@@ -134,7 +134,7 @@ int main() {
 
   // init V vector
   Eigen::MatrixXd v(4, 1);
-  v << 1, 1, 1, 1;
+  v << 5, 4.5, 4, 1;
   std::cout << "v: " << v.rows() << " * " << v.cols() << std::endl;
 
   for (int index = 0; index < 10; index++) {
@@ -156,7 +156,7 @@ int main() {
     double Ieq2 = diodeIeq(v(1) - v(2), Is, vt);
     std::cout << "Ieq2 value: " << Ieq2 << std::endl;
     Eigen::MatrixXd i(4, 1);
-    i << -Ieq1, Ieq1 - Ieq2, Ieq2, 5;
+    i << -Ieq1, Ieq1 - Ieq2, Ieq2, -5;
     std::cout << "i: " << i.rows() << " * " << i.cols() << std::endl;
     // Calculate Jacobian Matrix
     double delta = 0.000000000001;
