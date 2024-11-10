@@ -109,42 +109,45 @@ public:
 
 // change return by vgs and vds
 // only for saturation
-double calg0(double k, double vgs, double vt, double va) {
+double calg0(double k, double vgs, double vds, double vt, double va) {
   if (vgs - vt < 0) return 0;
+  if (vds <= vgs - vt) return k*((vgs-vt)-vds);
   return ((k / 2) * pow(vgs - vt, 2)) / va;
 }
 
 double calgm(double k, double vgs, double vds, double vt, double va) {
   if (vgs - vt < 0) return 0;
+  if (vds <= vgs - vt) return k*vds;
   return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
 }
 
 double calid(double k, double vgs, double vds, double vt, double va) {
   if (vgs - vt < 0) return 0;
+  if (vds <= vgs - vt) return k*((vgs - vt)-vds/2)*vds;
   return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
 }
 
 double calideq(double k, double vgs, double vds, double vt, double va) {
   return calid(k, vgs, vds, vt, va) - calgm(k, vgs, vds, vt, va) * vgs -
-         calg0(k, vgs, vt, va) * vds;
+         calg0(k, vgs, vds, vt, va) * vds;
 }
 
 int main() {
   // nmos stats
-  double k = 0.5 * pow(10, -3);
+  double k = 0.4 * pow(10, -3);
   double vt = 1;
   // double va = std::numeric_limits<double>::infinity();
-  double va = 10000;
+  double va = INFINITY;
 
   // G V and I matrix
   Eigen::MatrixXd v(4, 1);
   // initial guess
   v << 0, 0, 0, 0;
 
-  for (int iteration = 0; iteration < 100; iteration++) {
+  for (int iteration = 0; iteration < 10; iteration++) {
     Eigen::MatrixXd g(4, 4);
     double g0;
-    g0 = calg0(k, v(0), vt, va);
+    g0 = calg0(k, v(0), v(1), vt, va);
     double g00 = 0;
     double g01 = 0;
     double g10 = 0;
@@ -158,7 +161,7 @@ int main() {
     std::cout << "issd: " << issd << std::endl;
     double ideq = calideq(k, v(0), v(1), vt, va);
     std::cout << "ideq: " << ideq << std::endl;
-    i << 0, -issd - ideq, -2.5, 3;
+    i << 0, -issd - ideq, 2, 0.5;
 
     std::cout << "g v i success" << std::endl;
     // F matrix
