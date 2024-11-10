@@ -107,16 +107,20 @@ public:
   }
 };
 
+// change return by vgs and vds
 // only for saturation
 double calg0(double k, double vgs, double vt, double va) {
+  if (vgs - vt < 0) return 0;
   return ((k / 2) * pow(vgs - vt, 2)) / va;
 }
 
 double calgm(double k, double vgs, double vds, double vt, double va) {
+  if (vgs - vt < 0) return 0;
   return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
 }
 
 double calid(double k, double vgs, double vds, double vt, double va) {
+  if (vgs - vt < 0) return 0;
   return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
 }
 
@@ -154,7 +158,7 @@ int main() {
     std::cout << "issd: " << issd << std::endl;
     double ideq = calideq(k, v(0), v(1), vt, va);
     std::cout << "ideq: " << ideq << std::endl;
-    i << 0, -issd - ideq, 2.5, 3;
+    i << 0, -issd - ideq, -2.5, 3;
 
     std::cout << "g v i success" << std::endl;
     // F matrix
