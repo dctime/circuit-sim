@@ -15,7 +15,7 @@ private:
   sf::Vector2f origin;
   float width, height;
   float gridSize;
-  float scale;
+  double scaleX, scaleY;
 
   virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(gridLines, states);
@@ -24,9 +24,11 @@ private:
 
 public:
   CoordinateGraph(float windowWidth, float windowHeight,
-                  float gridSpacing = 50.0f, float scaleFactor = 1.0f)
+                  float gridSpacing = 50.0f, double xGridUnit = 1.0,
+                  double yGridUnit = 1.0)
       : gridLines(sf::Lines), axisLines(sf::Lines), width(windowWidth),
-        height(windowHeight), gridSize(gridSpacing), scale(scaleFactor) {
+        height(windowHeight), gridSize(gridSpacing), scaleX(1.0 / xGridUnit),
+        scaleY(1.0 / yGridUnit) {
 
     origin = sf::Vector2f(width / 2, height / 2);
     createGrid();
@@ -77,8 +79,8 @@ public:
 
   // Convert graph coordinates to screen coordinates
   sf::Vector2f graphToScreen(float x, float y) {
-    return sf::Vector2f(origin.x + x * gridSize * scale,
-                        origin.y - y * gridSize * scale // Inverted y-axis
+    return sf::Vector2f(origin.x + x * gridSize * scaleX,
+                        origin.y - y * gridSize * scaleY // Inverted y-axis
     );
   }
 
@@ -139,101 +141,103 @@ double calideq(double k, double vgs, double vds, double vt, double va) {
 }
 
 int main() {
-  // nmos stats
-  double k = 1 * pow(10, -3);
-  double vt = 1;
-  // double va = std::numeric_limits<double>::infinity();
-  double va = INFINITY;
+  sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
+  window.setFramerateLimit(60);
 
-  // G V and I matrix
-  Eigen::MatrixXd v(7, 1);
-  // initial guess
-  v << 0, 0, 0, 0, 0, 0, 0;
+  CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.001);
 
-  for (int iteration = 0; iteration < 100; iteration++) {
-    Eigen::MatrixXd g(7, 7);
-    double g0;
-    g0 = calg0(k, v(1) - v(4), v(3) - v(4), vt, va);
-    double g1 = 1.0 / (10 * pow(10, 6));
-    double g2 = 1.0 / (10 * pow(10, 6));
-    double g3 = 1.0 / 6000.0;
-    double g4 = 1.0 / 6000.0;
+  std::vector<sf::VertexArray> plotsIY;
+  for (double vgs = 0; vgs <= 5; vgs += 1.0) {
+    std::vector<double> valuesIY; 
+    for (double vds = 0; vds <= 5; vds += 0.01) {
+      // nmos stats
+      double k = 0.4 * pow(10, -3);
+      double vt = 1;
+      // double va = std::numeric_limits<double>::infinity();
+      double va = INFINITY;
 
-    double g00 = g1;
-    double g01 = -g1;
-    double g10 = -g1;
-    double g02 = 0;
-    double g20 = 0;
-    double g03 = 0;
-    double g30 = 0;
-    double g04 = 0;
-    double g40 = 0;
-    double g11 = g1 + g2;
-    double g12 = 0;
-    double g21 = 0;
-    double g13 = 0;
-    double g31 = 0;
-    double g14 = 0;
-    double g41 = 0;
-    double g22 = g3;
-    double g23 = -g3;
-    double g32 = -g3;
-    double g24 = 0;
-    double g42 = 0;
-    double g33 = g3 + g0;
-    double g34 = -g0;
-    double g43 = -g0;
-    double g44 = g0 + g4;
+      // G V and I matrix
+      Eigen::MatrixXd v(4, 1);
+      // initial guess
+      v << 0, 0, 0, 0;
 
-    g << g00, g01, g02, g03, g04, 1, 0,
-      g10, g11, g12, g13, g14, 0, 0,
-      g20, g21, g22, g23, g24, 0, 1,
-      g30, g31, g32, g33, g34, 0, 0,
-      g40, g41, g42, g43, g44, 0, 0,
-      1, 0, 0, 0, 0, 0, 0,
-      0, 0, 1, 0, 0, 0, 0;
+      for (int iteration = 0; iteration < 10; iteration++) {
+        Eigen::MatrixXd g(4, 4);
+        double g0;
+        g0 = calg0(k, v(0), v(1), vt, va);
+        double g00 = 0;
+        double g01 = 0;
+        double g10 = 0;
+        double g11 = g0;
 
-    Eigen::MatrixXd i(7, 1);
-    double issd = calgm(k, v(1)-v(4), v(3)-v(4), vt, va) * (v(1)-v(4));
-    std::cout << "issd: " << issd << std::endl;
-    double ideq = calideq(k, v(1)-v(4), v(3)-v(4), vt, va);
-    std::cout << "ideq: " << ideq << std::endl;
-    i << 0, 0, 0, -issd - ideq, issd + ideq, 10, 10;
+        g << g00, g01, 1, 0, g10, g11, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0;
 
-    std::cout << "g v i success" << std::endl;
-    // F matrix
-    Eigen::MatrixXd f(7, 1);
-    f = g * v - i;
+        Eigen::MatrixXd i(4, 1);
+        double issd = calgm(k, v(0), v(1), vt, va) * (v(0));
+        // std::cout << "issd: " << issd << std::endl;
+        double ideq = calideq(k, v(0), v(1), vt, va);
+        // std::cout << "ideq: " << ideq << std::endl;
+        i << 0, -issd - ideq, vgs, vds;
 
-    std::cout << "f matrix success" << std::endl;
-    // J matrix
-    double delta = 0.00000001;
-    Eigen::MatrixXd dupV = v.replicate(1, 7);
-    Eigen::MatrixXd vWithDelta = Eigen::MatrixXd::Identity(7, 7);
-    vWithDelta = vWithDelta * delta + dupV;
-    std::cout << "vWithData value: " << vWithDelta << std::endl;
-    Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
-    std::cout << "j" << std::endl;
-    std::cout << j << std::endl;
+        // std::cout << "g v i success" << std::endl;
+        // F matrix
+        Eigen::MatrixXd f(4, 1);
+        f = g * v - i;
 
-    std::cout << "j matrix success" << std::endl;
+        // std::cout << "f matrix success" << std::endl;
+        // J matrix
+        double delta = 0.00000001;
+        Eigen::MatrixXd dupV = v.replicate(1, 4);
+        Eigen::MatrixXd vWithDelta = Eigen::MatrixXd::Identity(4, 4);
+        vWithDelta = vWithDelta * delta + dupV;
+        // std::cout << "vWithData value: " << vWithDelta << std::endl;
+        Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
+        // std::cout << "j" << std::endl;
+        // std::cout << j << std::endl;
 
-    // calculate deltaV
-    Eigen::MatrixXd deltaV = (-1.0/(iteration+1)) * ((j.inverse()) * f);
-    std::cout << "deltaV value:" << std::endl;
-    std::cout << deltaV << std::endl;
-    // calculate new v
-    v += deltaV;
-    std::cout << "cal v success" << std::endl;
+        // std::cout << "j matrix success" << std::endl;
 
-    // print v
-    std::cout << "iteration: " << iteration << std::endl;
-    std::cout << "V0\nV1\nV2\nV3\nV4\nIx\nIY:" << std::endl;
-    std::cout << v << std::endl;
-    std::cout << "===============" << std::endl;
-    std::cout << "evaluation:" << std::endl;
-    std::cout << g * v - i << std::endl;
-    std::cout << "===============" << std::endl;
+        // calculate deltaV
+        Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
+        // std::cout << "deltaV value:" << std::endl;
+        // std::cout << deltaV << std::endl;
+        // calculate new v
+        v += deltaV;
+        // std::cout << "cal v success" << std::endl;
+
+        // print v
+        // std::cout << "iteration: " << iteration << std::endl;
+        // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
+        // std::cout << v << std::endl;
+        // std::cout << "===============" << std::endl;
+        // std::cout << "evaluation:" << std::endl;
+        // std::cout << g * v - i << std::endl;
+        // std::cout << "===============" << std::endl;
+      }
+      std::cout << "vds: " << vds << " IY: " << v(3) << std::endl;
+      valuesIY.push_back(-v(3));
+    }
+
+    sf::VertexArray plotIY(sf::LineStrip);
+    graph.applyVectorToPlot(valuesIY, plotIY, 0.01, sf::Color::Green);
+    plotsIY.push_back(plotIY);
   }
+
+  
+  while (window.isOpen()) {
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
+
+    window.clear(sf::Color::Black);
+    window.draw(graph);
+    for (sf::VertexArray& v : plotsIY) {
+      window.draw(v);
+    }
+    window.display();
+  }
+
   return 0;
 }
