@@ -1,11 +1,16 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Window/Window.hpp>
 #include <cmath>
 #include <eigen3/Eigen/Dense>
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <vector>
 
 class CoordinateGraph : public sf::Drawable {
@@ -109,6 +114,126 @@ public:
   }
 };
 
+sf::VertexArray *setLineToBg(sf::Vector2f &point1, sf::Vector2f &point2,
+                             sf::Color color1, sf::Color color2, double width) {
+  sf::VertexArray *backgroundptr = new sf::VertexArray(sf::Quads, 4);
+  sf::VertexArray background = *backgroundptr;
+  float angle = std::atan2(point2.y - point1.y, point2.x - point1.x);
+  // background[0].position = sf::Vector2f(point1.x+(width/2.0)*std::sin(angle),
+  // point1.x-(width/2.0)*std::cos(angle)); background[1].position =
+  // sf::Vector2f(point1.x-(width/2.0)*std::sin(angle),
+  // point1.x+(width/2.0)*std::cos(angle)); background[2].position =
+  // sf::Vector2f(point2.x+(width/2.0)*std::sin(angle),
+  // point2.x-(width/2.0)*std::cos(angle)); background[3].position =
+  // sf::Vector2f(point2.x-(width/2.0)*std::sin(angle),
+  // point2.x+(width/2.0)*std::cos(angle));
+  background[0].position = sf::Vector2f(100, 100);
+  background[1].position = sf::Vector2f(100, 300);
+  background[2].position = sf::Vector2f(300, 100);
+  background[3].position = sf::Vector2f(300, 300);
+
+  background[0].color = color1;
+  background[1].color = color1;
+  background[2].color = color2;
+  background[3].color = color2;
+
+  return backgroundptr;
+}
+
+void showLine(sf::RenderWindow *window, sf::Vector2f &point1,
+              sf::Vector2f &point2, double width, sf::Color color1,
+              sf::Color color2, sf::Color colorm) {
+  sf::VertexArray background(sf::TriangleStrip, 6);
+  float angle = std::atan2(point2.y - point1.y, point2.x - point1.x);
+  // std::cout << "angle:" << angle << std::endl;
+  background[0].position =
+      sf::Vector2f(point1.x + (width / 2.0) * std::sin(angle),
+                   point1.y - (width / 2.0) * std::cos(angle));
+  background[1].position =
+      sf::Vector2f(point1.x - (width / 2.0) * std::sin(angle),
+                   point1.y + (width / 2.0) * std::cos(angle));
+  background[2].position = sf::Vector2f(
+      (point1.x + point2.x) / 2.0 + (width / 2.0) * std::sin(angle),
+      (point1.y + point2.y) / 2.0 - (width / 2.0) * std::cos(angle));
+  background[3].position = sf::Vector2f(
+      (point1.x + point2.x) / 2.0 - (width / 2.0) * std::sin(angle),
+      (point1.y + point2.y) / 2.0 + (width / 2.0) * std::cos(angle));
+  background[4].position =
+      sf::Vector2f(point2.x + (width / 2.0) * std::sin(angle),
+                   point2.y - (width / 2.0) * std::cos(angle));
+  background[5].position =
+      sf::Vector2f(point2.x - (width / 2.0) * std::sin(angle),
+                   point2.y + (width / 2.0) * std::cos(angle));
+
+  background[0].color = color1;
+  background[1].color = color1;
+  background[2].color = colorm;
+  background[3].color = colorm;
+  background[4].color = color2;
+  background[5].color = color2;
+
+  window->draw(background);
+}
+
+void voltToColor(double voltage, sf::Color &color) {
+  if (voltage >= 0) {
+    if (voltage >= 1)
+      voltage = 1;
+    color.a = 255;
+    color.r = 30;
+    color.g = 30 + (255 - 30) * voltage;
+  } else {
+    if (voltage <= -1)
+      voltage = -1;
+    color.a = 255;
+    color.r = 30 + (255 - 30) * voltage;
+    color.g = 30;
+    color.b = 30;
+  }
+}
+
+void midColor(sf::Color &outputColor, sf::Color &color1, sf::Color &color2) {
+  int color1Value = (color1.r - 30) - (color1.g - 30);
+  int color2Value = (color2.r - 30) - (color2.g - 30);
+  int midValue = (color1Value + color2Value) / 2;
+  outputColor.a = 255;
+  outputColor.r = 30;
+  outputColor.g = 30;
+  outputColor.b = 30;
+  if (midValue >= 0) {
+    outputColor.r += midValue;
+  } else {
+    outputColor.g += -midValue;
+  }
+}
+
+void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs) {
+  sf::Vector2f pointD1(100, 100);
+  sf::Vector2f pointD2(100, 150);
+  sf::Vector2f pointB1(50, 150);
+  sf::Vector2f pointB2(50, 200);
+  sf::Vector2f pointG1(50, 175);
+  sf::Vector2f pointG2(25, 175);
+  sf::Vector2f pointS1(100, 200);
+  sf::Vector2f pointS2(100, 250);
+
+  sf::Color gColor;
+  voltToColor(vg, gColor);
+  sf::Color dColor;
+  voltToColor(vd, dColor);
+  sf::Color sColor;
+  voltToColor(vs, sColor);
+  sf::Color bColor;
+  midColor(bColor, dColor, sColor);
+
+  showLine(window, pointD1, pointD2, 5, dColor, dColor, dColor);
+  showLine(window, pointB1, pointB2, 10, dColor, sColor, bColor);
+  showLine(window, pointG1, pointG2, 5, gColor, gColor, gColor);
+  showLine(window, pointS1, pointS2, 5, sColor, sColor, sColor);
+  showLine(window, pointD2, pointB1, 5, dColor, dColor, dColor);
+  showLine(window, pointB2, pointS1, 5, sColor, sColor, sColor);
+}
+
 // change return by vgs and vds
 // only for saturation
 double calg0(double k, double vgs, double vds, double vt, double va) {
@@ -141,16 +266,39 @@ double calideq(double k, double vgs, double vds, double vt, double va) {
 }
 
 int main() {
+  sf::Font font;
+  if (!font.loadFromFile("../arial.ttf")) {
+    std::cout << "Font Load Failed!" << std::endl;
+  }
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
 
-  CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
+  // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
-  std::vector<double> valuesV1;
-  std::vector<double> valuesV0;
+  // sf::VertexArray plotV1(sf::LineStrip);
+  // graph.applyVectorToPlot(valuesV1, plotV1, 0.01, sf::Color::Green);
+  // sf::VertexArray plotV0(sf::LineStrip);
+  // graph.applyVectorToPlot(valuesV0, plotV0, 0.01, sf::Color::Red);
+  sf::Text text;
+  text.setCharacterSize(20);
+  text.setStyle(sf::Text::Bold);
+  text.setFillColor(sf::Color::White);
+  text.setPosition(0, 0);
+  text.setFont(font);
 
-  std::function<double(double)> vgsOfT = [](double t) { return 13.3*pow(10, -3) * sin(t) + 0.6; };
-  for (double t = 0; t <= 5; t += 0.01) {
+  double t = 0;
+  while (window.isOpen()) {
+
+    t += 0.01;
+    std::function<double(double)> vgsOfT = [](double t) {
+      return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
+    };
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
+
     double vgs = vgsOfT(t);
     // nmos stats
     double k = 4 * pow(10, -3);
@@ -178,11 +326,8 @@ int main() {
       double g21 = -1.0 / r0;
       double g22 = 1.0 / r0;
 
-      g << g00, g01, g02, 1, 0,
-        g10, g11, g12, 0, 0,
-        g20, g21, g22, 0, 1,
-        1, 0, 0, 0, 0,
-        0, 0, 1, 0, 0;
+      g << g00, g01, g02, 1, 0, g10, g11, g12, 0, 0, g20, g21, g22, 0, 1, 1, 0,
+          0, 0, 0, 0, 0, 1, 0, 0;
 
       Eigen::MatrixXd i(5, 1);
       double issd = calgm(k, v(0), v(1), vt, va) * (v(0));
@@ -226,29 +371,18 @@ int main() {
       // std::cout << g * v - i << std::endl;
       // std::cout << "===============" << std::endl;
     }
-    std::cout << "v0: " << v(0) << " v1: " << v(1) << std::endl;
-    valuesV0.push_back(v(0));
-    valuesV1.push_back(v(1));
-  }
-
-  sf::VertexArray plotV1(sf::LineStrip);
-  graph.applyVectorToPlot(valuesV1, plotV1, 0.01, sf::Color::Green);
-  sf::VertexArray plotV0(sf::LineStrip);
-  graph.applyVectorToPlot(valuesV0, plotV0, 0.01, sf::Color::Red);
-
-  while (window.isOpen()) {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
+    // printf("v0:%f v1:%f\r", v(0), v(1));
+    // std::cout << "v0: " << v(0) << " v1: " << v(1) << "\r";
+    text.setString("vg: " + std::to_string(v(0)) +
+                   " | vd: " + std::to_string(v(1)));
 
     window.clear(sf::Color::Black);
-    window.draw(graph);
-    window.draw(plotV0);
-    window.draw(plotV1);
+    showNMOS(&window, v(0), v(1), 0);
+    window.draw(text);
     window.display();
   }
+
+  // delete bgD;
 
   return 0;
 }
