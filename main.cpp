@@ -182,8 +182,9 @@ void midColor(sf::Color &outputColor, sf::Color &color1, sf::Color &color2) {
   }
 }
 
+double lastoffsetNMOS = 0;
 void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
-              sf::Vector2f &loc) {
+              double id, sf::Vector2f &loc, double currentScale) {
   // pin_d 100 100
   // pin_g 0 150
   // pin_s 100 200
@@ -220,11 +221,57 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
   showLine(window, pointB2, pointS1, 5, sColor, sColor, sColor);
   showLine(window, pointS1, pointS11, width, sColor, sColor, sColor);
   showLine(window, pointS1, pointS12, width, sColor, sColor, sColor);
+
+  double &current = id;
+  lastoffsetNMOS += current * currentScale;
+  lastoffsetNMOS = std::remainder(lastoffsetNMOS, 20);
+  lastoffsetNMOS = lastoffsetNMOS < 0 ? lastoffsetNMOS + 20.0 : lastoffsetNMOS;
+
+  for (int i = 0; i < 20; ++i) {
+    sf::CircleShape circle(width / 2);
+    if (i < 1)
+      circle.setPosition(pointD1.x - circle.getRadius(),
+                         pointD1.y - circle.getRadius() + lastoffsetNMOS);
+    else if (i < 2) {
+      if (lastoffsetNMOS < 5)
+        circle.setPosition(pointD1.x - circle.getRadius(),
+                           pointD1.y + 20 - circle.getRadius() +
+                               lastoffsetNMOS);
+      else
+        circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS + 5,
+                           pointD2.y - circle.getRadius());
+    } else if (i < 3) {
+      circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 15, pointD2.y - circle.getRadius());
+    } else if (i < 4) {
+      if (lastoffsetNMOS < 15)
+        circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 35, pointD2.y - circle.getRadius());
+      else 
+        circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS - 15);
+    } else if (i < 6) {
+      circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS + 5 + (i-4)*20);
+    } else if (i < 7) {
+      if (lastoffsetNMOS < 5)
+        circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS + 45);
+      else 
+        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS - 5, pointB2.y - circle.getRadius());
+    } else if (i < 8) {
+      circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 15, pointB2.y - circle.getRadius());
+    } else if (i < 9) {
+      if (lastoffsetNMOS < 15)
+        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 35, pointB2.y - circle.getRadius());
+      else
+        circle.setPosition(pointS1.x - circle.getRadius(), pointS1.y - circle.getRadius() - 15 + lastoffsetNMOS);
+    } else {
+        circle.setPosition(pointS1.x - circle.getRadius(), pointS1.y - circle.getRadius() + lastoffsetNMOS + 5);
+    }
+    circle.setFillColor(sf::Color(200, 200, 0));
+    window->draw(circle);
+  }
 }
 
-double lastoffset = 0;
+double lastoffsetresistor = 0;
 void showResistor(sf::RenderWindow *window, double v1, double v2,
-                  sf::Vector2f &loc, double R, double t) {
+                  sf::Vector2f &loc, double R, double currentScale) {
   // pin1 302.5 300
   // pin2 302.5 400
   // loc 302.5 350
@@ -268,15 +315,16 @@ void showResistor(sf::RenderWindow *window, double v1, double v2,
 
   window->draw(bg);
   double current = (v1 - v2) / R;
-  double currentScale = 10000;
-  lastoffset += current*currentScale;
-  lastoffset = std::remainder(lastoffset, 20);
-  lastoffset = lastoffset < 0 ? lastoffset+20.0 : lastoffset;
+  lastoffsetresistor += current * currentScale;
+  lastoffsetresistor = std::remainder(lastoffsetresistor, 20);
+  lastoffsetresistor =
+      lastoffsetresistor < 0 ? lastoffsetresistor + 20.0 : lastoffsetresistor;
   for (int i = 0; i < 5; ++i) {
     sf::CircleShape circle(5.0 / 2);
-    circle.setPosition(loc.x - circle.getRadius(),
-                       loc.y - 50 + 20 * i - circle.getRadius() +
-                           lastoffset);
+    circle.setPosition(loc.x - circle.getRadius(), loc.y - 50 + 20 * i -
+                                                       circle.getRadius() +
+                                                       lastoffsetresistor);
+    circle.setFillColor(sf::Color(200, 200, 0));
     window->draw(circle);
   }
 }
@@ -423,8 +471,9 @@ int main() {
     window.clear(sf::Color::Black);
     sf::Vector2f nmosLoc(200, 300);
     sf::Vector2f resisLoc(200, 200);
-    showNMOS(&window, v(0), v(1), 0, nmosLoc);
-    showResistor(&window, v(2), v(1), resisLoc, r0, t);
+    double currentScale = 20000;
+    showNMOS(&window, v(0), v(1), 0, calid(k, v(0), v(1), vt, va), nmosLoc, currentScale);
+    showResistor(&window, v(2), v(1), resisLoc, r0, currentScale);
     window.draw(text);
     window.display();
   }
