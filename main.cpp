@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -114,32 +115,6 @@ public:
   }
 };
 
-sf::VertexArray *setLineToBg(sf::Vector2f &point1, sf::Vector2f &point2,
-                             sf::Color color1, sf::Color color2, double width) {
-  sf::VertexArray *backgroundptr = new sf::VertexArray(sf::Quads, 4);
-  sf::VertexArray background = *backgroundptr;
-  float angle = std::atan2(point2.y - point1.y, point2.x - point1.x);
-  // background[0].position = sf::Vector2f(point1.x+(width/2.0)*std::sin(angle),
-  // point1.x-(width/2.0)*std::cos(angle)); background[1].position =
-  // sf::Vector2f(point1.x-(width/2.0)*std::sin(angle),
-  // point1.x+(width/2.0)*std::cos(angle)); background[2].position =
-  // sf::Vector2f(point2.x+(width/2.0)*std::sin(angle),
-  // point2.x-(width/2.0)*std::cos(angle)); background[3].position =
-  // sf::Vector2f(point2.x-(width/2.0)*std::sin(angle),
-  // point2.x+(width/2.0)*std::cos(angle));
-  background[0].position = sf::Vector2f(100, 100);
-  background[1].position = sf::Vector2f(100, 300);
-  background[2].position = sf::Vector2f(300, 100);
-  background[3].position = sf::Vector2f(300, 300);
-
-  background[0].color = color1;
-  background[1].color = color1;
-  background[2].color = color2;
-  background[3].color = color2;
-
-  return backgroundptr;
-}
-
 void showLine(sf::RenderWindow *window, sf::Vector2f &point1,
               sf::Vector2f &point2, double width, sf::Color color1,
               sf::Color color2, sf::Color colorm) {
@@ -207,15 +182,25 @@ void midColor(sf::Color &outputColor, sf::Color &color1, sf::Color &color2) {
   }
 }
 
-void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs) {
-  sf::Vector2f pointD1(100, 100);
-  sf::Vector2f pointD2(100, 150);
-  sf::Vector2f pointB1(50, 150);
-  sf::Vector2f pointB2(50, 200);
-  sf::Vector2f pointG1(50, 175);
-  sf::Vector2f pointG2(25, 175);
-  sf::Vector2f pointS1(100, 200);
-  sf::Vector2f pointS2(100, 250);
+void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
+              sf::Vector2f &loc) {
+  // pin_d 100 100
+  // pin_g 0 150
+  // pin_s 100 200
+  // loc 100 150
+  double width = 5;
+  sf::Vector2f pointD1(loc.x, loc.y - 50);
+  sf::Vector2f pointD2(loc.x, loc.y - 25);
+  sf::Vector2f pointB1(loc.x - 50 + 2.5, loc.y - 25);
+  sf::Vector2f pointB2(loc.x - 50 + 2.5, loc.y + 25);
+  sf::Vector2f pointBG1(loc.x - 50 - 7.5, loc.y - 25);
+  sf::Vector2f pointBG2(loc.x - 50 - 7.5, loc.y + 25);
+  sf::Vector2f pointG1(loc.x - 50 - 7.5, loc.y);
+  sf::Vector2f pointG2(loc.x - 100, loc.y);
+  sf::Vector2f pointS1(loc.x, loc.y + 25);
+  sf::Vector2f pointS11(loc.x - 10, loc.y + 25 + 10);
+  sf::Vector2f pointS12(loc.x - 10, loc.y + 25 - 10);
+  sf::Vector2f pointS2(loc.x, loc.y + 50);
 
   sf::Color gColor;
   voltToColor(vg, gColor);
@@ -227,11 +212,73 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs) {
   midColor(bColor, dColor, sColor);
 
   showLine(window, pointD1, pointD2, 5, dColor, dColor, dColor);
-  showLine(window, pointB1, pointB2, 10, dColor, sColor, bColor);
+  showLine(window, pointB1, pointB2, width, dColor, sColor, bColor);
+  showLine(window, pointBG1, pointBG2, width, gColor, gColor, gColor);
   showLine(window, pointG1, pointG2, 5, gColor, gColor, gColor);
   showLine(window, pointS1, pointS2, 5, sColor, sColor, sColor);
   showLine(window, pointD2, pointB1, 5, dColor, dColor, dColor);
   showLine(window, pointB2, pointS1, 5, sColor, sColor, sColor);
+  showLine(window, pointS1, pointS11, width, sColor, sColor, sColor);
+  showLine(window, pointS1, pointS12, width, sColor, sColor, sColor);
+}
+
+double lastoffset = 0;
+void showResistor(sf::RenderWindow *window, double v1, double v2,
+                  sf::Vector2f &loc, double R, double t) {
+  // pin1 302.5 300
+  // pin2 302.5 400
+  // loc 302.5 350
+  sf::VertexArray bg(sf::TriangleStrip, 12);
+  bg[0].position = sf::Vector2f(loc.x - 2.5, loc.y - 50);
+  bg[1].position = sf::Vector2f(loc.x + 2.5, loc.y - 50);
+  bg[2].position = sf::Vector2f(loc.x - 2.5, loc.y - 10);
+  bg[3].position = sf::Vector2f(loc.x + 2.5, loc.y - 10);
+  bg[4].position = sf::Vector2f(loc.x - 7.5, loc.y - 5);
+  bg[5].position = sf::Vector2f(loc.x - 2.5, loc.y - 5);
+  bg[6].position = sf::Vector2f(loc.x + 2.5, loc.y + 5);
+  bg[7].position = sf::Vector2f(loc.x + 7.5, loc.y + 5);
+  bg[8].position = sf::Vector2f(loc.x - 2.5, loc.y + 10);
+  bg[9].position = sf::Vector2f(loc.x + 2.5, loc.y + 10);
+  bg[10].position = sf::Vector2f(loc.x - 2.5, loc.y + 50);
+  bg[11].position = sf::Vector2f(loc.x + 2.5, loc.y + 50);
+
+  sf::Color color1;
+  voltToColor(v1, color1);
+  sf::Color color2;
+  voltToColor(v2, color2);
+  sf::Color mColor;
+  sf::Color m1Color;
+  sf::Color m2Color;
+  midColor(mColor, color1, color2);
+  midColor(m1Color, color1, mColor);
+  midColor(m2Color, mColor, color2);
+
+  bg[0].color = color1;
+  bg[1].color = color1;
+  bg[2].color = color1;
+  bg[3].color = color1;
+  bg[4].color = m1Color;
+  bg[5].color = m1Color;
+  bg[6].color = m2Color;
+  bg[7].color = m2Color;
+  bg[8].color = color2;
+  bg[9].color = color2;
+  bg[10].color = color2;
+  bg[11].color = color2;
+
+  window->draw(bg);
+  double current = (v1 - v2) / R;
+  double currentScale = 10000;
+  lastoffset += current*currentScale;
+  lastoffset = std::remainder(lastoffset, 20);
+  lastoffset = lastoffset < 0 ? lastoffset+20.0 : lastoffset;
+  for (int i = 0; i < 5; ++i) {
+    sf::CircleShape circle(5.0 / 2);
+    circle.setPosition(loc.x - circle.getRadius(),
+                       loc.y - 50 + 20 * i - circle.getRadius() +
+                           lastoffset);
+    window->draw(circle);
+  }
 }
 
 // change return by vgs and vds
@@ -305,6 +352,7 @@ int main() {
     double vt = 0.4;
     // double va = std::numeric_limits<double>::infinity();
     double va = INFINITY;
+    double r0 = 17.5 * pow(10, 3);
 
     // G V and I matrix
     Eigen::MatrixXd v(5, 1);
@@ -312,7 +360,6 @@ int main() {
     v << 0, 0, 0, 0, 0;
 
     for (int iteration = 0; iteration < 10; iteration++) {
-      double r0 = 17.5 * pow(10, 3);
       Eigen::MatrixXd g(5, 5);
       double g0;
       g0 = calg0(k, v(0), v(1), vt, va);
@@ -371,13 +418,13 @@ int main() {
       // std::cout << g * v - i << std::endl;
       // std::cout << "===============" << std::endl;
     }
-    // printf("v0:%f v1:%f\r", v(0), v(1));
-    // std::cout << "v0: " << v(0) << " v1: " << v(1) << "\r";
-    text.setString("vg: " + std::to_string(v(0)) +
-                   " | vd: " + std::to_string(v(1)));
-
+    text.setString("vg: " + std::to_string(v(0)) + " | vd: " +
+                   std::to_string(v(1)) + " | t: " + std::to_string(t));
     window.clear(sf::Color::Black);
-    showNMOS(&window, v(0), v(1), 0);
+    sf::Vector2f nmosLoc(200, 300);
+    sf::Vector2f resisLoc(200, 200);
+    showNMOS(&window, v(0), v(1), 0, nmosLoc);
+    showResistor(&window, v(2), v(1), resisLoc, r0, t);
     window.draw(text);
     window.display();
   }
