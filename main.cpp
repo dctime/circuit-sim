@@ -182,6 +182,47 @@ void midColor(sf::Color &outputColor, sf::Color &color1, sf::Color &color2) {
   }
 }
 
+struct VoltageSource {
+  double lastoffsetVolt = 0;
+  void showVoltageSource(sf::RenderWindow *window, double vp, double vm,
+                         double i, sf::Vector2f &loc, double currentScale) {
+    double width = 5;
+
+    sf::Vector2f pointP1(loc.x, loc.y - 50);
+    sf::Vector2f pointP2(loc.x, loc.y - 10);
+    sf::Vector2f pointP3(loc.x - 30, loc.y - 10);
+    sf::Vector2f pointP4(loc.x + 30, loc.y - 10);
+    sf::Vector2f pointM1(loc.x, loc.y + 50);
+    sf::Vector2f pointM2(loc.x, loc.y + 10);
+    sf::Vector2f pointM3(loc.x - 20, loc.y + 10);
+    sf::Vector2f pointM4(loc.x + 20, loc.y + 10);
+
+    sf::Color colorP;
+    voltToColor(vp, colorP);
+    sf::Color colorM;
+    voltToColor(vm, colorM);
+
+    showLine(window, pointP1, pointP2, width, colorP, colorP, colorP);
+    showLine(window, pointP3, pointP4, width, colorP, colorP, colorP);
+    showLine(window, pointM1, pointM2, width, colorM, colorM, colorM);
+    showLine(window, pointM3, pointM4, width, colorM, colorM, colorM);
+
+    double current = i;
+    lastoffsetVolt += current * currentScale;
+    lastoffsetVolt = std::remainder(lastoffsetVolt, 20);
+    lastoffsetVolt =
+        lastoffsetVolt < 0 ? lastoffsetVolt + 20.0 : lastoffsetVolt;
+    for (int i = 0; i < 5; ++i) {
+      sf::CircleShape circle(5.0 / 2);
+      circle.setPosition(pointP1.x - circle.getRadius(),
+                         pointP1.y + 20 * i - circle.getRadius() +
+                             lastoffsetVolt);
+      circle.setFillColor(sf::Color(200, 200, 0));
+      window->draw(circle);
+    }
+  }
+};
+
 double lastoffsetNMOS = 0;
 void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
               double id, sf::Vector2f &loc, double currentScale) {
@@ -227,8 +268,14 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
   lastoffsetNMOS = std::remainder(lastoffsetNMOS, 20);
   lastoffsetNMOS = lastoffsetNMOS < 0 ? lastoffsetNMOS + 20.0 : lastoffsetNMOS;
 
+  sf::CircleShape circle(width / 2);
+  for (int i = 0; i < 2; ++i) {
+    circle.setPosition(pointG1.x - circle.getRadius() - 20 * i, pointG1.y - circle.getRadius());
+    circle.setFillColor(sf::Color(200, 200, 0));
+    window->draw(circle);
+  }
+
   for (int i = 0; i < 20; ++i) {
-    sf::CircleShape circle(width / 2);
     if (i < 1)
       circle.setPosition(pointD1.x - circle.getRadius(),
                          pointD1.y - circle.getRadius() + lastoffsetNMOS);
@@ -241,28 +288,42 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
         circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS + 5,
                            pointD2.y - circle.getRadius());
     } else if (i < 3) {
-      circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 15, pointD2.y - circle.getRadius());
+      circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 15,
+                         pointD2.y - circle.getRadius());
     } else if (i < 4) {
       if (lastoffsetNMOS < 15)
-        circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 35, pointD2.y - circle.getRadius());
-      else 
-        circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS - 15);
+        circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetNMOS - 35,
+                           pointD2.y - circle.getRadius());
+      else
+        circle.setPosition(pointB1.x - circle.getRadius(),
+                           pointB1.y - circle.getRadius() + lastoffsetNMOS -
+                               15);
     } else if (i < 6) {
-      circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS + 5 + (i-4)*20);
+      circle.setPosition(pointB1.x - circle.getRadius(),
+                         pointB1.y - circle.getRadius() + lastoffsetNMOS + 5 +
+                             (i - 4) * 20);
     } else if (i < 7) {
       if (lastoffsetNMOS < 5)
-        circle.setPosition(pointB1.x - circle.getRadius(), pointB1.y - circle.getRadius() + lastoffsetNMOS + 45);
-      else 
-        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS - 5, pointB2.y - circle.getRadius());
+        circle.setPosition(pointB1.x - circle.getRadius(),
+                           pointB1.y - circle.getRadius() + lastoffsetNMOS +
+                               45);
+      else
+        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS - 5,
+                           pointB2.y - circle.getRadius());
     } else if (i < 8) {
-      circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 15, pointB2.y - circle.getRadius());
+      circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 15,
+                         pointB2.y - circle.getRadius());
     } else if (i < 9) {
       if (lastoffsetNMOS < 15)
-        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 35, pointB2.y - circle.getRadius());
+        circle.setPosition(pointB2.x - circle.getRadius() + lastoffsetNMOS + 35,
+                           pointB2.y - circle.getRadius());
       else
-        circle.setPosition(pointS1.x - circle.getRadius(), pointS1.y - circle.getRadius() - 15 + lastoffsetNMOS);
+        circle.setPosition(pointS1.x - circle.getRadius(),
+                           pointS1.y - circle.getRadius() - 15 +
+                               lastoffsetNMOS);
     } else {
-        circle.setPosition(pointS1.x - circle.getRadius(), pointS1.y - circle.getRadius() + lastoffsetNMOS + 5);
+      circle.setPosition(pointS1.x - circle.getRadius(),
+                         pointS1.y - circle.getRadius() + lastoffsetNMOS + 5);
     }
     circle.setFillColor(sf::Color(200, 200, 0));
     window->draw(circle);
@@ -314,7 +375,9 @@ void showResistor(sf::RenderWindow *window, double v1, double v2,
   bg[11].color = color2;
 
   window->draw(bg);
+
   double current = (v1 - v2) / R;
+  
   lastoffsetresistor += current * currentScale;
   lastoffsetresistor = std::remainder(lastoffsetresistor, 20);
   lastoffsetresistor =
@@ -382,6 +445,8 @@ int main() {
   text.setFont(font);
 
   double t = 0;
+  VoltageSource sourceD, sourceG;
+
   while (window.isOpen()) {
 
     t += 0.01;
@@ -470,10 +535,15 @@ int main() {
                    std::to_string(v(1)) + " | t: " + std::to_string(t));
     window.clear(sf::Color::Black);
     sf::Vector2f nmosLoc(200, 300);
+    sf::Vector2f voltGateLoc(100, 350);
     sf::Vector2f resisLoc(200, 200);
-    double currentScale = 20000;
-    showNMOS(&window, v(0), v(1), 0, calid(k, v(0), v(1), vt, va), nmosLoc, currentScale);
+    sf::Vector2f voltLoc(500, 250);
+    double currentScale = 5000;
+    showNMOS(&window, v(0), v(1), 0, calid(k, v(0), v(1), vt, va), nmosLoc,
+             currentScale);
     showResistor(&window, v(2), v(1), resisLoc, r0, currentScale);
+    sourceD.showVoltageSource(&window, v(2), 0, v(4), voltLoc, currentScale);
+    sourceG.showVoltageSource(&window, v(0), 0, 0, voltGateLoc, currentScale);
     window.draw(text);
     window.display();
   }
