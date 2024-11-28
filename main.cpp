@@ -182,6 +182,48 @@ void midColor(sf::Color &outputColor, sf::Color &color1, sf::Color &color2) {
   }
 }
 
+struct Wire {
+  double lastoffsetVolt = 0;
+  void showWire(sf::RenderWindow *window, sf::Vector2f &loc1,
+                sf::Vector2f &loc2, double v, double i, double currentScale) {
+    double width = 5;
+    sf::Color wireColor;
+    voltToColor(v, wireColor);
+    showLine(window, loc1, loc2, width, wireColor, wireColor, wireColor);
+
+    double current = i;
+    lastoffsetVolt += current * currentScale;
+    lastoffsetVolt = std::remainder(lastoffsetVolt, 20);
+    lastoffsetVolt =
+        lastoffsetVolt < 0 ? lastoffsetVolt + 20.0 : lastoffsetVolt;
+    double length = std::sqrt(std::pow(loc1.x-loc2.x, 2) + std::pow(loc1.y-loc2.y, 2));
+    double unitX = (loc2.x - loc1.x) / length;
+    double unitY = (loc2.y - loc1.y) / length;
+    int max = (int)(std::sqrt(std::pow(loc1.x-loc2.x, 2) + std::pow(loc1.y-loc2.y, 2)) / 20);
+    for (int i = 0; i < max; ++i) {
+      sf::CircleShape circle(5.0 / 2);
+      circle.setPosition(loc1.x + 20 * i * unitX - circle.getRadius() + lastoffsetVolt * unitX,
+                         loc1.y + 20 * i * unitY - circle.getRadius() +
+                             lastoffsetVolt * unitY);
+      circle.setFillColor(sf::Color(200, 200, 0));
+      window->draw(circle);
+    }
+  }
+};
+
+void showGround(sf::RenderWindow* window, sf::Vector2f& loc) {
+  double width = 5;
+  sf::Vector2f pointG1(loc.x - 25, loc.y);
+  sf::Vector2f pointG2(loc.x + 25, loc.y);
+  sf::Vector2f pointG3(loc.x - 10, loc.y + 10);
+  sf::Vector2f pointG4(loc.x + 10, loc.y + 10);
+
+  showLine(window, pointG1, pointG2, width, sf::Color(30, 30, 30),
+           sf::Color(30, 30, 30), sf::Color(30, 30, 30));
+  showLine(window, pointG3, pointG4, width, sf::Color(30, 30, 30),
+           sf::Color(30, 30, 30), sf::Color(30, 30, 30));
+}
+
 struct AdjustableVoltageSource {
   double lastoffsetVolt = 0;
   void showAdjustableVoltageSource(sf::RenderWindow *window, double vp,
@@ -506,6 +548,7 @@ int main() {
   double t = 0;
   VoltageSource sourceD;
   AdjustableVoltageSource sourceG;
+  Wire wire;
 
   while (window.isOpen()) {
 
@@ -591,13 +634,19 @@ int main() {
       // std::cout << g * v - i << std::endl;
       // std::cout << "===============" << std::endl;
     }
-    text.setString("vg: " + std::to_string(v(0)) + " | vd: " +
-                   std::to_string(v(1)) + " | t: " + std::to_string(t));
+    text.setString(
+        "vg: " + std::to_string(v(0)) + " | vd: " + std::to_string(v(1)) +
+        " | i: " + std::to_string(v(4)) + " | t: " + std::to_string(t));
     window.clear(sf::Color::Black);
     sf::Vector2f nmosLoc(200, 300);
+    sf::Vector2f nmosGroundLoc(200, 350);
     sf::Vector2f voltGateLoc(100, 350);
+    sf::Vector2f voltGateGroundLoc(100, 400);
     sf::Vector2f resisLoc(200, 200);
     sf::Vector2f voltLoc(500, 250);
+    sf::Vector2f voltGroundLoc(500, 300);
+    sf::Vector2f wire1Loc(200, 150);
+    sf::Vector2f wire2Loc(500, 200);
     double currentScale = 5000;
     showNMOS(&window, v(0), v(1), 0, calid(k, v(0), v(1), vt, va), nmosLoc,
              currentScale);
@@ -605,6 +654,10 @@ int main() {
     sourceD.showVoltageSource(&window, v(2), 0, v(4), voltLoc, currentScale);
     sourceG.showAdjustableVoltageSource(&window, v(0), 0, v(3), voltGateLoc,
                                         currentScale);
+    showGround(&window, voltGateGroundLoc);
+    showGround(&window, voltGroundLoc);
+    showGround(&window, nmosGroundLoc);
+    wire.showWire(&window, wire1Loc, wire2Loc, v(2), v(4), currentScale);
     window.draw(text);
     window.display();
   }
