@@ -161,7 +161,7 @@ void voltToColor(double voltage, sf::Color &color) {
     if (voltage <= -1)
       voltage = -1;
     color.a = 255;
-    color.r = 30 + (255 - 30) * voltage;
+    color.r = 30 + (255 - 30) * voltage * (-1);
     color.g = 30;
     color.b = 30;
   }
@@ -554,7 +554,8 @@ int main() {
 
     t += 0.01;
     std::function<double(double)> vgsOfT = [](double t) {
-      return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
+      // return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
+      return sin(t)+0.6;
     };
     sf::Event event;
     while (window.pollEvent(event)) {
