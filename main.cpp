@@ -8,9 +8,11 @@
 #include <SFML/Window/Window.hpp>
 #include <cmath>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/src/Core/Matrix.h>
 #include <functional>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -196,13 +198,17 @@ struct Wire {
     lastoffsetVolt = std::remainder(lastoffsetVolt, 20);
     lastoffsetVolt =
         lastoffsetVolt < 0 ? lastoffsetVolt + 20.0 : lastoffsetVolt;
-    double length = std::sqrt(std::pow(loc1.x-loc2.x, 2) + std::pow(loc1.y-loc2.y, 2));
+    double length =
+        std::sqrt(std::pow(loc1.x - loc2.x, 2) + std::pow(loc1.y - loc2.y, 2));
     double unitX = (loc2.x - loc1.x) / length;
     double unitY = (loc2.y - loc1.y) / length;
-    int max = (int)(std::sqrt(std::pow(loc1.x-loc2.x, 2) + std::pow(loc1.y-loc2.y, 2)) / 20);
+    int max = (int)(std::sqrt(std::pow(loc1.x - loc2.x, 2) +
+                              std::pow(loc1.y - loc2.y, 2)) /
+                    20);
     for (int i = 0; i < max; ++i) {
       sf::CircleShape circle(5.0 / 2);
-      circle.setPosition(loc1.x + 20 * i * unitX - circle.getRadius() + lastoffsetVolt * unitX,
+      circle.setPosition(loc1.x + 20 * i * unitX - circle.getRadius() +
+                             lastoffsetVolt * unitX,
                          loc1.y + 20 * i * unitY - circle.getRadius() +
                              lastoffsetVolt * unitY);
       circle.setFillColor(sf::Color(200, 200, 0));
@@ -211,7 +217,7 @@ struct Wire {
   }
 };
 
-void showGround(sf::RenderWindow* window, sf::Vector2f& loc) {
+void showGround(sf::RenderWindow *window, sf::Vector2f &loc) {
   double width = 5;
   sf::Vector2f pointG1(loc.x - 25, loc.y);
   sf::Vector2f pointG2(loc.x + 25, loc.y);
@@ -364,6 +370,7 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
   showLine(window, pointS1, pointS12, width, sColor, sColor, sColor);
 
   double &current = id;
+  // std::cout << "id:" << id << std::endl;
   lastoffsetNMOS += current * currentScale;
   lastoffsetNMOS = std::remainder(lastoffsetNMOS, 20);
   lastoffsetNMOS = lastoffsetNMOS < 0 ? lastoffsetNMOS + 20.0 : lastoffsetNMOS;
@@ -493,36 +500,424 @@ void showResistor(sf::RenderWindow *window, double v1, double v2,
   }
 }
 
-// change return by vgs and vds
-// only for saturation
-double calg0(double k, double vgs, double vds, double vt, double va) {
-  if (vgs - vt < 0)
-    return 0;
-  if (vds <= vgs - vt)
-    return k * ((vgs - vt) - vds);
-  return ((k / 2) * pow(vgs - vt, 2)) / va;
-}
+class CircuitElement {
+public:
+  CircuitElement() {}
+  virtual ~CircuitElement() {}
+  virtual int getVoltageSourceCount() = 0;
+  virtual void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v,
+                             int MAX_NODE_ID, double t) = 0;
+  virtual void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v,
+                             int MAX_NODE_ID, double t) = 0;
+};
 
-double calgm(double k, double vgs, double vds, double vt, double va) {
-  if (vgs - vt < 0)
-    return 0;
-  if (vds <= vgs - vt)
-    return k * vds;
-  return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
-}
+class AdjustableVoltageSourceElement : public CircuitElement {
+public:
+  AdjustableVoltageSourceElement() : CircuitElement() {};
+  ~AdjustableVoltageSourceElement() {};
+  static std::unique_ptr<AdjustableVoltageSourceElement>
+  create(std::function<double(double)> v, int pin1, int pin2,
+         int voltageSourceID) {
+    // current flow from pin1 to pin2, + at pin1 - at pin2
+    std::unique_ptr<AdjustableVoltageSourceElement> vsrc =
+        std::make_unique<AdjustableVoltageSourceElement>();
+    vsrc->v = v;
+    vsrc->pin1 = pin1;
+    vsrc->pin2 = pin2;
+    vsrc->voltageSourceID = voltageSourceID;
+    return std::move(vsrc);
+  }
 
-double calid(double k, double vgs, double vds, double vt, double va) {
-  if (vgs - vt < 0)
-    return 0;
-  if (vds <= vgs - vt)
-    return k * ((vgs - vt) - vds / 2) * vds;
-  return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
-}
+  double getV(double t) { return v(t); }
+  int getVoltageSourceCount() override { return 1; }
 
-double calideq(double k, double vgs, double vds, double vt, double va) {
-  return calid(k, vgs, vds, vt, va) - calgm(k, vgs, vds, vt, va) * vgs -
-         calg0(k, vgs, vds, vt, va) * vds;
-}
+  void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    if (pin1 != -1) {
+      g(MAX_NODE_ID + 1 + voltageSourceID, pin1) = 1;
+      g(pin1, MAX_NODE_ID + 1 + voltageSourceID) = 1;
+    }
+
+    if (pin2 != -1) {
+      g(MAX_NODE_ID + 1 + voltageSourceID, pin2) = -1;
+      g(pin2, MAX_NODE_ID + 1 + voltageSourceID) = -1;
+    }
+
+    // std::cout << "adjVoltageSourceGSuccess" << std::endl;
+  }
+
+  void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    i(MAX_NODE_ID + 1 + voltageSourceID) = this->v(t);
+    // std::cout << "adjVoltageSourceISuccess" << std::endl;
+  }
+
+private:
+  std::function<double(double)> v;
+  int pin1;
+  int pin2;
+  int voltageSourceID;
+};
+
+class VoltageSourceElement : public CircuitElement {
+public:
+  VoltageSourceElement() : CircuitElement() {}
+  ~VoltageSourceElement() {}
+  static std::unique_ptr<VoltageSourceElement>
+  create(double v, int pin1, int pin2, int voltageSourceID) {
+    // current flow from pin1 to pin2, + at pin1 - at pin2
+    std::unique_ptr<VoltageSourceElement> vsrc =
+        std::make_unique<VoltageSourceElement>();
+    vsrc->v = v;
+    vsrc->pin1 = pin1;
+    vsrc->pin2 = pin2;
+    vsrc->voltageSourceID = voltageSourceID;
+    return std::move(vsrc);
+  }
+
+  void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    // std::cout << "modifying" << std::endl;
+    // std::cout << "pin1" << pin1 << std::endl;
+    // std::cout << "pin2" << pin2 << std::endl;
+    // std::cout << "MAX_NODE_ID" << MAX_NODE_ID << std::endl;
+    // std::cout << "voltageSourceID" << voltageSourceID << std::endl;
+    if (pin1 != -1) {
+      g(MAX_NODE_ID + 1 + voltageSourceID, pin1) = 1;
+      // std::cout << "success1" << std::endl;
+      g(pin1, MAX_NODE_ID + 1 + voltageSourceID) = 1;
+      // std::cout << "success2" << std::endl;
+    }
+
+    if (pin2 != -1) {
+      g(MAX_NODE_ID + 1 + voltageSourceID, pin2) = -1;
+      g(pin2, MAX_NODE_ID + 1 + voltageSourceID) = -1;
+    }
+
+    // std::cout << "voltageSourceGSuccess" << std::endl;
+  }
+
+  void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    i(MAX_NODE_ID + 1 + voltageSourceID) = this->v;
+
+    // std::cout << "voltageSourceISuccess" << std::endl;
+  }
+
+  int getVoltageSourceCount() override { return 1; }
+
+private:
+  double v;
+  int pin1;
+  int pin2;
+  int voltageSourceID;
+};
+
+class ResistorElement : public CircuitElement {
+public:
+  ResistorElement() : CircuitElement() {}
+  ~ResistorElement() {}
+  static std::unique_ptr<ResistorElement> create(double r, int pin1, int pin2) {
+    // current flow from pin1 to pin2, + at pin1 - at pin2
+    std::unique_ptr<ResistorElement> rEle = std::make_unique<ResistorElement>();
+    rEle->R = r;
+    rEle->PIN1 = pin1;
+    rEle->PIN2 = pin2;
+    return std::move(rEle);
+  }
+
+  int getVoltageSourceCount() override { return 0; }
+
+  void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    double g0 = 1.0 / R;
+    if (PIN1 != -1)
+      g(PIN1, PIN1) += g0;
+    if (PIN2 != -1)
+      g(PIN2, PIN2) += g0;
+    if (PIN1 != -1 && PIN2 != -1) {
+      g(PIN1, PIN2) += -g0;
+      g(PIN2, PIN1) += -g0;
+    }
+  }
+
+  void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {}
+
+private:
+  double R;
+  int PIN1;
+  int PIN2;
+};
+
+class NMOSElement : public CircuitElement {
+public:
+  NMOSElement() : CircuitElement() {}
+  ~NMOSElement() {}
+  static std::unique_ptr<NMOSElement> create(double K, double VA, double VT,
+                                             int PIN_G, int PIN_D, int PIN_S) {
+    std::unique_ptr<NMOSElement> nmosEle = std::make_unique<NMOSElement>();
+    nmosEle->PIN_G = PIN_G;
+    nmosEle->PIN_D = PIN_D;
+    nmosEle->PIN_S = PIN_S;
+    nmosEle->K = K;
+    nmosEle->VA = VA;
+    nmosEle->VT = VT;
+    return std::move(nmosEle);
+  }
+
+  int getVoltageSourceCount() override { return 0; }
+
+  double getId(Eigen::MatrixXd &vResult) {
+    double vg, vd, vs;
+    if (PIN_G == -1) {
+      vg = 0;
+    } else {
+      vg = vResult(PIN_G);
+    }
+
+    if (PIN_D == -1) {
+      vd = 0;
+    } else {
+      vd = vResult(PIN_D);
+    }
+
+    if (PIN_S == -1) {
+      vs = 0;
+    } else {
+      vs = vResult(PIN_S);
+    }
+    return calid(K, vg - vs, vd - vs, VT, VA);
+  }
+
+  void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    // g0
+    double vg, vd, vs;
+    if (PIN_G == -1) {
+      vg = 0;
+    } else {
+      vg = v(PIN_G);
+    }
+
+    if (PIN_D == -1) {
+      vd = 0;
+    } else {
+      vd = v(PIN_D);
+    }
+
+    if (PIN_S == -1) {
+      vs = 0;
+    } else {
+      vs = v(PIN_S);
+    }
+
+    double g0 = calg0(K, vg - vs, vd - vs, VT, VA);
+
+    if (PIN_D != -1)
+      g(PIN_D, PIN_D) += g0;
+
+    if (PIN_S != -1)
+      g(PIN_S, PIN_S) += g0;
+
+    if (PIN_D != -1 && PIN_S != -1) {
+      g(PIN_D, PIN_S) += -g0;
+      g(PIN_S, PIN_D) += -g0;
+    }
+  }
+
+  void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
+                     double t) override {
+    double vg, vd, vs;
+    if (PIN_G == -1) {
+      vg = 0;
+    } else {
+      vg = v(PIN_G);
+    }
+
+    if (PIN_D == -1) {
+      vd = 0;
+    } else {
+      vd = v(PIN_D);
+    }
+
+    if (PIN_S == -1) {
+      vs = 0;
+    } else {
+      vs = v(PIN_S);
+    }
+
+    double ideq = calideq(K, vg - vs, vd - vs, VT, VA);
+    double issd = calissd(K, vg - vs, vd - vs, VT, VA);
+
+    if (PIN_D != -1) {
+      // ideq large DC signal current
+      // issd small signal current
+      i(PIN_D) += -ideq;
+      i(PIN_D) += -issd;
+    }
+
+    if (PIN_S != -1) {
+      // ideq large DC signal current
+      // issd small signal current
+      i(PIN_S) += ideq;
+      i(PIN_S) += issd;
+    }
+  }
+
+private:
+  int PIN_G;
+  int PIN_D;
+  int PIN_S;
+  double K;
+  double VA;
+  double VT;
+
+  double calg0(double k, double vgs, double vds, double vt, double va) {
+    if (vgs - vt < 0)
+      return 0;
+    if (vds <= vgs - vt)
+      return k * ((vgs - vt) - vds);
+    return ((k / 2) * pow(vgs - vt, 2)) / va;
+  }
+
+  double calgm(double k, double vgs, double vds, double vt, double va) {
+    if (vgs - vt < 0)
+      return 0;
+    if (vds <= vgs - vt)
+      return k * vds;
+    return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
+  }
+
+  double calid(double k, double vgs, double vds, double vt, double va) {
+    if (vgs - vt < 0)
+      return 0;
+    if (vds <= vgs - vt)
+      return k * ((vgs - vt) - vds / 2) * vds;
+    return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
+  }
+
+  double calissd(double k, double vgs, double vds, double vt, double va) {
+    return calgm(k, vgs, vds, vt, va) * vgs;
+  }
+
+  double calideq(double k, double vgs, double vds, double vt, double va) {
+    return calid(k, vgs, vds, vt, va) - calissd(k, vgs, vds, vt, va) -
+           calg0(k, vgs, vds, vt, va) * vds;
+  }
+};
+
+class Circuit {
+public:
+  static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
+                                         double deltaT, int MAX_NODE_ID) {
+    std::unique_ptr<Circuit> circuit = std::make_unique<Circuit>();
+    circuit->elements = elements;
+    circuit->t = 0;
+    circuit->deltaT = deltaT;
+    circuit->MAX_NODE_ID = MAX_NODE_ID;
+
+    circuit->MAX_MATRIX_SIZE = MAX_NODE_ID + 1; // node starts from 0
+    for (CircuitElement *ele : elements) {
+      circuit->MAX_MATRIX_SIZE += ele->getVoltageSourceCount();
+    }
+
+    circuit->v.resize(circuit->MAX_MATRIX_SIZE, 1);
+    circuit->v.setZero();
+    circuit->g.resize(circuit->MAX_MATRIX_SIZE, circuit->MAX_MATRIX_SIZE);
+    circuit->g.setZero();
+    circuit->i.resize(circuit->MAX_MATRIX_SIZE, 1);
+    circuit->i.setZero();
+    // std::cout << "MAX_MATRIX_SIZE: " << circuit->MAX_MATRIX_SIZE << std::endl;
+
+    for (CircuitElement *ele : elements) {
+      // g matrix
+      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0);
+      // i matrix
+      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0);
+      // std::cout << "element success" << std::endl;
+    }
+
+    return std::move(circuit);
+  }
+
+  void incTimerByDeltaT() {
+    t += deltaT;
+  }
+  void iterate() {
+    g.resize(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
+    g.setZero();
+    i.resize(MAX_MATRIX_SIZE, 1);
+    i.setZero();
+    // std::cout << "MAX_MATRIX_SIZE: " << MAX_MATRIX_SIZE << std::endl;
+
+    for (CircuitElement *ele : elements) {
+      // g matrix
+      ele->modifyGMatrix(g, v, MAX_NODE_ID, t);
+      // i matrix
+      ele->modifyIMatrix(i, v, MAX_NODE_ID, t);
+      // std::cout << "element success" << std::endl;
+    }
+
+
+    // std::cout << "g: " << std::endl;
+    // std::cout << g << std::endl;
+    // std::cout << "v: " << std::endl;
+    // std::cout << v << std::endl;
+    // std::cout << "i: " << std::endl;
+    // std::cout << i << std::endl;
+    // std::cout << "Start ITERATE: " << std::endl;
+    // F matrix
+    Eigen::MatrixXd f(MAX_MATRIX_SIZE, 1);
+    f = g * v - i;
+
+    // std::cout << "f matrix success" << std::endl;
+    // J matrix
+    double delta = 0.00000001;
+    Eigen::MatrixXd dupV = v.replicate(1, MAX_MATRIX_SIZE);
+    Eigen::MatrixXd vWithDelta =
+        Eigen::MatrixXd::Identity(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
+    vWithDelta = vWithDelta * delta + dupV;
+    // std::cout << "vWithData value: " << vWithDelta << std::endl;
+    Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
+    // std::cout << "j" << std::endl;
+    // std::cout << j << std::endl;
+
+    // std::cout << "j matrix success" << std::endl;
+
+    // calculate deltaV
+    Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
+    // std::cout << "deltaV value:" << std::endl;
+    // std::cout << deltaV << std::endl;
+    // calculate new v
+    v += deltaV;
+    // std::cout << "cal v success" << std::endl;
+
+    // print v
+    // std::cout << "iteration: " << "idk" << std::endl;
+    // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
+    // std::cout << v << std::endl;
+    // std::cout << "===============" << std::endl;
+    // std::cout << "evaluation:" << std::endl;
+    // std::cout << g * v - i << std::endl;
+    // std::cout << "===============" << std::endl;
+  }
+
+  double getVoltage(int PIN_ID) { return v(PIN_ID); }
+  Eigen::MatrixXd &getVoltageMatrix() { return v; }
+
+  double getTime() { return t; }
+
+private:
+  std::vector<CircuitElement *> elements;
+  Eigen::MatrixXd v;
+  Eigen::MatrixXd g;
+  Eigen::MatrixXd i;
+  double t;
+  double deltaT;
+  int MAX_NODE_ID;
+  int MAX_MATRIX_SIZE;
+};
 
 int main() {
   sf::Font font;
@@ -545,99 +940,68 @@ int main() {
   text.setPosition(0, 0);
   text.setFont(font);
 
-  double t = 0;
-  VoltageSource sourceD;
-  AdjustableVoltageSource sourceG;
+  // vg
+  std::function<double(double)> vgsOfT = [](double t) {
+    // return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
+    return sin(t) + 0.6;
+  };
+
+  std::unique_ptr<AdjustableVoltageSourceElement> adjustVsrc =
+      AdjustableVoltageSourceElement::create(vgsOfT, 0, -1, 0);
+  // voltage source from vd
+  std::unique_ptr<VoltageSourceElement> vsrc =
+      VoltageSourceElement::create(1.8, 2, -1, 1);
+
+  // nmos stats
+  double K = 4 * pow(10, -3);
+  double VT = 0.4;
+  // double va = std::numeric_limits<double>::infinity();
+  double VA = INFINITY;
+  std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1, -1);
+
+  // resistor format
+  double r0 = 17.5 * pow(10, 3);
+  std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2, 1);
+
+  std::vector<CircuitElement *> elements;
+  elements.push_back(vsrc.get());
+  elements.push_back(adjustVsrc.get());
+  elements.push_back(nmos.get());
+  elements.push_back(resistor.get());
+
+  std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
   Wire wire;
+
+  AdjustableVoltageSource sourceG;
+  VoltageSource sourceD;
 
   while (window.isOpen()) {
 
-    t += 0.01;
-    std::function<double(double)> vgsOfT = [](double t) {
-      // return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
-      return sin(t)+0.6;
-    };
+    circuit->incTimerByDeltaT();
+
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         window.close();
     }
 
-    double vgs = vgsOfT(t);
-    // nmos stats
-    double k = 4 * pow(10, -3);
-    double vt = 0.4;
-    // double va = std::numeric_limits<double>::infinity();
-    double va = INFINITY;
-    double r0 = 17.5 * pow(10, 3);
+    // std::cout << "*******************************" << std::endl;
+    // std::cout << "Time:" << circuit->getTime() << std::endl;
 
-    // G V and I matrix
-    Eigen::MatrixXd v(5, 1);
-    // initial guess
-    v << 0, 0, 0, 0, 0;
+    // if (circuit->getTime() >= 0.03)
+    //   window.close();
 
     for (int iteration = 0; iteration < 10; iteration++) {
-      Eigen::MatrixXd g(5, 5);
-      double g0;
-      g0 = calg0(k, v(0), v(1), vt, va);
-      double g00 = 0;
-      double g01 = 0;
-      double g10 = 0;
-      double g02 = 0;
-      double g20 = 0;
-      double g11 = g0 + 1.0 / r0;
-      double g12 = -1.0 / r0;
-      double g21 = -1.0 / r0;
-      double g22 = 1.0 / r0;
-
-      g << g00, g01, g02, 1, 0, g10, g11, g12, 0, 0, g20, g21, g22, 0, 1, 1, 0,
-          0, 0, 0, 0, 0, 1, 0, 0;
-
-      Eigen::MatrixXd i(5, 1);
-      double issd = calgm(k, v(0), v(1), vt, va) * (v(0));
-      // std::cout << "issd: " << issd << std::endl;
-      double ideq = calideq(k, v(0), v(1), vt, va);
-      // std::cout << "ideq: " << ideq << std::endl;
-      i << 0, -issd - ideq, 0, vgs, 1.8;
-
-      // std::cout << "g v i success" << std::endl;
-      // F matrix
-      Eigen::MatrixXd f(5, 1);
-      f = g * v - i;
-
-      // std::cout << "f matrix success" << std::endl;
-      // J matrix
-      double delta = 0.00000001;
-      Eigen::MatrixXd dupV = v.replicate(1, 5);
-      Eigen::MatrixXd vWithDelta = Eigen::MatrixXd::Identity(5, 5);
-      vWithDelta = vWithDelta * delta + dupV;
-      // std::cout << "vWithData value: " << vWithDelta << std::endl;
-      Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
-      // std::cout << "j" << std::endl;
-      // std::cout << j << std::endl;
-
-      // std::cout << "j matrix success" << std::endl;
-
-      // calculate deltaV
-      Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
-      // std::cout << "deltaV value:" << std::endl;
-      // std::cout << deltaV << std::endl;
-      // calculate new v
-      v += deltaV;
-      // std::cout << "cal v success" << std::endl;
-
-      // print v
+      // std::cout << "========================" << std::endl;
       // std::cout << "iteration: " << iteration << std::endl;
-      // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
-      // std::cout << v << std::endl;
-      // std::cout << "===============" << std::endl;
-      // std::cout << "evaluation:" << std::endl;
-      // std::cout << g * v - i << std::endl;
-      // std::cout << "===============" << std::endl;
+
+      circuit->iterate();
     }
-    text.setString(
-        "vg: " + std::to_string(v(0)) + " | vd: " + std::to_string(v(1)) +
-        " | i: " + std::to_string(v(4)) + " | t: " + std::to_string(t));
+
+    text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
+                   std::to_string(circuit->getVoltage(1)) + " | i: " +
+                   std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
+                   " | t: " + std::to_string(circuit->getTime()));
     window.clear(sf::Color::Black);
     sf::Vector2f nmosLoc(200, 300);
     sf::Vector2f nmosGroundLoc(200, 350);
@@ -649,16 +1013,20 @@ int main() {
     sf::Vector2f wire1Loc(200, 150);
     sf::Vector2f wire2Loc(500, 200);
     double currentScale = 5000;
-    showNMOS(&window, v(0), v(1), 0, calid(k, v(0), v(1), vt, va), nmosLoc,
-             currentScale);
-    showResistor(&window, v(2), v(1), resisLoc, r0, currentScale);
-    sourceD.showVoltageSource(&window, v(2), 0, v(4), voltLoc, currentScale);
-    sourceG.showAdjustableVoltageSource(&window, v(0), 0, v(3), voltGateLoc,
+    showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
+             nmos->getId(circuit->getVoltageMatrix()), nmosLoc, currentScale);
+    showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1),
+                 resisLoc, r0, currentScale);
+    sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
+                              circuit->getVoltage(4), voltLoc, currentScale);
+    sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
+                                        circuit->getVoltage(3), voltGateLoc,
                                         currentScale);
     showGround(&window, voltGateGroundLoc);
     showGround(&window, voltGroundLoc);
     showGround(&window, nmosGroundLoc);
-    wire.showWire(&window, wire1Loc, wire2Loc, v(2), v(4), currentScale);
+    wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
+                  circuit->getVoltage(4), currentScale);
     window.draw(text);
     window.display();
   }
