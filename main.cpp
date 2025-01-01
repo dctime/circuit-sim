@@ -3,17 +3,17 @@
 #include <cmath>
 #include <vector>
 #include <functional>
-#include "../src/Circuit.h"
-#include "../src/AdjustableVoltageSource.h"
-#include "../src/VoltageSource.h"
-#include "../src/NMOSElement.h"
-#include "../src/ResistorElement.h"
-#include "../src/showNMOS.h"
-#include "../src/wire.h"
-#include "../src/AdjustableVoltageSource.h"
-#include "../src/AdjustableVoltageSourceElement.h"
-#include "../src/VoltageSourceElement.h"
-#include "../src/showResistor.h"
+#include <Circuit.h>
+#include <AdjustableVoltageSource.h>
+#include <VoltageSource.h>
+#include <NMOSElement.h>
+#include <ResistorElement.h>
+#include <showNMOS.h>
+#include <wire.h>
+#include <AdjustableVoltageSource.h>
+#include <AdjustableVoltageSourceElement.h>
+#include <VoltageSourceElement.h>
+#include <showResistor.h>
 int main() {
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
