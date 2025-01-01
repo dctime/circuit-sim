@@ -1,0 +1,45 @@
+#pragma once
+#include <SFML/Graphics.hpp>
+#include <cmath>
+#include "Line.h"
+
+struct VoltageSource {
+  double lastoffsetVolt = 0;
+  void showVoltageSource(sf::RenderWindow *window, double vp, double vm,
+                         double i, sf::Vector2f &loc, double currentScale) {
+    double width = 5;
+
+    sf::Vector2f pointP1(loc.x, loc.y - 50);
+    sf::Vector2f pointP2(loc.x, loc.y - 10);
+    sf::Vector2f pointP3(loc.x - 30, loc.y - 10);
+    sf::Vector2f pointP4(loc.x + 30, loc.y - 10);
+    sf::Vector2f pointM1(loc.x, loc.y + 50);
+    sf::Vector2f pointM2(loc.x, loc.y + 10);
+    sf::Vector2f pointM3(loc.x - 20, loc.y + 10);
+    sf::Vector2f pointM4(loc.x + 20, loc.y + 10);
+
+    sf::Color colorP;
+    voltToColor(vp, colorP);
+    sf::Color colorM;
+    voltToColor(vm, colorM);
+
+    showLine(window, pointP1, pointP2, width, colorP, colorP, colorP);
+    showLine(window, pointP3, pointP4, width, colorP, colorP, colorP);
+    showLine(window, pointM1, pointM2, width, colorM, colorM, colorM);
+    showLine(window, pointM3, pointM4, width, colorM, colorM, colorM);
+
+    double current = i;
+    lastoffsetVolt += current * currentScale;
+    lastoffsetVolt = std::remainder(lastoffsetVolt, 20);
+    lastoffsetVolt =
+        lastoffsetVolt < 0 ? lastoffsetVolt + 20.0 : lastoffsetVolt;
+    for (int i = 0; i < 5; ++i) {
+      sf::CircleShape circle(5.0 / 2);
+      circle.setPosition(pointP1.x - circle.getRadius(),
+                         pointP1.y + 20 * i - circle.getRadius() +
+                             lastoffsetVolt);
+      circle.setFillColor(sf::Color(200, 200, 0));
+      window->draw(circle);
+    }
+  }
+};
