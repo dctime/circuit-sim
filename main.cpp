@@ -14,8 +14,11 @@
 #include <AdjustableVoltageSourceElement.h>
 #include <VoltageSourceElement.h>
 #include <showResistor.h>
+#include <button.h>
 int main() {
   sf::Font font;
+  Button button(100, 100, 100, 50, &font, "Hello", sf::Color::Red, sf::Color::Green, sf::Color::Blue);
+
   if (!font.loadFromFile("../arial.ttf")) {
     std::cout << "Font Load Failed!" << std::endl;
   }
@@ -71,7 +74,7 @@ int main() {
   VoltageSource sourceD;
 
   while (window.isOpen()) {
-
+    
     circuit->incTimerByDeltaT();
 
     sf::Event event;
@@ -123,8 +126,11 @@ int main() {
     wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
     window.draw(text);
+    button.render(&window);
+    button.update(sf::Vector2f(sf::Mouse::getPosition(window)));
     window.display();
   }
+  
 
   // delete bgD;
 

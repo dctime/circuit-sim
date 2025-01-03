@@ -24,7 +24,7 @@ class Button
                sf::Font* font, std::string text,
                sf::Color idleColor, sf::Color hoverColor, sf::Color activeColor);
         ~Button();
-
+       // void ispressed();
         void render(sf::RenderTarget* target);
         void update(const sf::Vector2f& mousePos);
 };

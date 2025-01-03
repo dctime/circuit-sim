@@ -24,6 +24,7 @@ Button::Button(float x, float y, float width, float height,
     this->idleColor=idleColor;
     this->hoverColor=hoverColor;
     this->activeColor=activeColor;
+    return;
 }
 
 Button::~Button()
