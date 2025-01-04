@@ -1,19 +1,35 @@
-#include <SFML/Graphics.hpp> 
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <functional>
-#include <Circuit.h>
-#include <AdjustableVoltageSource.h>
-#include <VoltageSource.h>
-#include <NMOSElement.h>
-#include <ResistorElement.h>
-#include <showNMOS.h>
-#include <wire.h>
 #include <AdjustableVoltageSource.h>
 #include <AdjustableVoltageSourceElement.h>
+#include <Circuit.h>
+#include <NMOSElement.h>
+#include <ResistorElement.h>
+#include <SFML/Graphics.hpp>
+#include <VoltageSource.h>
 #include <VoltageSourceElement.h>
+#include <cmath>
+#include <functional>
+#include <iostream>
+#include <showNMOS.h>
 #include <showResistor.h>
+#include <vector>
+#include <wire.h>
+
+void showGrid(sf::RenderWindow& window, sf::Color& color) {
+  for (int x = 0; x <= window.getSize().x; x += 50) {
+      sf::Vertex line[] = {sf::Vertex(sf::Vector2f(x, 0), color),
+                           sf::Vertex(sf::Vector2f(x, window.getSize().y), color)};
+
+      window.draw(line, 2, sf::Lines);
+    }
+
+    for (int y = 0; y <= window.getSize().y; y += 50) {
+      sf::Vertex line[] = {sf::Vertex(sf::Vector2f(0, y), color),
+                           sf::Vertex(sf::Vector2f(window.getSize().x, y), color)};
+
+      window.draw(line, 2, sf::Lines);
+    }
+}
+
 int main() {
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
@@ -72,6 +88,7 @@ int main() {
 
   while (window.isOpen()) {
 
+
     circuit->incTimerByDeltaT();
 
     sf::Event event;
@@ -98,6 +115,9 @@ int main() {
                    std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
                    " | t: " + std::to_string(circuit->getTime()));
     window.clear(sf::Color::Black);
+
+    sf::Color gridColor = sf::Color(30, 30, 30);
+    showGrid(window, gridColor);
     sf::Vector2f nmosLoc(200, 300);
     sf::Vector2f nmosGroundLoc(200, 350);
     sf::Vector2f voltGateLoc(100, 350);
@@ -123,6 +143,9 @@ int main() {
     wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
     window.draw(text);
+
+    
+
     window.display();
   }
 
