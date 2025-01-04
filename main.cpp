@@ -15,7 +15,7 @@
 #include <showResistor.h>
 #include <vector>
 #include <wire.h>
-
+#include <button.h>
 void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
     sf::Vertex line[] = {
@@ -41,7 +41,11 @@ int main() {
   }
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
-
+  std::vector<Button> buttons;
+  for(int i=0;i<5;i++)
+  {
+    buttons.push_back(Button(50*i+5*i, 550, 50, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+  }
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
   // sf::VertexArray plotV1(sf::LineStrip);
@@ -99,7 +103,7 @@ int main() {
   bool mousePressed = false;
 
   while (window.isOpen()) {
-
+    
     circuit->incTimerByDeltaT();
 
     // mousePos, mouseGridPos update
@@ -180,10 +184,16 @@ int main() {
     showGround(&window, 4, 7);
     wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
+    for(size_t i=0;i<buttons.size();i++)
+    {
+      buttons[i].render(&window);
+      buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    }
     window.draw(text);
 
     window.display();
   }
+  
 
   // delete bgD;
 

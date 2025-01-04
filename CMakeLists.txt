@@ -36,6 +36,7 @@ project(circuit-sim)
 file (GLOB SOURCES
   "main.cpp"
   "src/*.h"
+  "src/*.cpp"
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
