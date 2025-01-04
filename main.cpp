@@ -16,6 +16,7 @@
 #include <vector>
 #include <wire.h>
 #include <button.h>
+#include <string>
 void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
     sf::Vertex line[] = {
@@ -42,9 +43,10 @@ int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
+  std::vector<std::string> buttonNames = {"resistor", "wire", "voltage\nsource", "Adjustable\nVoltage\nSource", "NOMS"};
   for(int i=0;i<5;i++)
   {
-    buttons.push_back(Button(50*i+5*i, 550, 50, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+    buttons.push_back(Button(60*i+5*i, 550, 60, 50, &font, buttonNames[i], sf::Color::Red, sf::Color::Green, sf::Color::Blue));
   }
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
