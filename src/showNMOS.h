@@ -2,8 +2,11 @@
 #include <SFML/Graphics.hpp>
 #include "Line.h"
 double lastoffsetNMOS = 0;
+
+
+
 void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
-              double id, sf::Vector2f &loc, double currentScale) {
+              double id, sf::Vector2f& loc, double currentScale) {
   // pin_d 100 100
   // pin_g 0 150
   // pin_s 100 200
@@ -108,4 +111,10 @@ void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
     circle.setFillColor(sf::Color(200, 200, 0));
     window->draw(circle);
   }
+}
+
+void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
+              double id, int xGrid, int yGrid, double currentScale) {
+  sf::Vector2f loc(xGrid*50, yGrid*50);
+  showNMOS(window, vg, vd, vs, id, loc, currentScale);
 }

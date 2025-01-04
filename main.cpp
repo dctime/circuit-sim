@@ -1,20 +1,39 @@
-#include <SFML/Graphics.hpp> 
-#include <iostream>
-#include <cmath>
-#include <vector>
-#include <functional>
-#include <Circuit.h>
-#include <AdjustableVoltageSource.h>
-#include <VoltageSource.h>
-#include <NMOSElement.h>
-#include <ResistorElement.h>
-#include <showNMOS.h>
-#include <wire.h>
 #include <AdjustableVoltageSource.h>
 #include <AdjustableVoltageSourceElement.h>
+#include <Circuit.h>
+#include <NMOSElement.h>
+#include <ResistorElement.h>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window/Cursor.hpp>
+#include <SFML/Window/Keyboard.hpp>
+#include <VoltageSource.h>
 #include <VoltageSourceElement.h>
+#include <cmath>
+#include <functional>
+#include <iostream>
+#include <showNMOS.h>
 #include <showResistor.h>
+#include <vector>
+#include <wire.h>
 #include <button.h>
+void showGrid(sf::RenderWindow &window, sf::Color &color) {
+  for (int x = 0; x <= window.getSize().x; x += 50) {
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(x, 0), color),
+        sf::Vertex(sf::Vector2f(x, window.getSize().y), color)};
+
+    window.draw(line, 2, sf::Lines);
+  }
+
+  for (int y = 0; y <= window.getSize().y; y += 50) {
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(0, y), color),
+        sf::Vertex(sf::Vector2f(window.getSize().x, y), color)};
+
+    window.draw(line, 2, sf::Lines);
+  }
+}
+
 int main() {
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
@@ -25,7 +44,7 @@ int main() {
   std::vector<Button> buttons;
   for(int i=0;i<5;i++)
   {
-    buttons.push_back(Button(100*i+10*i, 550, 100, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+    buttons.push_back(Button(50*i+5*i, 550, 50, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
   }
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
@@ -70,20 +89,60 @@ int main() {
   elements.push_back(resistor.get());
 
   std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
-  Wire wire;
 
+  // UI only
+  Wire wire;
+  Resistor resistorCursor;
   AdjustableVoltageSource sourceG;
   VoltageSource sourceD;
+  Resistor resistorDrain;
+  // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
+
+  sf::Vector2i mouseGridPos;
+  sf::Vector2i mousePos;
+  bool mousePressed = false;
 
   while (window.isOpen()) {
     
     circuit->incTimerByDeltaT();
+
+    // mousePos, mouseGridPos update
+    mousePos = sf::Mouse::getPosition(window);
+
+    if (mousePos.x < 0 || mousePos.x >= window.getSize().x) {
+      mousePos.x = -1;
+      mouseGridPos.x = -1;
+    } else {
+      if (mousePos.x % 50 >= 25) {
+        mouseGridPos.x = mousePos.x / 50 + 1;
+      } else {
+        mouseGridPos.x = mousePos.x / 50;
+      }
+    }
+
+    if (mousePos.y < 0 || mousePos.y >= window.getSize().y) {
+      mousePos.y = -1;
+      mouseGridPos.y = -1;
+    } else {
+      if (mousePos.y % 50 >= 25) {
+        mouseGridPos.y = mousePos.y / 50 + 1;
+      } else {
+        mouseGridPos.y = mousePos.y / 50;
+      }
+    }
 
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
         window.close();
     }
+
+    if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+      mousePressed = false;
+    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed && mouseGridPos.x != -1 && mouseGridPos.y != -1) {
+      mousePressed = true;
+
+    } 
 
     // std::cout << "*******************************" << std::endl;
     // std::cout << "Time:" << circuit->getTime() << std::endl;
@@ -102,30 +161,28 @@ int main() {
                    std::to_string(circuit->getVoltage(1)) + " | i: " +
                    std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
                    " | t: " + std::to_string(circuit->getTime()));
+
     window.clear(sf::Color::Black);
-    sf::Vector2f nmosLoc(200, 300);
-    sf::Vector2f nmosGroundLoc(200, 350);
-    sf::Vector2f voltGateLoc(100, 350);
-    sf::Vector2f voltGateGroundLoc(100, 400);
-    sf::Vector2f resisLoc(200, 200);
-    sf::Vector2f voltLoc(500, 250);
-    sf::Vector2f voltGroundLoc(500, 300);
-    sf::Vector2f wire1Loc(200, 150);
-    sf::Vector2f wire2Loc(500, 200);
+
+    sf::Color gridColor = sf::Color(30, 30, 30);
+    showGrid(window, gridColor);
+    // resistor follows the cursor
+    resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
+
     double currentScale = 5000;
     showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
-             nmos->getId(circuit->getVoltageMatrix()), nmosLoc, currentScale);
-    showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1),
-                 resisLoc, r0, currentScale);
+             nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
+    resistorDrain.showResistor(&window, circuit->getVoltage(2),
+                               circuit->getVoltage(1), 4, 4, r0, currentScale);
     sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
-                              circuit->getVoltage(4), voltLoc, currentScale);
+                              circuit->getVoltage(4), 10, 5, currentScale);
     sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
-                                        circuit->getVoltage(3), voltGateLoc,
+                                        circuit->getVoltage(3), 2, 7,
                                         currentScale);
-    showGround(&window, voltGateGroundLoc);
-    showGround(&window, voltGroundLoc);
-    showGround(&window, nmosGroundLoc);
-    wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
+    showGround(&window, 2, 8);
+    showGround(&window, 10, 6);
+    showGround(&window, 4, 7);
+    wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
     for(size_t i=0;i<buttons.size();i++)
     {
@@ -133,6 +190,7 @@ int main() {
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
     window.draw(text);
+
     window.display();
   }
   
