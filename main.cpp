@@ -93,6 +93,14 @@ int main() {
   VoltageSourceUIElement sourceD;
   ResistorUIElement resistorDrain;
   NMOSUIElement nmosUI;
+
+  std::vector<UIElement*> uiElements;
+  uiElements.push_back(&resistorCursor);
+  uiElements.push_back(&sourceG);
+  uiElements.push_back(&sourceD);
+  uiElements.push_back(&resistorDrain);
+  uiElements.push_back(&nmosUI);
+
   // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
 
   sf::Vector2i mouseGridPos;
@@ -167,6 +175,7 @@ int main() {
     resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
 
     double currentScale = 5000;
+
     nmosUI.showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
              nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
     resistorDrain.showResistor(&window, circuit->getVoltage(2),
