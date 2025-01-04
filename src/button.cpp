@@ -53,7 +53,7 @@ void Button::update(const sf::Vector2f& mousePos)
         this->shape.setFillColor(this->hoverColor);
 
         // Pressed
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)||sf::Mouse::isButtonPressed(sf::Mouse::Right))
         {
             this->shape.setFillColor(this->activeColor);
         }

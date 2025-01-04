@@ -17,14 +17,16 @@
 #include <button.h>
 int main() {
   sf::Font font;
-  Button button(100, 100, 100, 50, &font, "Hello", sf::Color::Red, sf::Color::Green, sf::Color::Blue);
-
   if (!font.loadFromFile("../arial.ttf")) {
     std::cout << "Font Load Failed!" << std::endl;
   }
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
-
+  std::vector<Button> buttons;
+  for(int i=0;i<5;i++)
+  {
+    buttons.push_back(Button(100*i+10*i, 550, 100, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+  }
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
   // sf::VertexArray plotV1(sf::LineStrip);
@@ -125,9 +127,12 @@ int main() {
     showGround(&window, nmosGroundLoc);
     wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
+    for(size_t i=0;i<buttons.size();i++)
+    {
+      buttons[i].render(&window);
+      buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    }
     window.draw(text);
-    button.render(&window);
-    button.update(sf::Vector2f(sf::Mouse::getPosition(window)));
     window.display();
   }
   
