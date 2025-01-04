@@ -1,7 +1,8 @@
 #pragma once
-#include <SFML/Graphics.hpp>
-#include <cmath>
 #include "Line.h"
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <cmath>
 
 struct VoltageSource {
   double lastoffsetVolt = 0;
@@ -41,5 +42,11 @@ struct VoltageSource {
       circle.setFillColor(sf::Color(200, 200, 0));
       window->draw(circle);
     }
+  }
+
+  void showVoltageSource(sf::RenderWindow *window, double vp, double vm,
+                         double i, int xGrid, int yGrid, double currentScale) {
+    sf::Vector2f loc(xGrid*50, yGrid*50);
+    showVoltageSource(window, vp, vm, i, loc, currentScale);
   }
 };

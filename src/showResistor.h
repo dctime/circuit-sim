@@ -1,6 +1,16 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <SFML/System/Vector2.hpp>
 #include "Line.h"
+void showResistor(sf::RenderWindow *window, double v1, double v2,
+                  sf::Vector2f &loc, double R, double currentScale);
+
+void showResistor(sf::RenderWindow *window, double v1, double v2,
+                  int xGrid, int yGrid, double R, double currentScale) {
+  sf::Vector2f loc(xGrid*50, yGrid*50);
+  showResistor(window, v1, v2, loc, R, currentScale);
+}
+
 double lastoffsetresistor = 0;
 void showResistor(sf::RenderWindow *window, double v1, double v2,
                   sf::Vector2f &loc, double R, double currentScale) {

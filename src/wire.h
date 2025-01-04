@@ -1,5 +1,6 @@
 #pragma once
 #include "Line.h"
+#include <SFML/System/Vector2.hpp>
 struct Wire {
   double lastoffsetVolt = 0;
   void showWire(sf::RenderWindow *window, sf::Vector2f &loc1,
@@ -30,5 +31,11 @@ struct Wire {
       circle.setFillColor(sf::Color(200, 200, 0));
       window->draw(circle);
     }
+  }
+  void showWire(sf::RenderWindow *window, int xGrid1, int yGrid1,
+                int xGrid2, int yGrid2, double v, double i, double currentScale) {
+    sf::Vector2f loc1(xGrid1*50, yGrid1*50);
+    sf::Vector2f loc2(xGrid2*50, yGrid2*50);
+    showWire(window, loc1, loc2, v, i, currentScale);
   }
 };

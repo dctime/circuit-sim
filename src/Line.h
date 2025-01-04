@@ -80,3 +80,8 @@ void showGround(sf::RenderWindow *window, sf::Vector2f &loc) {
   showLine(window, pointG3, pointG4, width, sf::Color(30, 30, 30),
            sf::Color(30, 30, 30), sf::Color(30, 30, 30));
 }
+
+void showGround(sf::RenderWindow *window, int xGrid, int yGrid) {
+  sf::Vector2f loc(xGrid*50, yGrid*50);
+  showGround(window, loc);
+}

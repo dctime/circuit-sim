@@ -118,29 +118,21 @@ int main() {
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
-    sf::Vector2f nmosLoc(200, 300);
-    sf::Vector2f nmosGroundLoc(200, 350);
     sf::Vector2f voltGateLoc(100, 350);
-    sf::Vector2f voltGateGroundLoc(100, 400);
-    sf::Vector2f resisLoc(200, 200);
-    sf::Vector2f voltLoc(500, 250);
-    sf::Vector2f voltGroundLoc(500, 300);
-    sf::Vector2f wire1Loc(200, 150);
-    sf::Vector2f wire2Loc(500, 200);
     double currentScale = 5000;
     showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
-             nmos->getId(circuit->getVoltageMatrix()), nmosLoc, currentScale);
+             nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
     showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1),
-                 resisLoc, r0, currentScale);
+                 4, 4, r0, currentScale);
     sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
-                              circuit->getVoltage(4), voltLoc, currentScale);
+                              circuit->getVoltage(4), 10, 5, currentScale);
     sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
-                                        circuit->getVoltage(3), voltGateLoc,
+                                        circuit->getVoltage(3), 2, 7,
                                         currentScale);
-    showGround(&window, voltGateGroundLoc);
-    showGround(&window, voltGroundLoc);
-    showGround(&window, nmosGroundLoc);
-    wire.showWire(&window, wire1Loc, wire2Loc, circuit->getVoltage(2),
+    showGround(&window, 2, 8);
+    showGround(&window, 10, 6);
+    showGround(&window, 4, 7);
+    wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
     window.draw(text);
 
