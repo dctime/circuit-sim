@@ -92,6 +92,7 @@ int main() {
   AdjustableVoltageSource sourceG;
   VoltageSource sourceD;
   Resistor resistorDrain;
+  // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
@@ -136,7 +137,7 @@ int main() {
       mousePressed = false;
     } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed && mouseGridPos.x != -1 && mouseGridPos.y != -1) {
       mousePressed = true;
-      std::cout << "Left Mouse Button!" << std::endl;
+
     } 
 
     // std::cout << "*******************************" << std::endl;
