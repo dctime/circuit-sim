@@ -58,7 +58,7 @@ int main() {
   text.setFillColor(sf::Color::White);
   text.setPosition(0, 0);
   text.setFont(font);
-
+//l
   // vg
   std::function<double(double)> vgsOfT = [](double t) {
     // return 13.3 * pow(10, -3) * sin(5 * t) + 0.6;
