@@ -4,6 +4,7 @@
 #include <NMOSElement.h>
 #include <ResistorElement.h>
 #include <SFML/Graphics.hpp>
+#include <SFML/Window/Cursor.hpp>
 #include <VoltageSource.h>
 #include <VoltageSourceElement.h>
 #include <cmath>
@@ -14,20 +15,22 @@
 #include <vector>
 #include <wire.h>
 
-void showGrid(sf::RenderWindow& window, sf::Color& color) {
+void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
-      sf::Vertex line[] = {sf::Vertex(sf::Vector2f(x, 0), color),
-                           sf::Vertex(sf::Vector2f(x, window.getSize().y), color)};
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(x, 0), color),
+        sf::Vertex(sf::Vector2f(x, window.getSize().y), color)};
 
-      window.draw(line, 2, sf::Lines);
-    }
+    window.draw(line, 2, sf::Lines);
+  }
 
-    for (int y = 0; y <= window.getSize().y; y += 50) {
-      sf::Vertex line[] = {sf::Vertex(sf::Vector2f(0, y), color),
-                           sf::Vertex(sf::Vector2f(window.getSize().x, y), color)};
+  for (int y = 0; y <= window.getSize().y; y += 50) {
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(0, y), color),
+        sf::Vertex(sf::Vector2f(window.getSize().x, y), color)};
 
-      window.draw(line, 2, sf::Lines);
-    }
+    window.draw(line, 2, sf::Lines);
+  }
 }
 
 int main() {
@@ -81,13 +84,15 @@ int main() {
   elements.push_back(resistor.get());
 
   std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
-  Wire wire;
 
+  // UI only
+  Wire wire;
+  Resistor resistorCursor;
   AdjustableVoltageSource sourceG;
   VoltageSource sourceD;
+  Resistor resistorDrain;
 
   while (window.isOpen()) {
-
 
     circuit->incTimerByDeltaT();
 
@@ -114,16 +119,45 @@ int main() {
                    std::to_string(circuit->getVoltage(1)) + " | i: " +
                    std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
                    " | t: " + std::to_string(circuit->getTime()));
+
+    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+    sf::Vector2i mouseGridPos;
+
+    if (mousePos.x < 0 || mousePos.x >= window.getSize().x) {
+      mousePos.x = -1;
+      mouseGridPos.x = -1;
+    } else {
+      if (mousePos.x % 50 >= 25) {
+        mouseGridPos.x = mousePos.x / 50 + 1;
+      } else {
+        mouseGridPos.x = mousePos.x / 50;
+      }
+    }
+
+    if (mousePos.y < 0 || mousePos.y >= window.getSize().y) {
+      mousePos.y = -1;
+      mouseGridPos.y = -1;
+    } else {
+      if (mousePos.y % 50 >= 25) {
+        mouseGridPos.y = mousePos.y / 50 + 1;
+      } else {
+        mouseGridPos.y = mousePos.y / 50;
+      }
+    }
+
+
     window.clear(sf::Color::Black);
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
-    sf::Vector2f voltGateLoc(100, 350);
+    // resistor follows the cursor
+    resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
+
     double currentScale = 5000;
     showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
              nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
-    showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1),
-                 4, 4, r0, currentScale);
+    resistorDrain.showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1), 4, 4,
+                 r0, currentScale);
     sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
                               circuit->getVoltage(4), 10, 5, currentScale);
     sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
@@ -135,8 +169,6 @@ int main() {
     wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
     window.draw(text);
-
-    
 
     window.display();
   }
