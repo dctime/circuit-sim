@@ -2,10 +2,15 @@
 #include "Line.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include "UIElement.h"
 
-struct Resistor {
+class ResistorUIElement : public UIElement {
 
+private:
   double lastoffsetresistor = 0;
+
+public:
+  ~ResistorUIElement() override {}; 
   void showResistor(sf::RenderWindow *window, int xGrid, int yGrid) {
     sf::Vector2f loc(xGrid * 50, yGrid * 50);
     showResistor(window, 0, 0, loc, 1000, 0, false);

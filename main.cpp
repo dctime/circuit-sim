@@ -1,4 +1,5 @@
-#include <AdjustableVoltageSource.h>
+#include <NMOSUIElement.h>
+#include <AdjustableVoltageSourceUIElement.h>
 #include <AdjustableVoltageSourceElement.h>
 #include <Circuit.h>
 #include <NMOSElement.h>
@@ -6,13 +7,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <VoltageSource.h>
+#include <VoltageSourceUIElement.h>
 #include <VoltageSourceElement.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
-#include <showNMOS.h>
-#include <showResistor.h>
+#include <ResistorUIElement.h>
 #include <vector>
 #include <wire.h>
 
@@ -88,10 +88,11 @@ int main() {
 
   // UI only
   Wire wire;
-  Resistor resistorCursor;
-  AdjustableVoltageSource sourceG;
-  VoltageSource sourceD;
-  Resistor resistorDrain;
+  ResistorUIElement resistorCursor;
+  AdjustableVoltageSourceUIElement sourceG;
+  VoltageSourceUIElement sourceD;
+  ResistorUIElement resistorDrain;
+  NMOSUIElement nmosUI;
   // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
 
   sf::Vector2i mouseGridPos;
@@ -166,7 +167,7 @@ int main() {
     resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
 
     double currentScale = 5000;
-    showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
+    nmosUI.showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
              nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
     resistorDrain.showResistor(&window, circuit->getVoltage(2),
                                circuit->getVoltage(1), 4, 4, r0, currentScale);

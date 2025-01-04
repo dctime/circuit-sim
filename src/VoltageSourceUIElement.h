@@ -3,9 +3,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include "UIElement.h"
 
-struct VoltageSource {
+class VoltageSourceUIElement : public UIElement{
+private:
   double lastoffsetVolt = 0;
+public:
+  ~VoltageSourceUIElement() override {};
   void showVoltageSource(sf::RenderWindow *window, double vp, double vm,
                          double i, sf::Vector2f &loc, double currentScale) {
     double width = 5;

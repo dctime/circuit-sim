@@ -4,10 +4,14 @@
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include "Line.h"
+#include "ResistorUIElement.h"
 
 // Forward declarations of functio
-struct AdjustableVoltageSource {
+class AdjustableVoltageSourceUIElement : public UIElement{
+private:
   double lastoffsetVolt = 0;
+public:
+  ~AdjustableVoltageSourceUIElement() override {};
   void showAdjustableVoltageSource(sf::RenderWindow *window, double vp,
                                    double vm, double i, sf::Vector2f &loc,
                                    double currentScale) {
