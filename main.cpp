@@ -5,6 +5,7 @@
 #include <ResistorElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
+#include <SFML/Window/Keyboard.hpp>
 #include <VoltageSource.h>
 #include <VoltageSourceElement.h>
 #include <cmath>
@@ -92,36 +93,16 @@ int main() {
   VoltageSource sourceD;
   Resistor resistorDrain;
 
+  sf::Vector2i mouseGridPos;
+  sf::Vector2i mousePos;
+  bool mousePressed = false;
+
   while (window.isOpen()) {
 
     circuit->incTimerByDeltaT();
 
-    sf::Event event;
-    while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-        window.close();
-    }
-
-    // std::cout << "*******************************" << std::endl;
-    // std::cout << "Time:" << circuit->getTime() << std::endl;
-
-    // if (circuit->getTime() >= 0.03)
-    //   window.close();
-
-    for (int iteration = 0; iteration < 10; iteration++) {
-      // std::cout << "========================" << std::endl;
-      // std::cout << "iteration: " << iteration << std::endl;
-
-      circuit->iterate();
-    }
-
-    text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
-                   std::to_string(circuit->getVoltage(1)) + " | i: " +
-                   std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
-                   " | t: " + std::to_string(circuit->getTime()));
-
-    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-    sf::Vector2i mouseGridPos;
+    // mousePos, mouseGridPos update
+    mousePos = sf::Mouse::getPosition(window);
 
     if (mousePos.x < 0 || mousePos.x >= window.getSize().x) {
       mousePos.x = -1;
@@ -145,6 +126,36 @@ int main() {
       }
     }
 
+    sf::Event event;
+    while (window.pollEvent(event)) {
+      if (event.type == sf::Event::Closed)
+        window.close();
+    }
+
+    if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+      mousePressed = false;
+    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed && mouseGridPos.x != -1 && mouseGridPos.y != -1) {
+      mousePressed = true;
+      std::cout << "Left Mouse Button!" << std::endl;
+    } 
+
+    // std::cout << "*******************************" << std::endl;
+    // std::cout << "Time:" << circuit->getTime() << std::endl;
+
+    // if (circuit->getTime() >= 0.03)
+    //   window.close();
+
+    for (int iteration = 0; iteration < 10; iteration++) {
+      // std::cout << "========================" << std::endl;
+      // std::cout << "iteration: " << iteration << std::endl;
+
+      circuit->iterate();
+    }
+
+    text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
+                   std::to_string(circuit->getVoltage(1)) + " | i: " +
+                   std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
+                   " | t: " + std::to_string(circuit->getTime()));
 
     window.clear(sf::Color::Black);
 
@@ -156,8 +167,8 @@ int main() {
     double currentScale = 5000;
     showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
              nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
-    resistorDrain.showResistor(&window, circuit->getVoltage(2), circuit->getVoltage(1), 4, 4,
-                 r0, currentScale);
+    resistorDrain.showResistor(&window, circuit->getVoltage(2),
+                               circuit->getVoltage(1), 4, 4, r0, currentScale);
     sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
                               circuit->getVoltage(4), 10, 5, currentScale);
     sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
