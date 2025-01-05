@@ -16,16 +16,18 @@ private:
   Circuit* circuit;
 public:
   ~NMOSUIElement() override {};
-  NMOSUIElement(double* vg, double* vd, double* vs, NMOSElement* nmosElement, Circuit* circuit, double* currentScale) {
+  NMOSUIElement(double* vg, double* vd, double* vs, NMOSElement* nmosElement, Circuit* circuit, double* currentScale, int xGrid, int yGrid) {
     this->vg = vg;
     this->vd = vd;
     this->vs = vs;
     this->nmosElement = nmosElement;
     this->circuit = circuit;
     this->currentScale = currentScale;
+    this->xGrid = xGrid;
+    this->yGrid = yGrid;
   }
 
-  void showElement(sf::RenderWindow *window, int xGrid, int yGrid) override {
+  void showElement(sf::RenderWindow *window) override {
     double id = nmosElement->getId(circuit->getVoltageMatrix());
     showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
   }

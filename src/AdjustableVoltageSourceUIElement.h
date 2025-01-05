@@ -14,14 +14,16 @@ private:
   double* i;
   double* currentScale;
 public:
-  AdjustableVoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale) {
+  AdjustableVoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale, int xGrid, int yGrid) {
     this->vp = vp;
     this->vm = vm;
     this->i = i;
     this->currentScale = currentScale;
+    this->xGrid = xGrid;
+    this->yGrid = yGrid;
   }
   
-  void showElement(sf::RenderWindow* window, int xGrid, int yGrid) override {
+  void showElement(sf::RenderWindow* window) override {
     showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale); 
   }
 

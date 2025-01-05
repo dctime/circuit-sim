@@ -99,15 +99,15 @@ int main() {
   ResistorUIElement resistorCursor;
   AdjustableVoltageSourceUIElement sourceG(
       circuit->getVoltagePointer(0), &GROUND, circuit->getVoltagePointer(3),
-      &currentScale);
+      &currentScale, 2, 7);
   VoltageSourceUIElement sourceD(circuit->getVoltagePointer(2), &GROUND,
-                                 circuit->getVoltagePointer(4), &currentScale);
+                                 circuit->getVoltagePointer(4), &currentScale, 10, 5);
   ResistorUIElement resistorDrain(circuit->getVoltagePointer(2),
                                   circuit->getVoltagePointer(1), r0,
-                                  &currentScale);
+                                  &currentScale, 4, 4);
   NMOSUIElement nmosUI(circuit->getVoltagePointer(0),
                        circuit->getVoltagePointer(1), &GROUND, nmos.get(),
-                       circuit.get(), &currentScale);
+                       circuit.get(), &currentScale, 4, 6);
 
   std::vector<UIElement *> uiElements;
   uiElements.push_back(&resistorCursor);
@@ -190,13 +190,13 @@ int main() {
 
     // TODO: indicator Elements and ground and wire doesnt fit into UI Elements and Circuit Elements
     // resistor follows the cursor
-    resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
+    ResistorUIElement::showGhostElement(&window, mouseGridPos.x, mouseGridPos.y);
 
     // TODO: UI Elements and Circuit Elements does not have a good relationship...
-    nmosUI.showElement(&window, 4, 6);
-    resistorDrain.showElement(&window, 4, 4);
-    sourceD.showElement(&window, 10, 5);
-    sourceG.showElement(&window, 2, 7);
+    nmosUI.showElement(&window);
+    resistorDrain.showElement(&window);
+    sourceD.showElement(&window);
+    sourceG.showElement(&window);
 
     showGround(&window, 2, 8);
     showGround(&window, 10, 6);
