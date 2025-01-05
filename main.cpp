@@ -188,9 +188,11 @@ int main() {
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
 
+    // TODO: indicator Elements and ground and wire doesnt fit into UI Elements and Circuit Elements
     // resistor follows the cursor
     resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
 
+    // TODO: UI Elements and Circuit Elements does not have a good relationship...
     nmosUI.showElement(&window, 4, 6);
     resistorDrain.showElement(&window, 4, 4);
     sourceD.showElement(&window, 10, 5);
