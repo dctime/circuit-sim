@@ -188,11 +188,18 @@ int main() {
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
 
-    // TODO: indicator Elements and ground and wire doesnt fit into UI Elements and Circuit Elements
+    // TODO: ground and wire doesnt fit into UI Elements and Circuit Elements
+    // need ground and wire UIElement classes
+    // TODO: need UICircuit class to decide the pin numbers when circuit updates and passes to the elements. 
+    // circuit needs to be stopped and restarted.
+    //
     // resistor follows the cursor
     ResistorUIElement::showGhostElement(&window, mouseGridPos.x, mouseGridPos.y);
 
-    // TODO: UI Elements and Circuit Elements does not have a good relationship...
+    // TODO: UI Elements should use Circuit Elements PIN num to get data from circuit
+    // TODO: UI Elements should store the representing circuit element and put circuit elements into main circuits when build
+    // TODO: Wires should get data from connected UIElements
+    // TODO: Ground only need to be rendered
     nmosUI.showElement(&window);
     resistorDrain.showElement(&window);
     sourceD.showElement(&window);
