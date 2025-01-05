@@ -1,14 +1,37 @@
 #pragma once
+#include "Circuit.h"
 #include "Line.h"
 #include <SFML/Graphics.hpp>
+#include "NMOSElement.h"
 #include "UIElement.h"
 
 class NMOSUIElement : public UIElement {
-private:
-  double lastoffsetNMOS = 0;
 
+private:
+  double* vg;
+  double* vd;
+  double* vs;
+  double* currentScale;
+  NMOSElement* nmosElement;
+  Circuit* circuit;
 public:
   ~NMOSUIElement() override {};
+  NMOSUIElement(double* vg, double* vd, double* vs, NMOSElement* nmosElement, Circuit* circuit, double* currentScale) {
+    this->vg = vg;
+    this->vd = vd;
+    this->vs = vs;
+    this->nmosElement = nmosElement;
+    this->circuit = circuit;
+    this->currentScale = currentScale;
+  }
+
+  void showElement(sf::RenderWindow *window, int xGrid, int yGrid) override {
+    double id = nmosElement->getId(circuit->getVoltageMatrix());
+    showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
+  }
+
+private:
+  double lastoffsetNMOS = 0;
   void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
                 double id, sf::Vector2f &loc, double currentScale) {
     // pin_d 100 100

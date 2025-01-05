@@ -100,6 +100,7 @@ public:
   }
 
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
+  double* getVoltagePointer(int PIN_ID) { return &v(PIN_ID); }
   Eigen::MatrixXd &getVoltageMatrix() { return v; }
 
   double getTime() { return t; }

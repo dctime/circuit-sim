@@ -5,16 +5,31 @@
 #include "UIElement.h"
 
 class ResistorUIElement : public UIElement {
-
 private:
-  double lastoffsetresistor = 0;
-
+  double* v1;
+  double* v2;
+  double R;
+  double* currentScale;
 public:
-  ~ResistorUIElement() override {}; 
+  ResistorUIElement() {};
+  ResistorUIElement(double* v1, double* v2, double R, double* currentScale) {
+    this->v1 = v1;
+    this->v2 = v2;
+    this->R = R;
+    this->currentScale = currentScale;
+  }
+
+  void showElement(sf::RenderWindow *window, int xGrid, int yGrid) override {
+    showResistor(window, *v1, *v2, xGrid, yGrid, R, *currentScale);
+  }
+public:
+  ~ResistorUIElement() override {};
+  double lastoffsetresistor = 0; 
   void showResistor(sf::RenderWindow *window, int xGrid, int yGrid) {
     sf::Vector2f loc(xGrid * 50, yGrid * 50);
     showResistor(window, 0, 0, loc, 1000, 0, false);
   }
+private:
 
   void showResistor(sf::RenderWindow *window, double v1, double v2, int xGrid,
                     int yGrid, double R, double currentScale) {

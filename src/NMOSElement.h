@@ -1,8 +1,11 @@
 #pragma once
 #include "CircuitElement.h"
+#include <memory>
 
 class NMOSElement : public CircuitElement
 {
+private:
+  double id;
 public:
   NMOSElement() : CircuitElement() {}
   ~NMOSElement() {}

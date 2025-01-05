@@ -1,21 +1,22 @@
-#include <NMOSUIElement.h>
-#include <AdjustableVoltageSourceUIElement.h>
 #include <AdjustableVoltageSourceElement.h>
+#include <AdjustableVoltageSourceUIElement.h>
 #include <Circuit.h>
 #include <NMOSElement.h>
+#include <NMOSUIElement.h>
 #include <ResistorElement.h>
+#include <ResistorUIElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <VoltageSourceUIElement.h>
 #include <VoltageSourceElement.h>
+#include <VoltageSourceUIElement.h>
+#include <button.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
-#include <ResistorUIElement.h>
 #include <vector>
 #include <wire.h>
-#include <button.h>
+
 void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
     sf::Vertex line[] = {
@@ -42,9 +43,10 @@ int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
-  for(int i=0;i<5;i++)
-  {
-    buttons.push_back(Button(50*i+5*i, 550, 50, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+  for (int i = 0; i < 5; i++) {
+    buttons.push_back(Button(50 * i + 5 * i, 550, 50, 50, &font, "Button",
+                             sf::Color::Red, sf::Color::Green,
+                             sf::Color::Blue));
   }
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
@@ -91,28 +93,38 @@ int main() {
   std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
 
   // UI only
+  double currentScale = 5000;
+  double GROUND = 0;
   Wire wire;
   ResistorUIElement resistorCursor;
-  AdjustableVoltageSourceUIElement sourceG;
-  VoltageSourceUIElement sourceD;
-  ResistorUIElement resistorDrain;
-  NMOSUIElement nmosUI;
+  AdjustableVoltageSourceUIElement sourceG(
+      circuit->getVoltagePointer(0), &GROUND, circuit->getVoltagePointer(3),
+      &currentScale);
+  VoltageSourceUIElement sourceD(circuit->getVoltagePointer(2), &GROUND,
+                                 circuit->getVoltagePointer(4), &currentScale);
+  ResistorUIElement resistorDrain(circuit->getVoltagePointer(2),
+                                  circuit->getVoltagePointer(1), r0,
+                                  &currentScale);
+  NMOSUIElement nmosUI(circuit->getVoltagePointer(0),
+                       circuit->getVoltagePointer(1), &GROUND, nmos.get(),
+                       circuit.get(), &currentScale);
 
-  std::vector<UIElement*> uiElements;
+  std::vector<UIElement *> uiElements;
   uiElements.push_back(&resistorCursor);
   uiElements.push_back(&sourceG);
   uiElements.push_back(&sourceD);
   uiElements.push_back(&resistorDrain);
   uiElements.push_back(&nmosUI);
 
-  // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
+  // TODO: Make a vector that stores all the UI circuit elements and make a
+  // class that all UI elements inhert
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
   bool mousePressed = false;
 
   while (window.isOpen()) {
-    
+
     circuit->incTimerByDeltaT();
 
     // mousePos, mouseGridPos update
@@ -148,10 +160,10 @@ int main() {
 
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       mousePressed = false;
-    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed && mouseGridPos.x != -1 && mouseGridPos.y != -1) {
+    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
+               mouseGridPos.x != -1 && mouseGridPos.y != -1) {
       mousePressed = true;
-
-    } 
+    }
 
     // std::cout << "*******************************" << std::endl;
     // std::cout << "Time:" << circuit->getTime() << std::endl;
@@ -175,27 +187,21 @@ int main() {
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
+
     // resistor follows the cursor
     resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
 
-    double currentScale = 5000;
+    nmosUI.showElement(&window, 4, 6);
+    resistorDrain.showElement(&window, 4, 4);
+    sourceD.showElement(&window, 10, 5);
+    sourceG.showElement(&window, 2, 7);
 
-    nmosUI.showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
-             nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
-    resistorDrain.showResistor(&window, circuit->getVoltage(2),
-                               circuit->getVoltage(1), 4, 4, r0, currentScale);
-    sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
-                              circuit->getVoltage(4), 10, 5, currentScale);
-    sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
-                                        circuit->getVoltage(3), 2, 7,
-                                        currentScale);
     showGround(&window, 2, 8);
     showGround(&window, 10, 6);
     showGround(&window, 4, 7);
     wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
                   circuit->getVoltage(4), currentScale);
-    for(size_t i=0;i<buttons.size();i++)
-    {
+    for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
@@ -203,7 +209,6 @@ int main() {
 
     window.display();
   }
-  
 
   // delete bgD;
 

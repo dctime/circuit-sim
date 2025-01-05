@@ -7,9 +7,25 @@
 
 class VoltageSourceUIElement : public UIElement{
 private:
-  double lastoffsetVolt = 0;
+  double* vp;
+  double* vm;
+  double* i;
+  double* currentScale;
 public:
   ~VoltageSourceUIElement() override {};
+  VoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale) {
+    this->vp = vp;
+    this->vm = vm;
+    this->i = i;
+    this->currentScale = currentScale;
+  }
+
+  void showElement(sf::RenderWindow *window, int xGrid, int yGrid) override {
+    showVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale);
+  }
+
+private:
+  double lastoffsetVolt = 0;
   void showVoltageSource(sf::RenderWindow *window, double vp, double vm,
                          double i, sf::Vector2f &loc, double currentScale) {
     double width = 5;

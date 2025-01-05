@@ -1,17 +1,36 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include "Line.h"
-#include "ResistorUIElement.h"
+#include "UIElement.h"
 
-// Forward declarations of functio
 class AdjustableVoltageSourceUIElement : public UIElement{
 private:
-  double lastoffsetVolt = 0;
+  double* vp;
+  double* vm;
+  double* i;
+  double* currentScale;
+public:
+  AdjustableVoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale) {
+    this->vp = vp;
+    this->vm = vm;
+    this->i = i;
+    this->currentScale = currentScale;
+  }
+  
+  void showElement(sf::RenderWindow* window, int xGrid, int yGrid) override {
+    showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale); 
+  }
+
+ 
 public:
   ~AdjustableVoltageSourceUIElement() override {};
+private:
+  double lastoffsetVolt = 0;
+ 
   void showAdjustableVoltageSource(sf::RenderWindow *window, double vp,
                                    double vm, double i, sf::Vector2f &loc,
                                    double currentScale) {
