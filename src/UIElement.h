@@ -5,6 +5,7 @@ protected:
   int xGrid;
   int yGrid;
 public:
+  UIElement() {};
   virtual ~UIElement() {
 
   };
