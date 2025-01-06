@@ -1,3 +1,5 @@
 CompileFlags:
   Add:
     - "-I./src"
+    - "-I./src/UIElements"
+    - "-I./src/Elements"
