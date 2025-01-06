@@ -2,6 +2,7 @@
 #include <AdjustableVoltageSourceElement.h>
 #include <AdjustableVoltageSourceUIElement.h>
 #include <Circuit.h>
+#include <GroundUIElement.h>
 #include <NMOSElement.h>
 #include <NMOSUIElement.h>
 #include <ResistorElement.h>
@@ -11,17 +12,19 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <VoltageSourceElement.h>
 #include <VoltageSourceUIElement.h>
+#include <WireUIElement.h>
 #include <button.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <vector>
-#include <wire.h>
 
 double TEST_DOUBLE = 0;
 
-void leftMouseButtonPressed(int xGrid, int yGrid, std::vector<std::unique_ptr<UIElement>>& uiElements, Circuit* circuit, double* currentScale);
+void leftMouseButtonPressed(int xGrid, int yGrid,
+                            std::vector<std::unique_ptr<UIElement>> &uiElements,
+                            Circuit *circuit, double *currentScale);
 
 void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
@@ -101,34 +104,42 @@ int main() {
   // UI only
   double currentScale = 5000;
   double GROUND = 0;
-  Wire wire;
-  // std::unique_ptr<UIElement> resistorCursor;
-  std::unique_ptr<UIElement> sourceG = std::make_unique<AdjustableVoltageSourceUIElement>(
-      circuit->getVoltagePointer(0), &GROUND, circuit->getVoltagePointer(3),
-      &currentScale, 2, 7);
 
-  std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(circuit->getVoltagePointer(2), &GROUND,
-                                 circuit->getVoltagePointer(4), &currentScale, 10, 5);
+  std::unique_ptr<UIElement> gnd1 = std::make_unique<GroundUIElement>(2, 8);
+  std::unique_ptr<UIElement> gnd2 = std::make_unique<GroundUIElement>(10, 6);
+  std::unique_ptr<UIElement> gnd3 = std::make_unique<GroundUIElement>(4, 7);
 
-  std::unique_ptr<UIElement> resistorDrain = std::make_unique<ResistorUIElement>(circuit->getVoltagePointer(2),
-                                  circuit->getVoltagePointer(1), r0,
-                                  &currentScale, 4, 4);
+  std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(
+      circuit->getVoltagePointer(2), circuit->getVoltagePointer(4),
+      &currentScale, 4, 3, 10, 4);
+  std::unique_ptr<UIElement> sourceG =
+      std::make_unique<AdjustableVoltageSourceUIElement>(
+          circuit->getVoltagePointer(0), &GROUND, circuit->getVoltagePointer(3),
+          &currentScale, 2, 7);
 
-  std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(circuit->getVoltagePointer(0),
-                       circuit->getVoltagePointer(1), &GROUND, nmos.get(),
-                       circuit.get(), &currentScale, 4, 6);
+  std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(
+      circuit->getVoltagePointer(2), &GROUND, circuit->getVoltagePointer(4),
+      &currentScale, 10, 5);
+
+  std::unique_ptr<UIElement> resistorDrain =
+      std::make_unique<ResistorUIElement>(circuit->getVoltagePointer(2),
+                                          circuit->getVoltagePointer(1), r0,
+                                          &currentScale, 4, 4);
+
+  std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(
+      circuit->getVoltagePointer(0), circuit->getVoltagePointer(1), &GROUND,
+      nmos.get(), circuit.get(), &currentScale, 4, 6);
 
   std::vector<std::unique_ptr<UIElement>> uiElements;
 
-  // uiElements.push_back(std::move(resistorCursor));
+  uiElements.push_back(std::move(wire));
   uiElements.push_back(std::move(sourceG));
   uiElements.push_back(std::move(sourceD));
   uiElements.push_back(std::move(resistorDrain));
   uiElements.push_back(std::move(nmosUI));
-
-
-  // TODO: Make a vector that stores all the UI circuit elements and make a
-  // class that all UI elements inhert
+  uiElements.push_back(std::move(gnd1));
+  uiElements.push_back(std::move(gnd2));
+  uiElements.push_back(std::move(gnd3));
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
@@ -173,7 +184,8 @@ int main() {
       mousePressed = false;
     } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
                mouseGridPos.x != -1 && mouseGridPos.y != -1) {
-      leftMouseButtonPressed(mouseGridPos.x, mouseGridPos.y, uiElements, circuit.get(), &currentScale);
+      leftMouseButtonPressed(mouseGridPos.x, mouseGridPos.y, uiElements,
+                             circuit.get(), &currentScale);
       mousePressed = true;
     }
 
@@ -202,24 +214,23 @@ int main() {
 
     // TODO: ground and wire doesnt fit into UI Elements and Circuit Elements
     // need ground and wire UIElement classes
-    // TODO: need UICircuit class to decide the pin numbers when circuit updates and passes to the elements. 
-    // circuit needs to be stopped and restarted.
+    // TODO: need UICircuit class to decide the pin numbers when circuit updates
+    // and passes to the elements. circuit needs to be stopped and restarted.
     //
     // resistor follows the cursor
-    ResistorUIElement::showGhostElement(&window, mouseGridPos.x, mouseGridPos.y);
+    ResistorUIElement::showGhostElement(&window, mouseGridPos.x,
+                                        mouseGridPos.y);
 
-    // TODO: UI Elements should use Circuit Elements PIN num to get data from circuit
-    // TODO: UI Elements should store the representing circuit element and put circuit elements into main circuits when build
+    // TODO: UI Elements should use Circuit Elements PIN num to get data from
+    // circuit
+    // TODO: UI Elements should store the representing circuit element and put
+    // circuit elements into main circuits when build
     // TODO: Wires should get data from connected UIElements
     // TODO: Ground only need to be rendered
-    for (std::unique_ptr<UIElement>& uiElement : uiElements) {
+    for (std::unique_ptr<UIElement> &uiElement : uiElements) {
       uiElement->showElement(&window);
     }
-    showGround(&window, 2, 8);
-    showGround(&window, 10, 6);
-    showGround(&window, 4, 7);
-    wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
-                  circuit->getVoltage(4), currentScale);
+
     for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
@@ -234,9 +245,10 @@ int main() {
   return 0;
 }
 
-
-void leftMouseButtonPressed(int xGrid, int yGrid, std::vector<std::unique_ptr<UIElement>>& uiElements, Circuit* circuit, double* currentScale) {
-  std::unique_ptr<UIElement> resistor = std::make_unique<ResistorUIElement>(&TEST_DOUBLE, &TEST_DOUBLE, 1000, currentScale,
-                    xGrid, yGrid); 
-  uiElements.push_back(std::move(resistor)); 
+void leftMouseButtonPressed(int xGrid, int yGrid,
+                            std::vector<std::unique_ptr<UIElement>> &uiElements,
+                            Circuit *circuit, double *currentScale) {
+  std::unique_ptr<UIElement> resistor = std::make_unique<ResistorUIElement>(
+      &TEST_DOUBLE, &TEST_DOUBLE, 1000, currentScale, xGrid, yGrid);
+  uiElements.push_back(std::move(resistor));
 }
