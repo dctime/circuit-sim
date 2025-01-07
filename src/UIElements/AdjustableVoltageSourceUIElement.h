@@ -4,27 +4,42 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
+#include "AdjustableVoltageSourceElement.h"
 #include "Line.h"
 #include "UIElement.h"
+#include <UICircuit.h>
+#include <iostream>
 
 class AdjustableVoltageSourceUIElement : public UIElement{
 private:
-  double* vp;
-  double* vm;
-  double* i;
-  double* currentScale;
+  std::unique_ptr<AdjustableVoltageSourceElement> element;
 public:
-  AdjustableVoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale, int xGrid, int yGrid) {
-    this->vp = vp;
-    this->vm = vm;
-    this->i = i;
-    this->currentScale = currentScale;
+  AdjustableVoltageSourceUIElement(int xGrid, int yGrid, std::function<double(double)> v) {
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+
+    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
+    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
+
+    this->connectedLocs.push_back(pin1Loc);
+    this->connectedLocs.push_back(pin2Loc);
+    
+    std::cout << "Adj. Voltage Source added to UICircuit:" << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
   
   void showElement(sf::RenderWindow* window) override {
-    showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale); 
+    if (element.get() == nullptr) {
+      // show Ghost Version
+    } else {
+      // show normal ones
+    }
+    // showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale); 
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+    return element.get(); 
   }
 
  

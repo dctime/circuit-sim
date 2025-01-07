@@ -2,30 +2,40 @@
 #include "../Line.h"
 #include "../UIElement.h"
 #include <SFML/System/Vector2.hpp>
+#include <iostream>
 
 class WireUIElement : public UIElement {
 private:
   int xGrid1, xGrid2, yGrid1, yGrid2;
-  double *v;
-  double *i;
-  double *currentScale;
 
 public:
   ~WireUIElement() override {};
-  WireUIElement(double *v, double *i, double *currentScale, int xGrid1,
-                int yGrid1, int xGrid2, int yGrid2) {
+  WireUIElement(int xGrid1, int yGrid1, int xGrid2, int yGrid2) {
+    this->xGrid = -1;
+    this->yGrid = -1;
     this->xGrid1 = xGrid1;
     this->xGrid2 = xGrid2;
     this->yGrid1 = yGrid1;
     this->yGrid2 = yGrid2;
-    this->v = v;
-    this->i = i;
-    this->currentScale = currentScale;
+
+    std::string pin1Loc = std::to_string(xGrid1) + "," + std::to_string(yGrid1);
+    std::string pin2Loc = std::to_string(xGrid2) + "," + std::to_string(yGrid2);
+
+    connectedLocs.push_back(pin1Loc);
+    connectedLocs.push_back(pin2Loc);
+
+    std::cout << "Wire Added to UI Circuit: " << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
 
   void showElement(sf::RenderWindow *window) override {
-    showWire(window, xGrid1, yGrid1, xGrid2, yGrid2, *v, *i,
-             *currentScale);
+    // showWire(window, xGrid1, yGrid1, xGrid2, yGrid2, *v, *i,
+    //          *currentScale);
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+    return nullptr;
   }
 
 private:

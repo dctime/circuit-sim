@@ -4,26 +4,37 @@
 #include <SFML/System/Vector2.hpp>
 #include <cmath>
 #include "UIElement.h"
+#include <VoltageSourceElement.h>
+#include <memory>
+#include <iostream>
 
 class VoltageSourceUIElement : public UIElement{
 private:
-  double* vp;
-  double* vm;
-  double* i;
-  double* currentScale;
+  std::unique_ptr<VoltageSourceElement> element;
 public:
   ~VoltageSourceUIElement() override {};
-  VoltageSourceUIElement(double* vp, double* vm, double* i, double* currentScale, int xGrid, int yGrid) {
-    this->vp = vp;
-    this->vm = vm;
-    this->i = i;
-    this->currentScale = currentScale;
+  VoltageSourceUIElement(int xGrid, int yGrid, double v) {
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+
+    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
+
+    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
+
+    this->connectedLocs.push_back(pin1Loc);
+    this->connectedLocs.push_back(pin2Loc);
+
+    std::cout << "Voltage Source Added to UI Circuit: " << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
 
   void showElement(sf::RenderWindow *window) override {
-    showVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale);
+    // showVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale);
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+    return element.get();
   }
 
 private:

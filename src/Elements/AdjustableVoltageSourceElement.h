@@ -1,5 +1,5 @@
 #pragma once
-#include "CircuitElement.h"
+#include <CircuitElement.h>
 #include <memory>
 
 class AdjustableVoltageSourceElement : public CircuitElement {

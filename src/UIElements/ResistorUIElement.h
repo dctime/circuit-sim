@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <ResistorElement.h>
+#include <iostream>
 
 class ResistorUIElement : public UIElement {
 public:
@@ -13,25 +15,32 @@ public:
   }
 
 private:
-  double *v1;
-  double *v2;
   double R;
-  double *currentScale;
+  std::unique_ptr<ResistorElement> resistorElement; 
 
 public:
-  ResistorUIElement() {};
-  ResistorUIElement(double *v1, double *v2, double R, double *currentScale,
-                    int xGrid, int yGrid) {
-    this->v1 = v1;
-    this->v2 = v2;
+  ResistorUIElement(int xGrid, int yGrid, double R) {
     this->R = R;
-    this->currentScale = currentScale;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+
+    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
+    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
+
+    this->connectedLocs.push_back(pin1Loc);
+    this->connectedLocs.push_back(pin2Loc);
+
+    std::cout << "Resistor Added to UI Circuit: " << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+    return resistorElement.get();
   }
 
   void showElement(sf::RenderWindow *window) override {
-    showResistor(window, *v1, *v2, xGrid, yGrid, R, *currentScale);
+    // showResistor(window, *v1, *v2, xGrid, yGrid, R, *currentScale);
   }
 
 public:

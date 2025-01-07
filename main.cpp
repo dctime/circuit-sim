@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <UICircuit.h>
 #include <VoltageSourceElement.h>
 #include <VoltageSourceUIElement.h>
 #include <WireUIElement.h>
@@ -45,6 +46,21 @@ void showGrid(sf::RenderWindow &window, sf::Color &color) {
 }
 
 int main() {
+  // TODO: Make a UI Circuit First
+  // TODO: Add circuit element into UI Circuit
+  // TODO: UI Circuit has circuit
+  // TODO: UI Circuit has its own Circuit Element
+  // TODO: put circuit elements into circuit to simulate
+  // TODO: UI Circuit calculates all the pin number and the amount of voltages
+  // and max node id while UI Circuit element does the inputs of the initial
+  // values
+  // TODO: Circuit element updates the initial values and modifies the value in
+  // the circuit
+  // TODO: UI Circuit can control the rendering and the timing of the simulation
+  // of the circuit
+  // TODO: So by knowing all the location and rotation of all the UI Elements,
+  // it can does the simulation by itself.
+
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
     std::cout << "Font Load Failed!" << std::endl;
@@ -76,70 +92,74 @@ int main() {
     return sin(t) + 0.6;
   };
 
-  std::unique_ptr<AdjustableVoltageSourceElement> adjustVsrc =
-      AdjustableVoltageSourceElement::create(vgsOfT, 0, -1, 0);
-  // voltage source from vd
-  std::unique_ptr<VoltageSourceElement> vsrc =
-      VoltageSourceElement::create(1.8, 2, -1, 1);
-
+  // std::unique_ptr<AdjustableVoltageSourceElement> adjustVsrc =
+  //     AdjustableVoltageSourceElement::create(vgsOfT, 0, -1, 0);
+  // // voltage source from vd
+  // std::unique_ptr<VoltageSourceElement> vsrc =
+  //     VoltageSourceElement::create(1.8, 2, -1, 1);
+  double vsrc = 1.8;
   // nmos stats
   double K = 4 * pow(10, -3);
   double VT = 0.4;
   // double va = std::numeric_limits<double>::infinity();
   double VA = INFINITY;
-  std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1, -1);
+  // std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1, -1);
 
   // resistor format
   double r0 = 17.5 * pow(10, 3);
-  std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2, 1);
+  // std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2, 1);
 
-  std::vector<CircuitElement *> elements;
-  elements.push_back(vsrc.get());
-  elements.push_back(adjustVsrc.get());
-  elements.push_back(nmos.get());
-  elements.push_back(resistor.get());
+  // std::vector<CircuitElement *> elements;
+  // elements.push_back(vsrc.get());
+  // elements.push_back(adjustVsrc.get());
+  // elements.push_back(nmos.get());
+  // elements.push_back(resistor.get());
 
-  std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
+  
 
   // UI only
-  double currentScale = 5000;
-  double GROUND = 0;
+  UICircuit uiCircuit;
 
   std::unique_ptr<UIElement> gnd1 = std::make_unique<GroundUIElement>(2, 8);
   std::unique_ptr<UIElement> gnd2 = std::make_unique<GroundUIElement>(10, 6);
   std::unique_ptr<UIElement> gnd3 = std::make_unique<GroundUIElement>(4, 7);
 
-  std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(
-      circuit->getVoltagePointer(2), circuit->getVoltagePointer(4),
-      &currentScale, 4, 3, 10, 4);
-  std::unique_ptr<UIElement> sourceG =
-      std::make_unique<AdjustableVoltageSourceUIElement>(
-          circuit->getVoltagePointer(0), &GROUND, circuit->getVoltagePointer(3),
-          &currentScale, 2, 7);
+  // std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(
+  //     circuit->getVoltagePointer(2), circuit->getVoltagePointer(4),
+  //     uiCircuit.getCurrentScalePointer(), 4, 3, 10, 4);
+  std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(4, 3, 10, 4);  
+  // std::unique_ptr<UIElement> sourceG =
+  //     std::make_unique<AdjustableVoltageSourceUIElement>(
+  //         circuit->getVoltagePointer(0), &uiCircuit.GROUND, circuit->getVoltagePointer(3),
+  //         uiCircuit.getCurrentScalePointer(), 2, 7);
+  std::unique_ptr<UIElement> sourceG = std::make_unique<AdjustableVoltageSourceUIElement>(2, 7, vgsOfT);
 
-  std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(
-      circuit->getVoltagePointer(2), &GROUND, circuit->getVoltagePointer(4),
-      &currentScale, 10, 5);
+  // std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(
+  //     circuit->getVoltagePointer(2), &uiCircuit.GROUND, circuit->getVoltagePointer(4),
+  //     uiCircuit.getCurrentScalePointer(), 10, 5);
+  std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(10, 5, vsrc);
 
-  std::unique_ptr<UIElement> resistorDrain =
-      std::make_unique<ResistorUIElement>(circuit->getVoltagePointer(2),
-                                          circuit->getVoltagePointer(1), r0,
-                                          &currentScale, 4, 4);
+  // std::unique_ptr<UIElement> resistorDrain =
+  //     std::make_unique<ResistorUIElement>(circuit->getVoltagePointer(2),
+  //                                         circuit->getVoltagePointer(1), r0,
+  //                                         uiCircuit.getCurrentScalePointer(), 4, 4);
+  std::unique_ptr<UIElement> resistorDrain = std::make_unique<ResistorUIElement>(4, 4, r0);
 
-  std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(
-      circuit->getVoltagePointer(0), circuit->getVoltagePointer(1), &GROUND,
-      nmos.get(), circuit.get(), &currentScale, 4, 6);
+  // std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(
+  //     circuit->getVoltagePointer(0), circuit->getVoltagePointer(1), &uiCircuit.GROUND,
+  //     nmos.get(), circuit.get(), uiCircuit.getCurrentScalePointer(), 4, 6);
+  std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(4, 6, K, VT, VA);
 
-  std::vector<std::unique_ptr<UIElement>> uiElements;
+  uiCircuit.addElement(gnd1);
+  uiCircuit.addElement(gnd2);
+  uiCircuit.addElement(gnd3);
+  uiCircuit.addElement(wire);
+  uiCircuit.addElement(sourceG);
+  uiCircuit.addElement(sourceD);
+  uiCircuit.addElement(resistorDrain);
+  uiCircuit.addElement(nmosUI);
 
-  uiElements.push_back(std::move(wire));
-  uiElements.push_back(std::move(sourceG));
-  uiElements.push_back(std::move(sourceD));
-  uiElements.push_back(std::move(resistorDrain));
-  uiElements.push_back(std::move(nmosUI));
-  uiElements.push_back(std::move(gnd1));
-  uiElements.push_back(std::move(gnd2));
-  uiElements.push_back(std::move(gnd3));
+  uiCircuit.printOutLocToPinID();
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
@@ -147,7 +167,6 @@ int main() {
 
   while (window.isOpen()) {
 
-    circuit->incTimerByDeltaT();
 
     // mousePos, mouseGridPos update
     mousePos = sf::Mouse::getPosition(window);
@@ -184,8 +203,9 @@ int main() {
       mousePressed = false;
     } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
                mouseGridPos.x != -1 && mouseGridPos.y != -1) {
-      leftMouseButtonPressed(mouseGridPos.x, mouseGridPos.y, uiElements,
-                             circuit.get(), &currentScale);
+      std::cout << "Left Mouse Button Pressed" << std::endl;
+      // leftMouseButtonPressed(mouseGridPos.x, mouseGridPos.y, uiElements,
+      //                        circuit.get(), &currentScale);
       mousePressed = true;
     }
 
@@ -195,25 +215,18 @@ int main() {
     // if (circuit->getTime() >= 0.03)
     //   window.close();
 
-    for (int iteration = 0; iteration < 10; iteration++) {
-      // std::cout << "========================" << std::endl;
-      // std::cout << "iteration: " << iteration << std::endl;
+    
 
-      circuit->iterate();
-    }
-
-    text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
-                   std::to_string(circuit->getVoltage(1)) + " | i: " +
-                   std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
-                   " | t: " + std::to_string(circuit->getTime()));
+    // text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
+    //                std::to_string(circuit->getVoltage(1)) + " | i: " +
+    //                std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
+    //                " | t: " + std::to_string(circuit->getTime()));
 
     window.clear(sf::Color::Black);
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
 
-    // TODO: ground and wire doesnt fit into UI Elements and Circuit Elements
-    // need ground and wire UIElement classes
     // TODO: need UICircuit class to decide the pin numbers when circuit updates
     // and passes to the elements. circuit needs to be stopped and restarted.
     //
@@ -227,9 +240,10 @@ int main() {
     // circuit elements into main circuits when build
     // TODO: Wires should get data from connected UIElements
     // TODO: Ground only need to be rendered
-    for (std::unique_ptr<UIElement> &uiElement : uiElements) {
-      uiElement->showElement(&window);
-    }
+
+    // for (std::unique_ptr<UIElement> &uiElement : uiElements) {
+    //   uiElement->showElement(&window);
+    // }
 
     for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);
@@ -248,7 +262,7 @@ int main() {
 void leftMouseButtonPressed(int xGrid, int yGrid,
                             std::vector<std::unique_ptr<UIElement>> &uiElements,
                             Circuit *circuit, double *currentScale) {
-  std::unique_ptr<UIElement> resistor = std::make_unique<ResistorUIElement>(
-      &TEST_DOUBLE, &TEST_DOUBLE, 1000, currentScale, xGrid, yGrid);
-  uiElements.push_back(std::move(resistor));
+  // std::unique_ptr<UIElement> resistor = std::make_unique<ResistorUIElement>(
+  //     &TEST_DOUBLE, &TEST_DOUBLE, 1000, currentScale, xGrid, yGrid);
+  // uiElements.push_back(std::move(resistor));
 }

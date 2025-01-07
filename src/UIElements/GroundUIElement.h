@@ -1,17 +1,29 @@
 #include <UIElement.h>
 #include <Line.h>
+#include <iostream>
 
 class GroundUIElement : public UIElement {
-private:
-  int xGrid, yGrid;
 public:
   ~GroundUIElement() override {};
   GroundUIElement(int xGrid, int yGrid) {
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+
+    std::string pinLoc = std::to_string(xGrid) + "," + std::to_string(yGrid);
+
+    connectedLocs.push_back(pinLoc);
+    groundedLocs.push_back(pinLoc);
+
+    std::cout << "Ground Added To UI Circuit:" << std::endl;
+    std::cout << "  PinLoc: " << pinLoc << std::endl;
+    std::cout << "  Grounded: " << pinLoc << std::endl;
   }
   void showElement(sf::RenderWindow *window) override {
     showGround(window, xGrid, yGrid); 
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+    return nullptr;
   }
 private:
   void showGround(sf::RenderWindow *window, sf::Vector2f &loc) {

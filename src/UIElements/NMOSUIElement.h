@@ -4,32 +4,40 @@
 #include <SFML/Graphics.hpp>
 #include "NMOSElement.h"
 #include "UIElement.h"
+#include <iostream>
 
 class NMOSUIElement : public UIElement {
 
 private:
-  double* vg;
-  double* vd;
-  double* vs;
-  double* currentScale;
-  NMOSElement* nmosElement;
+  std::unique_ptr<NMOSElement> nmosElement;
   Circuit* circuit;
 public:
   ~NMOSUIElement() override {};
-  NMOSUIElement(double* vg, double* vd, double* vs, NMOSElement* nmosElement, Circuit* circuit, double* currentScale, int xGrid, int yGrid) {
-    this->vg = vg;
-    this->vd = vd;
-    this->vs = vs;
-    this->nmosElement = nmosElement;
-    this->circuit = circuit;
-    this->currentScale = currentScale;
+  NMOSUIElement(int xGrid, int yGrid, double k, double vt, double va) {
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+
+    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
+    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
+    std::string pin3Loc = std::to_string(xGrid-2) + "," + std::to_string(yGrid);
+
+    this->connectedLocs.push_back(pin1Loc);
+    this->connectedLocs.push_back(pin2Loc);
+    this->connectedLocs.push_back(pin3Loc);
+
+    std::cout << "NMOS added to UI Circuit: " << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
+    std::cout << "  Pin3Loc: " << pin3Loc << std::endl;
+  }
+
+  CircuitElement * getCircuitElementPointer() override {
+     return nmosElement.get();
   }
 
   void showElement(sf::RenderWindow *window) override {
-    double id = nmosElement->getId(circuit->getVoltageMatrix());
-    showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
+    // double id = nmosElement->getId(circuit->getVoltageMatrix());
+    // showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
   }
 
 private:

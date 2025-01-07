@@ -1,5 +1,6 @@
 #pragma once
-#include "CircuitElement.h"
+#include "../CircuitElement.h"
+#include <memory>
 
 class ResistorElement : public CircuitElement {
 public:
