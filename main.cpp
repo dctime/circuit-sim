@@ -241,9 +241,8 @@ int main() {
     // TODO: Wires should get data from connected UIElements
     // TODO: Ground only need to be rendered
 
-    // for (std::unique_ptr<UIElement> &uiElement : uiElements) {
-    //   uiElement->showElement(&window);
-    // }
+    uiCircuit.showCircuit(&window);
+    
 
     for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);

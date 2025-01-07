@@ -29,9 +29,18 @@ private:
 public:
   void printOutLocToPinID() {
     for (const auto& pair : locToPinID) { std::cout << pair.first << ": " << pair.second << std::endl; }
+    std::cout << "Max Node ID: " << nextPinID-1 << std::endl;
+    std::cout << "Voltage Source Count: " << voltageSourceID-1 << std::endl;
   }
 public:
   double GROUND = 0;
+
+  void showCircuit(sf::RenderWindow* window) {
+    for (std::unique_ptr<UIElement>& uiElement : uiElements) {
+      uiElement->showElement(window);
+    }      
+  }
+
   // run this every frame
   void runCircuit() {
     if (circuit.get() == nullptr)
@@ -62,6 +71,7 @@ public:
     uiElements.push_back(std::move(uiElement));
   }
 
+public:
   double* getCurrentScalePointer() {
     return &currentScale;
   }

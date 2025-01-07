@@ -1,13 +1,20 @@
 #pragma once
 #include "../Line.h"
 #include "../UIElement.h"
+#include "VoltageSourceElement.h"
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
 
 class WireUIElement : public UIElement {
+public:
+  static void showGhostElement(sf::RenderWindow* window, int xGrid1, int yGrid1, int xGrid2, int yGrid2) {
+    sf::Vector2f loc1(xGrid1*50, yGrid1*50);
+    sf::Vector2f loc2(xGrid2*50, yGrid2*50);
+    WireUIElement::showWire(window, 0, loc1, loc2);
+  }
 private:
   int xGrid1, xGrid2, yGrid1, yGrid2;
-
+  std::unique_ptr<VoltageSourceElement> element;
 public:
   ~WireUIElement() override {};
   WireUIElement(int xGrid1, int yGrid1, int xGrid2, int yGrid2) {
@@ -30,23 +37,28 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
+    if (element.get() == nullptr) {
+      WireUIElement::showGhostElement(window, xGrid1, yGrid1, xGrid2, yGrid2);
+    }
     // showWire(window, xGrid1, yGrid1, xGrid2, yGrid2, *v, *i,
     //          *currentScale);
   }
 
-  CircuitElement * getCircuitElementPointer() override {
-    return nullptr;
-  }
+  CircuitElement *getCircuitElementPointer() override { return nullptr; }
 
 private:
   double lastoffsetVolt = 0;
-  void showWire(sf::RenderWindow *window, sf::Vector2f &loc1,
-                sf::Vector2f &loc2, double v, double i, double currentScale) {
+  static void showWire(sf::RenderWindow *window, double v, sf::Vector2f &loc1,
+                       sf::Vector2f &loc2) {
     double width = 5;
     sf::Color wireColor;
     voltToColor(v, wireColor);
     showLine(window, loc1, loc2, width, wireColor, wireColor, wireColor);
+  }
 
+  void showWire(sf::RenderWindow *window, sf::Vector2f &loc1,
+                sf::Vector2f &loc2, double v, double i, double currentScale) {
+    WireUIElement::showWire(window, v, loc1, loc2);
     double current = i;
     lastoffsetVolt += current * currentScale;
     lastoffsetVolt = std::remainder(lastoffsetVolt, 20);

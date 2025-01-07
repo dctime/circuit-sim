@@ -4,10 +4,15 @@
 #include <SFML/Graphics.hpp>
 #include "NMOSElement.h"
 #include "UIElement.h"
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <iostream>
 
 class NMOSUIElement : public UIElement {
-
+public:
+  static void showGhostElement(sf::RenderWindow* window, int xGrid, int yGrid) {
+    sf::Vector2f loc(xGrid*50, yGrid*50);
+    NMOSUIElement::showNMOS(window, loc, 0, 0, 0);
+  }
 private:
   std::unique_ptr<NMOSElement> nmosElement;
   Circuit* circuit;
@@ -36,18 +41,19 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
+    if (nmosElement.get() == nullptr) {
+      NMOSUIElement::showGhostElement(window, xGrid, yGrid);
+      // ghost version
+    } else {
+      
+    }
     // double id = nmosElement->getId(circuit->getVoltageMatrix());
     // showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
   }
 
 private:
   double lastoffsetNMOS = 0;
-  void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
-                double id, sf::Vector2f &loc, double currentScale) {
-    // pin_d 100 100
-    // pin_g 0 150
-    // pin_s 100 200
-    // loc 100 150
+  static void showNMOS(sf::RenderWindow* window, sf::Vector2f& loc, double vg, double vd, double vs) {
     double width = 5;
     sf::Vector2f pointD1(loc.x, loc.y - 50);
     sf::Vector2f pointD2(loc.x, loc.y - 25);
@@ -80,6 +86,30 @@ private:
     showLine(window, pointB2, pointS1, 5, sColor, sColor, sColor);
     showLine(window, pointS1, pointS11, width, sColor, sColor, sColor);
     showLine(window, pointS1, pointS12, width, sColor, sColor, sColor);
+  }
+  void showNMOS(sf::RenderWindow *window, double vg, double vd, double vs,
+                double id, sf::Vector2f &loc, double currentScale) {
+    // pin_d 100 100
+    // pin_g 0 150
+    // pin_s 100 200
+    // loc 100 150
+    double width = 5;
+
+    NMOSUIElement::showNMOS(window, loc, vg, vd, vs); 
+    sf::Vector2f pointD1(loc.x, loc.y - 50);
+    sf::Vector2f pointD2(loc.x, loc.y - 25);
+    sf::Vector2f pointB1(loc.x - 50 + 2.5, loc.y - 25);
+    sf::Vector2f pointB2(loc.x - 50 + 2.5, loc.y + 25);
+    sf::Vector2f pointBG1(loc.x - 50 - 7.5, loc.y - 25);
+    sf::Vector2f pointBG2(loc.x - 50 - 7.5, loc.y + 25);
+    sf::Vector2f pointG1(loc.x - 50 - 7.5, loc.y);
+    sf::Vector2f pointG2(loc.x - 100, loc.y);
+    sf::Vector2f pointS1(loc.x, loc.y + 25);
+    sf::Vector2f pointS11(loc.x - 10, loc.y + 25 + 10);
+    sf::Vector2f pointS12(loc.x - 10, loc.y + 25 - 10);
+    sf::Vector2f pointS2(loc.x, loc.y + 50);
+
+
 
     double &current = id;
     // std::cout << "id:" << id << std::endl;

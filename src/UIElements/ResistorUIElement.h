@@ -40,6 +40,9 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
+    if (resistorElement.get() == nullptr) {
+      ResistorUIElement::showGhostElement(window, xGrid, yGrid);
+    }
     // showResistor(window, *v1, *v2, xGrid, yGrid, R, *currentScale);
   }
 
