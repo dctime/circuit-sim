@@ -1,4 +1,6 @@
-#include "UIElement.h"
+#include <UICircuit.h>
+#include <UIElement.h>
+
 #include <AdjustableVoltageSourceElement.h>
 #include <AdjustableVoltageSourceUIElement.h>
 #include <Circuit.h>
@@ -10,7 +12,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <UICircuit.h>
+
 #include <VoltageSourceElement.h>
 #include <VoltageSourceUIElement.h>
 #include <WireUIElement.h>
@@ -103,11 +105,13 @@ int main() {
   double VT = 0.4;
   // double va = std::numeric_limits<double>::infinity();
   double VA = INFINITY;
-  // std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1, -1);
+  // std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1,
+  // -1);
 
   // resistor format
   double r0 = 17.5 * pow(10, 3);
-  // std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2, 1);
+  // std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2,
+  // 1);
 
   // std::vector<CircuitElement *> elements;
   // elements.push_back(vsrc.get());
@@ -115,58 +119,72 @@ int main() {
   // elements.push_back(nmos.get());
   // elements.push_back(resistor.get());
 
-  
-
   // UI only
   UICircuit uiCircuit;
 
-  std::unique_ptr<UIElement> gnd1 = std::make_unique<GroundUIElement>(2, 8);
-  std::unique_ptr<UIElement> gnd2 = std::make_unique<GroundUIElement>(10, 6);
-  std::unique_ptr<UIElement> gnd3 = std::make_unique<GroundUIElement>(4, 7);
+  std::unique_ptr<UIElement> gnd1 =
+      std::make_unique<GroundUIElement>(&uiCircuit, 2, 8);
+  std::unique_ptr<UIElement> gnd2 =
+      std::make_unique<GroundUIElement>(&uiCircuit, 10, 6);
+  std::unique_ptr<UIElement> gnd3 =
+      std::make_unique<GroundUIElement>(&uiCircuit, 4, 7);
 
   // std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(
   //     circuit->getVoltagePointer(2), circuit->getVoltagePointer(4),
   //     uiCircuit.getCurrentScalePointer(), 4, 3, 10, 4);
-  std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(4, 3, 10, 4);  
+  std::unique_ptr<UIElement> wire =
+      std::make_unique<WireUIElement>(&uiCircuit, 4, 3, 10, 4);
   // std::unique_ptr<UIElement> sourceG =
   //     std::make_unique<AdjustableVoltageSourceUIElement>(
-  //         circuit->getVoltagePointer(0), &uiCircuit.GROUND, circuit->getVoltagePointer(3),
-  //         uiCircuit.getCurrentScalePointer(), 2, 7);
-  std::unique_ptr<UIElement> sourceG = std::make_unique<AdjustableVoltageSourceUIElement>(2, 7, vgsOfT);
+  //         circuit->getVoltagePointer(0), &uiCircuit.GROUND,
+  //         circuit->getVoltagePointer(3), uiCircuit.getCurrentScalePointer(),
+  //         2, 7);
+  std::unique_ptr<UIElement> sourceG =
+      std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 2, 7,
+                                                         vgsOfT);
 
-  // std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(
-  //     circuit->getVoltagePointer(2), &uiCircuit.GROUND, circuit->getVoltagePointer(4),
-  //     uiCircuit.getCurrentScalePointer(), 10, 5);
-  std::unique_ptr<UIElement> sourceD = std::make_unique<VoltageSourceUIElement>(10, 5, vsrc);
+  // std::unique_ptr<UIElement> sourceD =
+  // std::make_unique<VoltageSourceUIElement>(
+  //     circuit->getVoltagePointer(2), &uiCircuit.GROUND,
+  //     circuit->getVoltagePointer(4), uiCircuit.getCurrentScalePointer(), 10,
+  //     5);
+  std::unique_ptr<UIElement> sourceD =
+      std::make_unique<VoltageSourceUIElement>(&uiCircuit, 10, 5, vsrc);
 
   // std::unique_ptr<UIElement> resistorDrain =
   //     std::make_unique<ResistorUIElement>(circuit->getVoltagePointer(2),
   //                                         circuit->getVoltagePointer(1), r0,
-  //                                         uiCircuit.getCurrentScalePointer(), 4, 4);
-  std::unique_ptr<UIElement> resistorDrain = std::make_unique<ResistorUIElement>(4, 4, r0);
+  //                                         uiCircuit.getCurrentScalePointer(),
+  //                                         4, 4);
+  std::unique_ptr<UIElement> resistorDrain =
+      std::make_unique<ResistorUIElement>(&uiCircuit, 4, 4, r0);
 
   // std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(
-  //     circuit->getVoltagePointer(0), circuit->getVoltagePointer(1), &uiCircuit.GROUND,
-  //     nmos.get(), circuit.get(), uiCircuit.getCurrentScalePointer(), 4, 6);
-  std::unique_ptr<UIElement> nmosUI = std::make_unique<NMOSUIElement>(4, 6, K, VT, VA);
+  //     circuit->getVoltagePointer(0), circuit->getVoltagePointer(1),
+  //     &uiCircuit.GROUND, nmos.get(), circuit.get(),
+  //     uiCircuit.getCurrentScalePointer(), 4, 6);
+  std::unique_ptr<UIElement> nmosUI =
+      std::make_unique<NMOSUIElement>(&uiCircuit, 4, 6, K, VT, VA);
 
   uiCircuit.addElement(gnd1);
   uiCircuit.addElement(gnd2);
   uiCircuit.addElement(gnd3);
   uiCircuit.addElement(wire);
+  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(sourceG);
+  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(sourceD);
+  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(resistorDrain);
   uiCircuit.addElement(nmosUI);
-
-  uiCircuit.printOutLocToPinID();
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
   bool mousePressed = false;
 
-  while (window.isOpen()) {
+  uiCircuit.runCircuit();
 
+  while (window.isOpen()) {
 
     // mousePos, mouseGridPos update
     mousePos = sf::Mouse::getPosition(window);
@@ -215,9 +233,8 @@ int main() {
     // if (circuit->getTime() >= 0.03)
     //   window.close();
 
-    
-
-    // text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
+    // text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd:
+    // " +
     //                std::to_string(circuit->getVoltage(1)) + " | i: " +
     //                std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
     //                " | t: " + std::to_string(circuit->getTime()));
@@ -242,7 +259,6 @@ int main() {
     // TODO: Ground only need to be rendered
 
     uiCircuit.showCircuit(&window);
-    
 
     for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);

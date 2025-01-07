@@ -2,7 +2,7 @@
 #include <eigen3/Eigen/Dense>
 #include <memory>
 #include "CircuitElement.h"
-
+#include <iostream>
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
@@ -56,13 +56,13 @@ public:
     }
 
 
-    // std::cout << "g: " << std::endl;
-    // std::cout << g << std::endl;
-    // std::cout << "v: " << std::endl;
-    // std::cout << v << std::endl;
-    // std::cout << "i: " << std::endl;
-    // std::cout << i << std::endl;
-    // std::cout << "Start ITERATE: " << std::endl;
+    std::cout << "g: " << std::endl;
+    std::cout << g << std::endl;
+    std::cout << "v: " << std::endl;
+    std::cout << v << std::endl;
+    std::cout << "i: " << std::endl;
+    std::cout << i << std::endl;
+    std::cout << "Start ITERATE: " << std::endl;
     // F matrix
     Eigen::MatrixXd f(MAX_MATRIX_SIZE, 1);
     f = g * v - i;

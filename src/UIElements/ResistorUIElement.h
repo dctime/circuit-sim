@@ -1,31 +1,48 @@
 #pragma once
 #include "Line.h"
-#include "UIElement.h"
+#include <ResistorElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
-#include <ResistorElement.h>
+#include <UICircuit.h>
+#include <UIElement.h>
 #include <iostream>
 
 class ResistorUIElement : public UIElement {
 public:
   static void showGhostElement(sf::RenderWindow *window, int xGrid, int yGrid) {
-    sf::Vector2f loc(xGrid*50, yGrid*50);
-    ResistorUIElement::showResistor(window, 0, 0, loc); 
+    sf::Vector2f loc(xGrid * 50, yGrid * 50);
+    ResistorUIElement::showResistor(window, 0, 0, loc);
   }
 
 private:
   double R;
-  std::unique_ptr<ResistorElement> resistorElement; 
+  std::unique_ptr<ResistorElement> resistorElement;
+
+private:
+  int getPin1ID() {
+    std::string pin1Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+    return uiCircuit->getIDfromLoc(pin1Loc);
+  }
+
+  int getPin2ID() {
+    std::string pin2Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+    return uiCircuit->getIDfromLoc(pin2Loc);
+  }
 
 public:
-  ResistorUIElement(int xGrid, int yGrid, double R) {
+  ResistorUIElement(UICircuit *circuit, int xGrid, int yGrid, double R) {
+    uiCircuit = circuit;
     this->R = R;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
 
-    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
-    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
+    std::string pin1Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+    std::string pin2Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
 
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
@@ -35,21 +52,29 @@ public:
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
 
-  CircuitElement * getCircuitElementPointer() override {
+  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+    if (resistorElement.get() == nullptr) {
+      resistorElement = ResistorElement::create(R, getPin1ID(), getPin2ID());
+    }
+
     return resistorElement.get();
   }
 
   void showElement(sf::RenderWindow *window) override {
     if (resistorElement.get() == nullptr) {
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
+    } else {
+      // FIXME: Use elements pin not from here
+      showResistor(window,
+                   *uiCircuit->getCircuit()->getVoltagePointer(getPin1ID()),
+                   *uiCircuit->getCircuit()->getVoltagePointer(getPin2ID()), xGrid,
+                   yGrid, R, uiCircuit->getCurrentScale());
     }
-    // showResistor(window, *v1, *v2, xGrid, yGrid, R, *currentScale);
   }
 
 public:
   ~ResistorUIElement() override {};
   double lastoffsetresistor = 0;
-  
 
 private:
   // show current using xGrid yGrid
@@ -61,7 +86,7 @@ private:
 
   // without current indicator
   static void showResistor(sf::RenderWindow *window, double v1, double v2,
-                    sf::Vector2f &loc) {
+                           sf::Vector2f &loc) {
     // pin1 302.5 300
     // pin2 302.5 400
     // loc 302.5 350

@@ -2,13 +2,15 @@
 
 #include "AdjustableVoltageSourceElement.h"
 #include "Line.h"
-#include "UIElement.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <UICircuit.h>
+#include <UIElement.h>
 #include <cmath>
 #include <iostream>
+
+class UICircuit;
 
 class AdjustableVoltageSourceUIElement : public UIElement {
 public:
@@ -19,12 +21,16 @@ public:
 
 private:
   std::unique_ptr<AdjustableVoltageSourceElement> element;
+  std::function<double(double)> v;
+  UICircuit* uiCircuit;
 
 public:
-  AdjustableVoltageSourceUIElement(int xGrid, int yGrid,
+  AdjustableVoltageSourceUIElement(UICircuit* circuit, int xGrid, int yGrid,
                                    std::function<double(double)> v) {
+    this->v = v;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+    uiCircuit = circuit;    
 
     std::string pin1Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
@@ -44,13 +50,28 @@ public:
       // show Ghost Version
       AdjustableVoltageSourceUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
+       
       // show normal ones
     }
     // showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid,
     // *currentScale);
   }
 
-  CircuitElement *getCircuitElementPointer() override { return element.get(); }
+  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+    if (element.get() == nullptr) {
+      std::string pin1Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+      std::string pin2Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+
+      std::cout << "Adjustable Voltage Source Created" << std::endl;
+
+      element = AdjustableVoltageSourceElement::create(
+          v, circuit->getIDfromLoc(pin1Loc), circuit->getIDfromLoc(pin2Loc),
+          circuit->getNextVoltageSourceID());
+    }
+    return element.get();
+  }
 
 public:
   ~AdjustableVoltageSourceUIElement() override {};

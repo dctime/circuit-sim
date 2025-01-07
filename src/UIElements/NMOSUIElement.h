@@ -1,30 +1,41 @@
 #pragma once
 #include "Circuit.h"
 #include "Line.h"
-#include <SFML/Graphics.hpp>
 #include "NMOSElement.h"
 #include "UIElement.h"
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <UICircuit.h>
 #include <iostream>
 
 class NMOSUIElement : public UIElement {
 public:
-  static void showGhostElement(sf::RenderWindow* window, int xGrid, int yGrid) {
-    sf::Vector2f loc(xGrid*50, yGrid*50);
+  static void showGhostElement(sf::RenderWindow *window, int xGrid, int yGrid) {
+    sf::Vector2f loc(xGrid * 50, yGrid * 50);
     NMOSUIElement::showNMOS(window, loc, 0, 0, 0);
   }
+
 private:
   std::unique_ptr<NMOSElement> nmosElement;
-  Circuit* circuit;
+  double k, va, vt;
+
 public:
   ~NMOSUIElement() override {};
-  NMOSUIElement(int xGrid, int yGrid, double k, double vt, double va) {
+  NMOSUIElement(UICircuit* circuit, int xGrid, int yGrid, double k, double vt, double va) {
+    uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
 
-    std::string pin1Loc = std::to_string(xGrid) + "," + std::to_string(yGrid-1);
-    std::string pin2Loc = std::to_string(xGrid) + "," + std::to_string(yGrid+1);
-    std::string pin3Loc = std::to_string(xGrid-2) + "," + std::to_string(yGrid);
+    this->k = k;
+    this->vt = vt;
+    this->va = va;
+
+    std::string pin1Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+    std::string pin2Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+    std::string pin3Loc =
+        std::to_string(xGrid - 2) + "," + std::to_string(yGrid);
 
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
@@ -36,8 +47,20 @@ public:
     std::cout << "  Pin3Loc: " << pin3Loc << std::endl;
   }
 
-  CircuitElement * getCircuitElementPointer() override {
-     return nmosElement.get();
+  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+    if (nmosElement.get() == nullptr) {
+      std::string pin1Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+      std::string pin2Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+      std::string pin3Loc =
+          std::to_string(xGrid - 2) + "," + std::to_string(yGrid);
+
+      nmosElement = NMOSElement::create(
+          k, va, vt, circuit->getIDfromLoc(pin3Loc),
+          circuit->getIDfromLoc(pin1Loc), circuit->getIDfromLoc(pin2Loc));
+    }
+    return nmosElement.get();
   }
 
   void showElement(sf::RenderWindow *window) override {
@@ -45,7 +68,6 @@ public:
       NMOSUIElement::showGhostElement(window, xGrid, yGrid);
       // ghost version
     } else {
-      
     }
     // double id = nmosElement->getId(circuit->getVoltageMatrix());
     // showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
@@ -53,7 +75,8 @@ public:
 
 private:
   double lastoffsetNMOS = 0;
-  static void showNMOS(sf::RenderWindow* window, sf::Vector2f& loc, double vg, double vd, double vs) {
+  static void showNMOS(sf::RenderWindow *window, sf::Vector2f &loc, double vg,
+                       double vd, double vs) {
     double width = 5;
     sf::Vector2f pointD1(loc.x, loc.y - 50);
     sf::Vector2f pointD2(loc.x, loc.y - 25);
@@ -95,7 +118,7 @@ private:
     // loc 100 150
     double width = 5;
 
-    NMOSUIElement::showNMOS(window, loc, vg, vd, vs); 
+    NMOSUIElement::showNMOS(window, loc, vg, vd, vs);
     sf::Vector2f pointD1(loc.x, loc.y - 50);
     sf::Vector2f pointD2(loc.x, loc.y - 25);
     sf::Vector2f pointB1(loc.x - 50 + 2.5, loc.y - 25);
@@ -108,8 +131,6 @@ private:
     sf::Vector2f pointS11(loc.x - 10, loc.y + 25 + 10);
     sf::Vector2f pointS12(loc.x - 10, loc.y + 25 - 10);
     sf::Vector2f pointS2(loc.x, loc.y + 50);
-
-
 
     double &current = id;
     // std::cout << "id:" << id << std::endl;

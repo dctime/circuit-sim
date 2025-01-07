@@ -1,48 +1,54 @@
 #pragma once
+#include <Circuit.h>
 #include <UIElement.h>
+#include <iostream>
+#include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <memory>
-#include <Circuit.h>
-#include <string>
-#include <iostream>
 
 class UICircuit {
+public:
+  Circuit* getCircuit() {
+    return circuit.get();
+  }
+
+  double getCurrentScale() {
+    return currentScale;
+  }
+  
+  int getMaxNodeID() {
+    return nextPinID - 1;
+  }
 private:
   std::vector<std::unique_ptr<UIElement>> uiElements;
   std::unique_ptr<Circuit> circuit;
   std::unordered_map<std::string, int> locToPinID;
   int nextPinID = 0;
-
   double currentScale = 5000;
 
-  void buildCircuit() {
-    std::vector<CircuitElement*> elements;
-    for (std::unique_ptr<UIElement>& uiElement : uiElements) {
-      CircuitElement* circuitElement = uiElement->getCircuitElementPointer();
-      if (circuitElement == nullptr) continue;
-      elements.push_back(circuitElement);
-    }
-    circuit = Circuit::create(elements, 0.01, nextPinID-1);
-  }
-// infos
+  // infos
 public:
   void printOutLocToPinID() {
-    for (const auto& pair : locToPinID) { std::cout << pair.first << ": " << pair.second << std::endl; }
-    std::cout << "Max Node ID: " << nextPinID-1 << std::endl;
-    std::cout << "Voltage Source Count: " << voltageSourceID-1 << std::endl;
+    for (const auto &pair : locToPinID) {
+      std::cout << pair.first << ": " << pair.second << std::endl;
+    }
+    std::cout << "Max Node ID: " << nextPinID - 1 << std::endl;
+    std::cout << "Voltage Source Count: " << getVoltageSourceCount() << std::endl;
   }
+
 public:
   double GROUND = 0;
 
-  void showCircuit(sf::RenderWindow* window) {
-    for (std::unique_ptr<UIElement>& uiElement : uiElements) {
+  void showCircuit(sf::RenderWindow *window) {
+    for (std::unique_ptr<UIElement> &uiElement : uiElements) {
       uiElement->showElement(window);
-    }      
+    }
   }
 
   // run this every frame
   void runCircuit() {
+    std::cout << "running" << std::endl;
     if (circuit.get() == nullptr)
       buildCircuit();
 
@@ -55,16 +61,31 @@ public:
     }
   }
 
-  void addElement(std::unique_ptr<UIElement>& uiElement) {
+private:
+  void buildCircuit() {
+    std::vector<CircuitElement *> elements;
+    for (std::unique_ptr<UIElement> &uiElement : uiElements) {
+      CircuitElement *circuitElement = uiElement->getCircuitElementPointer(this);
+      if (circuitElement == nullptr)
+        continue;
+      elements.push_back(circuitElement);
+    }
+    circuit = Circuit::create(elements, 0.01, nextPinID - 1);
+    
+    printOutLocToPinID();
+  }
+
+public:
+  void addElement(std::unique_ptr<UIElement> &uiElement) {
     circuit.reset();
-    for (std::string& loc : uiElement.get()->getConnectedLocs()) {
+    for (std::string &loc : uiElement.get()->getConnectedLocs()) {
       if (!locToPinID.count(loc)) {
         locToPinID[loc] = nextPinID;
         nextPinID++;
       }
     }
 
-    for (std::string& loc : uiElement.get()->getGroundedLocs()) {
+    for (std::string &loc : uiElement.get()->getGroundedLocs()) {
       locToPinID[loc] = -1;
     }
 
@@ -72,19 +93,21 @@ public:
   }
 
 public:
-  double* getCurrentScalePointer() {
-    return &currentScale;
-  }
+  double *getCurrentScalePointer() { return &currentScale; }
 
-  int getIDfromLoc(std::string& loc) {
-    return locToPinID[loc];
-  }
+  int getIDfromLoc(std::string &loc) { return locToPinID[loc]; }
+
 private:
   int voltageSourceID = 0;
+
 public:
   int getNextVoltageSourceID() {
     int returnID = voltageSourceID;
     voltageSourceID++;
     return returnID;
+  }
+
+  int getVoltageSourceCount() {
+    return voltageSourceID;
   }
 };

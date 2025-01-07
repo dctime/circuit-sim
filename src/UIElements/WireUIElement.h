@@ -4,20 +4,26 @@
 #include "VoltageSourceElement.h"
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
+#include <UICircuit.h>
 
 class WireUIElement : public UIElement {
 public:
-  static void showGhostElement(sf::RenderWindow* window, int xGrid1, int yGrid1, int xGrid2, int yGrid2) {
-    sf::Vector2f loc1(xGrid1*50, yGrid1*50);
-    sf::Vector2f loc2(xGrid2*50, yGrid2*50);
+  static void showGhostElement(sf::RenderWindow *window, int xGrid1, int yGrid1,
+                               int xGrid2, int yGrid2) {
+    sf::Vector2f loc1(xGrid1 * 50, yGrid1 * 50);
+    sf::Vector2f loc2(xGrid2 * 50, yGrid2 * 50);
     WireUIElement::showWire(window, 0, loc1, loc2);
   }
+
 private:
   int xGrid1, xGrid2, yGrid1, yGrid2;
   std::unique_ptr<VoltageSourceElement> element;
+
 public:
   ~WireUIElement() override {};
-  WireUIElement(int xGrid1, int yGrid1, int xGrid2, int yGrid2) {
+  WireUIElement(UICircuit *circuit, int xGrid1, int yGrid1, int xGrid2,
+                int yGrid2) {
+    uiCircuit = circuit;
     this->xGrid = -1;
     this->yGrid = -1;
     this->xGrid1 = xGrid1;
@@ -44,7 +50,18 @@ public:
     //          *currentScale);
   }
 
-  CircuitElement *getCircuitElementPointer() override { return nullptr; }
+  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+    if (element.get() == nullptr) {
+      std::string pin1Loc =
+          std::to_string(xGrid1) + "," + std::to_string(yGrid1);
+      std::string pin2Loc =
+          std::to_string(xGrid2) + "," + std::to_string(yGrid2);
+
+      element = VoltageSourceElement::create(0, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
+                                             uiCircuit->getNextVoltageSourceID());
+    }
+    return element.get();
+  }
 
 private:
   double lastoffsetVolt = 0;

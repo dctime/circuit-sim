@@ -3,6 +3,7 @@
 #include "UIElement.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
+#include <UICircuit.h>
 #include <VoltageSourceElement.h>
 #include <cmath>
 #include <iostream>
@@ -10,16 +11,20 @@
 
 class VoltageSourceUIElement : public UIElement {
 public:
-  static void showGhostElement(sf::RenderWindow* window, int xGrid, int yGrid) {
-    sf::Vector2f loc(xGrid*50, yGrid*50);
+  static void showGhostElement(sf::RenderWindow *window, int xGrid, int yGrid) {
+    sf::Vector2f loc(xGrid * 50, yGrid * 50);
     VoltageSourceUIElement::showVoltageSource(window, loc, 0, 0);
   }
+
 private:
   std::unique_ptr<VoltageSourceElement> element;
+  double v;
 
 public:
   ~VoltageSourceUIElement() override {};
-  VoltageSourceUIElement(int xGrid, int yGrid, double v) {
+  VoltageSourceUIElement(UICircuit *circuit, int xGrid, int yGrid, double v) {
+    // important
+    uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
 
@@ -32,25 +37,60 @@ public:
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
 
+    this->v = v;
+
     std::cout << "Voltage Source Added to UI Circuit: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
+    std::cout << "  Voltage: " << v << std::endl;
   }
 
   void showElement(sf::RenderWindow *window) override {
     if (element.get() == nullptr) {
       VoltageSourceUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
-      
+      double pin1Volt = 0;
+      double pin2Volt = 0;
+      if (element->getPin1() != -1) {
+        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+      }
+
+      if (element->getPin2() != -1) {
+        pin2Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin2());
+      }
+
+      showVoltageSource(
+          window,
+          pin1Volt,
+          pin2Volt,
+          *uiCircuit->getCircuit()->getVoltagePointer(
+              uiCircuit->getMaxNodeID() +
+              element->getVoltageSourceID() + 1),
+          xGrid, yGrid, uiCircuit->getCurrentScale());
     }
-    // showVoltageSource(window, *vp, *vm, *i, xGrid, yGrid, *currentScale);
   }
 
-  CircuitElement *getCircuitElementPointer() override { return element.get(); }
+  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+    if (element.get() == nullptr) {
+      std::string pin1Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+
+      std::string pin2Loc =
+          std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+
+      std::cout << "Voltage Source Element Created" << std::endl;
+      element = VoltageSourceElement::create(
+          v, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
+          circuit->getNextVoltageSourceID());
+    }
+
+    return element.get();
+  }
 
 private:
   double lastoffsetVolt = 0;
-  static void showVoltageSource(sf::RenderWindow *window, sf::Vector2f& loc, double vp, double vm) {
+  static void showVoltageSource(sf::RenderWindow *window, sf::Vector2f &loc,
+                                double vp, double vm) {
     double width = 5;
     sf::Vector2f pointP1(loc.x, loc.y - 50);
     sf::Vector2f pointP2(loc.x, loc.y - 10);

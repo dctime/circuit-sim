@@ -5,7 +5,8 @@
 class GroundUIElement : public UIElement {
 public:
   ~GroundUIElement() override {};
-  GroundUIElement(int xGrid, int yGrid) {
+  GroundUIElement(UICircuit* circuit, int xGrid, int yGrid) {
+    uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
 
@@ -22,7 +23,7 @@ public:
     showGround(window, xGrid, yGrid); 
   }
 
-  CircuitElement * getCircuitElementPointer() override {
+  CircuitElement * getCircuitElementPointer(UICircuit* circuit) override {
     return nullptr;
   }
 private:

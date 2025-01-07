@@ -2,6 +2,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <CircuitElement.h>
 
+class UICircuit;
+
 class UIElement {
 protected:
   
@@ -9,6 +11,7 @@ protected:
   int yGrid;
   std::vector<std::string> connectedLocs;
   std::vector<std::string> groundedLocs;
+  UICircuit* uiCircuit;
 
 public:
 
@@ -28,7 +31,9 @@ public:
   virtual void showElement(sf::RenderWindow* window) = 0;
 
   // if there is no circuit element return nullptr
-  virtual CircuitElement* getCircuitElementPointer() = 0;
+  // Called when UICircuit is building himself
+  // Will Rewrite uiCircuit
+  virtual CircuitElement* getCircuitElementPointer(UICircuit* circuit) = 0;
   // virtual void showUnCalculated() = 0;
 };
 
