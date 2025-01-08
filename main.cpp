@@ -22,7 +22,6 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
 double TEST_DOUBLE = 0;
 
 void leftMouseButtonPressed(int xGrid, int yGrid,
@@ -56,8 +55,10 @@ int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
+  std::vector<std::string> buttonNames = {"resistor", "voltage\nsource", "nmos", "wire", "ground"};
   for (int i = 0; i < 5; i++) {
-    buttons.push_back(Button(50 * i + 5 * i, window.getSize().y - 50, 50, 50, &font, "Button",
+  
+    buttons.push_back(Button(50 * i + 5 * (i+1), window.getSize().y - 50, 50, 50, &font, buttonNames[i],
                              sf::Color::Red, sf::Color::Green,
                              sf::Color::Blue));
   }
@@ -167,10 +168,10 @@ int main() {
       window.setView(sf::View(visibleArea));
       // Update button positions
       for (int i = 0; i < buttons.size(); i++) {
-        buttons[i].setposition(50 * i + 5 * i, window.getSize().y - 50);
+        buttons[i].setPosition(50 * i + 5 * i, window.getSize().y - 50);
       }
-      startButton.setposition(window.getSize().x - 55, 50);
-      endButton.setposition(window.getSize().x - 55, 105);
+      startButton.setPosition(window.getSize().x - 55, 50);
+      endButton.setPosition(window.getSize().x - 55, 105);
       }
     }
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {

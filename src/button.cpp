@@ -1,13 +1,14 @@
 #include "button.h"
 
 Button::Button(float x, float y, float width, float height,
-               sf::Font* font, std::string text,
+               sf::Font* font, const std::string& text,
                sf::Color idleColor, sf::Color hoverColor, sf::Color activeColor)
+    : tooltip(x, y, width*2, height*2, *font, "hello world", sf::Color::Blue, sf::Color::White)
 {
     this->shape.setSize(sf::Vector2f(width, height));
     this->shape.setPosition(sf::Vector2f(x, y));
-    
-    this->font=font;
+
+    this->font = font;
     this->text.setFont(*this->font);
     this->text.setString(text);
     this->text.setFillColor(sf::Color::White);
@@ -25,27 +26,24 @@ Button::Button(float x, float y, float width, float height,
         this->text.getGlobalBounds().height / 2.f
     );
 
-    this->idleColor=idleColor;
-    this->hoverColor=hoverColor;
-    this->activeColor=activeColor;
-    return;
+    this->idleColor = idleColor;
+    this->hoverColor = hoverColor;
+    this->activeColor = activeColor;
 }
 
-Button::~Button()
-{
+Button::~Button() {}
 
-}
-
-void Button::render(sf::RenderTarget* target)
-{
+void Button::render(sf::RenderTarget* target) {
     target->draw(this->shape);
     target->draw(this->text);
+    if (tooltip.isVisible()) {
+        tooltip.render(*target);
+    }
 }
 
-void Button::update(const sf::Vector2f& mousePos)
-{
-    /* Update the button's position and size */
-    this->text.setPosition(
+void Button::update(const sf::Vector2f& mousePos) {
+    // Default state: idle
+     this->text.setPosition(
         this->shape.getPosition().x 
         +
         this->shape.getGlobalBounds().width / 2.f
@@ -53,29 +51,29 @@ void Button::update(const sf::Vector2f& mousePos)
         this->text.getGlobalBounds().width / 2.f,
         this->shape.getPosition().y
     );
-
-    /* Update the booleans for hover and pressed */
-
-    // Idle
-    this->text.setFillColor(sf::Color::White);
     this->shape.setFillColor(this->idleColor);
+    this->text.setFillColor(sf::Color::White);
+    tooltip.setVisible(false);
 
-    // Hover
-    if(this->shape.getGlobalBounds().contains(mousePos))
-    {
-        this->text.setFillColor(sf::Color::Black);
+    // Hover state
+    if (this->shape.getGlobalBounds().contains(mousePos)) {
         this->shape.setFillColor(this->hoverColor);
+        this->text.setFillColor(sf::Color::Black);
 
-        // Pressed
-        if(sf::Mouse::isButtonPressed(sf::Mouse::Left)||sf::Mouse::isButtonPressed(sf::Mouse::Right))
-        {
+        tooltip.setPosition(this->shape.getPosition().x, this->shape.getPosition().y + this->shape.getSize().y + 5);
+        tooltip.setVisible(true);
+
+        // Active state (pressed)
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
             this->shape.setFillColor(this->activeColor);
         }
     }
+
+    
 }
 
-void Button::setposition(float x, float y)
-{
+void Button::setPosition(float x, float y) {
     this->shape.setPosition(sf::Vector2f(x, y));
-    return;
+    tooltip.setPosition(x, y + this->shape.getSize().y + 5);
 }
+
