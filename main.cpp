@@ -84,55 +84,43 @@ int main() {
   // UI only
   UICircuit uiCircuit;
 
-  std::unique_ptr<UIElement> gnd1 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 4, 5);
-  std::unique_ptr<UIElement> gnd2 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 5, 9);
-  std::unique_ptr<UIElement> gnd3 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 7, 9);
-
-  std::unique_ptr<UIElement> wire1 =
-      std::make_unique<WireUIElement>(&uiCircuit, 4, 3, 5, 3);
-  std::unique_ptr<UIElement> wire2 =
-      std::make_unique<WireUIElement>(&uiCircuit, 5, 3, 7, 3);
-  std::unique_ptr<UIElement> wire3 =
-      std::make_unique<WireUIElement>(&uiCircuit, 5, 5, 5, 6);
-  std::unique_ptr<UIElement> wire4 =
-      std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 5, 7);
-
-  std::function<double(double)> vsrc = [](double t) { return 10*sin(t); };
-  std::unique_ptr<UIElement> source =
-      std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 4, 4, vsrc);
-  double r1 = 10000000;
-  std::unique_ptr<UIElement> resistor1 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 5, 4, r1);
-  std::unique_ptr<UIElement> resistor2 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 5, 8, r1);
-  double r2 = 6000;
-  std::unique_ptr<UIElement> resistor3 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 7, 4, r2);
-  std::unique_ptr<UIElement> resistor4 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 7, 8, r2);
   double K = 1 * pow(10, -3);
   double VT = 1;
   // double va = std::numeric_limits<double>::infinity();
   double VA = INFINITY;
-  std::unique_ptr<UIElement> nmosUI =
-      std::make_unique<NMOSUIElement>(&uiCircuit, 7, 6, K, VT, VA);
+  std::unique_ptr<UIElement> nmos1 = std::make_unique<NMOSUIElement>(&uiCircuit, 4, 3, K, VT, VA);
+  std::unique_ptr<UIElement> nmos2 = std::make_unique<NMOSUIElement>(&uiCircuit, 4, 8, K, VT, VA);
+  double v = 5;
+  std::unique_ptr<UIElement> voltsrc = std::make_unique<VoltageSourceUIElement>(&uiCircuit, 6, 5, v);
+  std::function<double(double)> adjv = [](double t){ return 5*sin(t/2) + 4; };
+  std::unique_ptr<UIElement> adjvoltsrc = std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 5, 6, adjv);
+  std::unique_ptr<UIElement> r1 = std::make_unique<ResistorUIElement>(&uiCircuit, 6, 3, 1000);
+  std::unique_ptr<UIElement> r2 = std::make_unique<ResistorUIElement>(&uiCircuit, 4, 6, 1000);
+  std::unique_ptr<UIElement> gnd1 = std::make_unique<GroundUIElement>(&uiCircuit, 4, 9);
+  std::unique_ptr<UIElement> gnd2 = std::make_unique<GroundUIElement>(&uiCircuit, 5, 7);
+  std::unique_ptr<UIElement> gnd3 = std::make_unique<GroundUIElement>(&uiCircuit, 6, 6);
+  std::unique_ptr<UIElement> gnd4 = std::make_unique<GroundUIElement>(&uiCircuit, 4, 4);
+  std::unique_ptr<UIElement> wire1 = std::make_unique<WireUIElement>(&uiCircuit, 4, 2, 6, 2);
+  std::unique_ptr<UIElement> wire2 = std::make_unique<WireUIElement>(&uiCircuit, 2, 3, 2, 7);
+  std::unique_ptr<UIElement> wire3 = std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 2, 8);
+  std::unique_ptr<UIElement> wire4 = std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 4, 7);
+  std::unique_ptr<UIElement> wire5 = std::make_unique<WireUIElement>(&uiCircuit, 4, 5, 5, 5);
 
+  uiCircuit.addElement(nmos1);
+  uiCircuit.addElement(nmos2);
+  uiCircuit.addElement(voltsrc);
+  uiCircuit.addElement(adjvoltsrc);
+  uiCircuit.addElement(r1);
+  uiCircuit.addElement(r2);
   uiCircuit.addElement(gnd1);
   uiCircuit.addElement(gnd2);
   uiCircuit.addElement(gnd3);
+  uiCircuit.addElement(gnd4);
   uiCircuit.addElement(wire1);
   uiCircuit.addElement(wire2);
   uiCircuit.addElement(wire3);
   uiCircuit.addElement(wire4);
-  uiCircuit.addElement(source);
-  uiCircuit.addElement(resistor1);
-  uiCircuit.addElement(resistor2);
-  uiCircuit.addElement(resistor3);
-  uiCircuit.addElement(resistor4);
-  uiCircuit.addElement(nmosUI);
+  uiCircuit.addElement(wire5);
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
@@ -207,13 +195,20 @@ int main() {
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
 
-    NMOSUIElement *nmosUIElement = (NMOSUIElement *)uiCircuit.getUIElement(12);
+    NMOSUIElement *nmos1UIElement = (NMOSUIElement *)uiCircuit.getUIElement(0);
+    NMOSUIElement *nmos2UIElement = (NMOSUIElement *)uiCircuit.getUIElement(1);
+    // text.setString(
+    //     "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
+    //     " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
+    //     " | vs: " + std::to_string(nmosUIElement->getShownPinSVolt()) +
+    //     " | i: " + std::to_string(nmosUIElement->getShownId()) +
+    //     " | t: " + std::to_string(uiCircuit.getTime()));
     text.setString(
-        "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
-        " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
-        " | vs: " + std::to_string(nmosUIElement->getShownPinSVolt()) +
-        " | i: " + std::to_string(nmosUIElement->getShownId()) +
-        " | t: " + std::to_string(uiCircuit.getTime()));
+      "id copy: " + std::to_string(nmos1UIElement->getShownId()) +
+      "|id: " + std::to_string(nmos2UIElement->getShownId()) +
+      "|vg control: " + std::to_string(nmos2UIElement->getShownPinGVolt()) +
+      "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt())
+    );
     window.draw(text);
 
     window.display();
