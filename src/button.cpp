@@ -19,6 +19,10 @@ Button::Button(float x, float y, float width, float height,
         -
         this->text.getGlobalBounds().width / 2.f,
         this->shape.getPosition().y
+        +
+        this->shape.getGlobalBounds().height / 2.f
+        -
+        this->text.getGlobalBounds().height / 2.f
     );
 
     this->idleColor=idleColor;
@@ -40,6 +44,16 @@ void Button::render(sf::RenderTarget* target)
 
 void Button::update(const sf::Vector2f& mousePos)
 {
+    /* Update the button's position and size */
+    this->text.setPosition(
+        this->shape.getPosition().x 
+        +
+        this->shape.getGlobalBounds().width / 2.f
+        -
+        this->text.getGlobalBounds().width / 2.f,
+        this->shape.getPosition().y
+    );
+
     /* Update the booleans for hover and pressed */
 
     // Idle
@@ -58,4 +72,10 @@ void Button::update(const sf::Vector2f& mousePos)
             this->shape.setFillColor(this->activeColor);
         }
     }
+}
+
+void Button::setposition(float x, float y)
+{
+    this->shape.setPosition(sf::Vector2f(x, y));
+    return;
 }

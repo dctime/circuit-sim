@@ -1,21 +1,34 @@
-#include <AdjustableVoltageSource.h>
+#include <UICircuit.h>
+#include <UIElement.h>
+
 #include <AdjustableVoltageSourceElement.h>
+#include <AdjustableVoltageSourceUIElement.h>
 #include <Circuit.h>
+#include <GroundUIElement.h>
 #include <NMOSElement.h>
+#include <NMOSUIElement.h>
 #include <ResistorElement.h>
+#include <ResistorUIElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <VoltageSource.h>
+
 #include <VoltageSourceElement.h>
+#include <VoltageSourceUIElement.h>
+#include <WireUIElement.h>
+#include <button.h>
 #include <cmath>
 #include <functional>
 #include <iostream>
-#include <showNMOS.h>
-#include <showResistor.h>
+#include <memory>
 #include <vector>
-#include <wire.h>
-#include <button.h>
+
+double TEST_DOUBLE = 0;
+
+void leftMouseButtonPressed(int xGrid, int yGrid,
+                            std::vector<std::unique_ptr<UIElement>> &uiElements,
+                            Circuit *circuit, double *currentScale);
+
 void showGrid(sf::RenderWindow &window, sf::Color &color) {
   for (int x = 0; x <= window.getSize().x; x += 50) {
     sf::Vertex line[] = {
@@ -35,6 +48,7 @@ void showGrid(sf::RenderWindow &window, sf::Color &color) {
 }
 
 int main() {
+
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
     std::cout << "Font Load Failed!" << std::endl;
@@ -42,10 +56,15 @@ int main() {
   sf::RenderWindow window(sf::VideoMode(800, 600), "X-Y Coordinate Graph");
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
-  for(int i=0;i<5;i++)
-  {
-    buttons.push_back(Button(50*i+5*i, 550, 50, 50, &font, "Button", sf::Color::Red, sf::Color::Green, sf::Color::Blue));
+  for (int i = 0; i < 5; i++) {
+    buttons.push_back(Button(50 * i + 5 * i, window.getSize().y - 50, 50, 50, &font, "Button",
+                             sf::Color::Red, sf::Color::Green,
+                             sf::Color::Blue));
   }
+  Button startButton(window.getSize().x - 55, 5, 50, 50, &font, "Start", sf::Color::Red,
+                     sf::Color::Green, sf::Color::Blue);
+  Button endButton(window.getSize().x - 55, 55, 50, 50, &font, "End", sf::Color::Red,
+                   sf::Color::Green, sf::Color::Blue);
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
   // sf::VertexArray plotV1(sf::LineStrip);
@@ -65,46 +84,54 @@ int main() {
     return sin(t) + 0.6;
   };
 
-  std::unique_ptr<AdjustableVoltageSourceElement> adjustVsrc =
-      AdjustableVoltageSourceElement::create(vgsOfT, 0, -1, 0);
-  // voltage source from vd
-  std::unique_ptr<VoltageSourceElement> vsrc =
-      VoltageSourceElement::create(1.8, 2, -1, 1);
+  
+  // UI only
+  UICircuit uiCircuit;
 
-  // nmos stats
-  double K = 4 * pow(10, -3);
-  double VT = 0.4;
+  double K = 1 * pow(10, -3);
+  double VT = 1;
   // double va = std::numeric_limits<double>::infinity();
   double VA = INFINITY;
-  std::unique_ptr<NMOSElement> nmos = NMOSElement::create(K, VA, VT, 0, 1, -1);
+  std::unique_ptr<UIElement> nmos1 = std::make_unique<NMOSUIElement>(&uiCircuit, 4, 3, K, VT, VA);
+  std::unique_ptr<UIElement> nmos2 = std::make_unique<NMOSUIElement>(&uiCircuit, 4, 8, K, VT, VA);
+  double v = 5;
+  std::unique_ptr<UIElement> voltsrc = std::make_unique<VoltageSourceUIElement>(&uiCircuit, 6, 5, v);
+  std::function<double(double)> adjv = [](double t){ return 5*sin(t/2) + 4; };
+  std::unique_ptr<UIElement> adjvoltsrc = std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 5, 6, adjv);
+  std::unique_ptr<UIElement> r1 = std::make_unique<ResistorUIElement>(&uiCircuit, 6, 3, 1000);
+  std::unique_ptr<UIElement> r2 = std::make_unique<ResistorUIElement>(&uiCircuit, 4, 6, 1000);
+  std::unique_ptr<UIElement> gnd1 = std::make_unique<GroundUIElement>(&uiCircuit, 4, 9);
+  std::unique_ptr<UIElement> gnd2 = std::make_unique<GroundUIElement>(&uiCircuit, 5, 7);
+  std::unique_ptr<UIElement> gnd3 = std::make_unique<GroundUIElement>(&uiCircuit, 6, 6);
+  std::unique_ptr<UIElement> gnd4 = std::make_unique<GroundUIElement>(&uiCircuit, 4, 4);
+  std::unique_ptr<UIElement> wire1 = std::make_unique<WireUIElement>(&uiCircuit, 4, 2, 6, 2);
+  std::unique_ptr<UIElement> wire2 = std::make_unique<WireUIElement>(&uiCircuit, 2, 3, 2, 7);
+  std::unique_ptr<UIElement> wire3 = std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 2, 8);
+  std::unique_ptr<UIElement> wire4 = std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 4, 7);
+  std::unique_ptr<UIElement> wire5 = std::make_unique<WireUIElement>(&uiCircuit, 4, 5, 5, 5);
 
-  // resistor format
-  double r0 = 17.5 * pow(10, 3);
-  std::unique_ptr<ResistorElement> resistor = ResistorElement::create(r0, 2, 1);
-
-  std::vector<CircuitElement *> elements;
-  elements.push_back(vsrc.get());
-  elements.push_back(adjustVsrc.get());
-  elements.push_back(nmos.get());
-  elements.push_back(resistor.get());
-
-  std::unique_ptr<Circuit> circuit = Circuit::create(elements, 0.01, 2);
-
-  // UI only
-  Wire wire;
-  Resistor resistorCursor;
-  AdjustableVoltageSource sourceG;
-  VoltageSource sourceD;
-  Resistor resistorDrain;
-  // TODO: Make a vector that stores all the UI circuit elements and make a class that all UI elements inhert 
+  uiCircuit.addElement(nmos1);
+  uiCircuit.addElement(nmos2);
+  uiCircuit.addElement(voltsrc);
+  uiCircuit.addElement(adjvoltsrc);
+  uiCircuit.addElement(r1);
+  uiCircuit.addElement(r2);
+  uiCircuit.addElement(gnd1);
+  uiCircuit.addElement(gnd2);
+  uiCircuit.addElement(gnd3);
+  uiCircuit.addElement(gnd4);
+  uiCircuit.addElement(wire1);
+  uiCircuit.addElement(wire2);
+  uiCircuit.addElement(wire3);
+  uiCircuit.addElement(wire4);
+  uiCircuit.addElement(wire5);
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
   bool mousePressed = false;
 
   while (window.isOpen()) {
-    
-    circuit->incTimerByDeltaT();
+    uiCircuit.runCircuit();
 
     // mousePos, mouseGridPos update
     mousePos = sf::Mouse::getPosition(window);
@@ -134,15 +161,27 @@ int main() {
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
-        window.close();
+      window.close();
+      if (event.type == sf::Event::Resized) {
+      sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+      window.setView(sf::View(visibleArea));
+      // Update button positions
+      for (int i = 0; i < buttons.size(); i++) {
+        buttons[i].setposition(50 * i + 5 * i, window.getSize().y - 50);
+      }
+      startButton.setposition(window.getSize().x - 55, 50);
+      endButton.setposition(window.getSize().x - 55, 105);
+      }
     }
-
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       mousePressed = false;
-    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed && mouseGridPos.x != -1 && mouseGridPos.y != -1) {
+    } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
+               mouseGridPos.x != -1 && mouseGridPos.y != -1) {
+      std::cout << "Left Mouse Button Pressed" << std::endl;
+      // leftMouseButtonPressed(mouseGridPos.x, mouseGridPos.y, uiElements,
+      //                        circuit.get(), &currentScale);
       mousePressed = true;
-
-    } 
+    }
 
     // std::cout << "*******************************" << std::endl;
     // std::cout << "Time:" << circuit->getTime() << std::endl;
@@ -150,52 +189,56 @@ int main() {
     // if (circuit->getTime() >= 0.03)
     //   window.close();
 
-    for (int iteration = 0; iteration < 10; iteration++) {
-      // std::cout << "========================" << std::endl;
-      // std::cout << "iteration: " << iteration << std::endl;
-
-      circuit->iterate();
-    }
-
-    text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd: " +
-                   std::to_string(circuit->getVoltage(1)) + " | i: " +
-                   std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
-                   " | t: " + std::to_string(circuit->getTime()));
-
     window.clear(sf::Color::Black);
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
-    // resistor follows the cursor
-    resistorCursor.showResistor(&window, mouseGridPos.x, mouseGridPos.y);
 
-    double currentScale = 5000;
-    showNMOS(&window, circuit->getVoltage(0), circuit->getVoltage(1), 0,
-             nmos->getId(circuit->getVoltageMatrix()), 4, 6, currentScale);
-    resistorDrain.showResistor(&window, circuit->getVoltage(2),
-                               circuit->getVoltage(1), 4, 4, r0, currentScale);
-    sourceD.showVoltageSource(&window, circuit->getVoltage(2), 0,
-                              circuit->getVoltage(4), 10, 5, currentScale);
-    sourceG.showAdjustableVoltageSource(&window, circuit->getVoltage(0), 0,
-                                        circuit->getVoltage(3), 2, 7,
-                                        currentScale);
-    showGround(&window, 2, 8);
-    showGround(&window, 10, 6);
-    showGround(&window, 4, 7);
-    wire.showWire(&window, 4, 3, 10, 4, circuit->getVoltage(2),
-                  circuit->getVoltage(4), currentScale);
-    for(size_t i=0;i<buttons.size();i++)
-    {
+    // TODO: need UICircuit class to decide the pin numbers when circuit updates
+    // and passes to the elements. circuit needs to be stopped and restarted.
+    //
+    // resistor follows the cursor
+    ResistorUIElement::showGhostElement(&window, mouseGridPos.x,
+                                        mouseGridPos.y);
+
+    uiCircuit.showCircuit(&window);
+
+    for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
+    startButton.render(&window);
+    startButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    endButton.render(&window);
+    endButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    NMOSUIElement *nmos1UIElement = (NMOSUIElement *)uiCircuit.getUIElement(0);
+    NMOSUIElement *nmos2UIElement = (NMOSUIElement *)uiCircuit.getUIElement(1);
+    // text.setString(
+    //     "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
+    //     " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
+    //     " | vs: " + std::to_string(nmosUIElement->getShownPinSVolt()) +
+    //     " | i: " + std::to_string(nmosUIElement->getShownId()) +
+    //     " | t: " + std::to_string(uiCircuit.getTime()));
+    text.setString(
+      "id copy: " + std::to_string(nmos1UIElement->getShownId()) +
+      "|id: " + std::to_string(nmos2UIElement->getShownId()) +
+      "|vg control: " + std::to_string(nmos2UIElement->getShownPinGVolt()) +
+      "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt())
+    );
     window.draw(text);
 
     window.display();
   }
-  
 
   // delete bgD;
 
   return 0;
+}
+
+void leftMouseButtonPressed(int xGrid, int yGrid,
+                            std::vector<std::unique_ptr<UIElement>> &uiElements,
+                            Circuit *circuit, double *currentScale) {
+  // std::unique_ptr<UIElement> resistor = std::make_unique<ResistorUIElement>(
+  //     &TEST_DOUBLE, &TEST_DOUBLE, 1000, currentScale, xGrid, yGrid);
+  // uiElements.push_back(std::move(resistor));
 }
