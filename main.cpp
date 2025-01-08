@@ -58,13 +58,13 @@ int main() {
   std::vector<std::string> buttonNames = {"resistor", "voltage\nsource", "nmos", "wire", "ground"};
   for (int i = 0; i < 5; i++) {
   
-    buttons.push_back(Button(50 * i + 5 * (i+1), window.getSize().y - 50, 50, 50, &font, buttonNames[i],
+    buttons.push_back(Button(50 * i + 5 * (i), window.getSize().y - 50, 50, 50, &font, buttonNames[i],
                              sf::Color::Red, sf::Color::Green,
                              sf::Color::Blue));
   }
-  Button startButton(window.getSize().x - 55, 5, 50, 50, &font, "Start", sf::Color::Red,
+  Button startButton(window.getSize().x , 5, 50, 50, &font, "Start", sf::Color::Red,
                      sf::Color::Green, sf::Color::Blue);
-  Button endButton(window.getSize().x - 55, 55, 50, 50, &font, "End", sf::Color::Red,
+  Button endButton(window.getSize().x , 55, 50, 50, &font, "End", sf::Color::Red,
                    sf::Color::Green, sf::Color::Blue);
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 

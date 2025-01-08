@@ -1,9 +1,10 @@
 #include "button.h"
+#include <SFML/Graphics.hpp>
 
 Button::Button(float x, float y, float width, float height,
-               sf::Font* font, const std::string& text,
+               sf::Font *font, const std::string &text,
                sf::Color idleColor, sf::Color hoverColor, sf::Color activeColor)
-    : tooltip(x, y, width*2, height*2, *font, "hello world", sf::Color::Blue, sf::Color::White)
+    : tooltip(x, y, width * 2, height * 2, *font, "hello world", sf::Color::Blue, sf::Color::White)
 {
     this->shape.setSize(sf::Vector2f(width, height));
     this->shape.setPosition(sf::Vector2f(x, y));
@@ -14,17 +15,12 @@ Button::Button(float x, float y, float width, float height,
     this->text.setFillColor(sf::Color::White);
     this->text.setCharacterSize(12);
     this->text.setPosition(
-        this->shape.getPosition().x 
-        +
-        this->shape.getGlobalBounds().width / 2.f
-        -
-        this->text.getGlobalBounds().width / 2.f,
-        this->shape.getPosition().y
-        +
-        this->shape.getGlobalBounds().height / 2.f
-        -
-        this->text.getGlobalBounds().height / 2.f
-    );
+        this->shape.getPosition().x +
+            this->shape.getGlobalBounds().width / 2.f -
+            this->text.getGlobalBounds().width / 2.f,
+        this->shape.getPosition().y +
+            this->shape.getGlobalBounds().height / 2.f -
+            this->text.getGlobalBounds().height / 2.f);
 
     this->idleColor = idleColor;
     this->hoverColor = hoverColor;
@@ -33,30 +29,31 @@ Button::Button(float x, float y, float width, float height,
 
 Button::~Button() {}
 
-void Button::render(sf::RenderTarget* target) {
+void Button::render(sf::RenderTarget *target)
+{
     target->draw(this->shape);
     target->draw(this->text);
-    if (tooltip.isVisible()) {
+    if (tooltip.isVisible())
+    {
         tooltip.render(*target);
     }
 }
 
-void Button::update(const sf::Vector2f& mousePos) {
+void Button::update(const sf::Vector2f &mousePos)
+{
     // Default state: idle
-     this->text.setPosition(
-        this->shape.getPosition().x 
-        +
-        this->shape.getGlobalBounds().width / 2.f
-        -
-        this->text.getGlobalBounds().width / 2.f,
-        this->shape.getPosition().y
-    );
+    this->text.setPosition(
+        this->shape.getPosition().x +
+            this->shape.getGlobalBounds().width / 2.f -
+            this->text.getGlobalBounds().width / 2.f,
+        this->shape.getPosition().y);
     this->shape.setFillColor(this->idleColor);
     this->text.setFillColor(sf::Color::White);
     tooltip.setVisible(false);
 
     // Hover state
-    if (this->shape.getGlobalBounds().contains(mousePos)) {
+    if (this->shape.getGlobalBounds().contains(mousePos))
+    {
         this->shape.setFillColor(this->hoverColor);
         this->text.setFillColor(sf::Color::Black);
 
@@ -64,16 +61,15 @@ void Button::update(const sf::Vector2f& mousePos) {
         tooltip.setVisible(true);
 
         // Active state (pressed)
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) || sf::Mouse::isButtonPressed(sf::Mouse::Right))
+        {
             this->shape.setFillColor(this->activeColor);
         }
     }
-
-    
 }
 
-void Button::setPosition(float x, float y) {
-    this->shape.setPosition(sf::Vector2f(x, y));
-    tooltip.setPosition(x, y + this->shape.getSize().y + 5);
+void Button::setPosition(float x, float y)
+{
+    this->shape.setPosition(sf::Vector2f(x + 5, y - 5));
+    tooltip.setPosition(x + 5, y + this->shape.getSize().y + 5);
 }
-
