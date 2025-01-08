@@ -57,10 +57,14 @@ int main() {
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
   for (int i = 0; i < 5; i++) {
-    buttons.push_back(Button(50 * i + 5 * i, 550, 50, 50, &font, "Button",
+    buttons.push_back(Button(50 * i + 5 * i, window.getSize().y - 50, 50, 50, &font, "Button",
                              sf::Color::Red, sf::Color::Green,
                              sf::Color::Blue));
   }
+  Button startButton(window.getSize().x - 55, 5, 50, 50, &font, "Start", sf::Color::Red,
+                     sf::Color::Green, sf::Color::Blue);
+  Button endButton(window.getSize().x - 55, 55, 50, 50, &font, "End", sf::Color::Red,
+                   sf::Color::Green, sf::Color::Blue);
   // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
 
   // sf::VertexArray plotV1(sf::LineStrip);
@@ -157,9 +161,18 @@ int main() {
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed)
-        window.close();
+      window.close();
+      if (event.type == sf::Event::Resized) {
+      sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
+      window.setView(sf::View(visibleArea));
+      // Update button positions
+      for (int i = 0; i < buttons.size(); i++) {
+        buttons[i].setposition(50 * i + 5 * i, window.getSize().y - 50);
+      }
+      startButton.setposition(window.getSize().x - 55, 50);
+      endButton.setposition(window.getSize().x - 55, 105);
+      }
     }
-
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       mousePressed = false;
     } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
@@ -194,7 +207,10 @@ int main() {
       buttons[i].render(&window);
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
-
+    startButton.render(&window);
+    startButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    endButton.render(&window);
+    endButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
     NMOSUIElement *nmos1UIElement = (NMOSUIElement *)uiCircuit.getUIElement(0);
     NMOSUIElement *nmos2UIElement = (NMOSUIElement *)uiCircuit.getUIElement(1);
     // text.setString(
