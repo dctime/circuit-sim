@@ -60,12 +60,20 @@ public:
     if (resistorElement.get() == nullptr) {
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
-      showResistor(window,
-                   *uiCircuit->getCircuit()->getVoltagePointer(
-                       resistorElement->getPIN1()),
-                   *uiCircuit->getCircuit()->getVoltagePointer(
-                       resistorElement->getPIN2()),
-                   xGrid, yGrid, R, uiCircuit->getCurrentScale());
+      double pin1Volt = 0;
+      double pin2Volt = 0;
+      if (resistorElement->getPIN1() != -1) {
+        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(
+            resistorElement->getPIN1());
+      }
+
+      if (resistorElement->getPIN2() != -1) {
+        pin2Volt = *uiCircuit->getCircuit()->getVoltagePointer(
+            resistorElement->getPIN2());
+      }
+
+      showResistor(window, pin1Volt, pin2Volt, xGrid, yGrid, R,
+                   uiCircuit->getCurrentScale());
     }
   }
 

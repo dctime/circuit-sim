@@ -28,7 +28,7 @@ private:
   std::unique_ptr<Circuit> circuit;
   std::unordered_map<std::string, int> locToPinID;
   int nextPinID = 0;
-  double currentScale = 5000;
+  double currentScale = 1000;
 
   // infos
 public:
@@ -58,11 +58,11 @@ public:
       buildCircuit();
 
     circuit->incTimerByDeltaT();
-    for (int iteration = 0; iteration < 10; iteration++) {
+    for (int iteration = 1; iteration <= 100; iteration++) {
       // std::cout << "========================" << std::endl;
       // std::cout << "iteration: " << iteration << std::endl;
 
-      circuit->iterate();
+      circuit->iterate(iteration);
     }
   }
 

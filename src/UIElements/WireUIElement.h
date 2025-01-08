@@ -46,12 +46,11 @@ public:
     if (element.get() == nullptr) {
       WireUIElement::showGhostElement(window, xGrid1, yGrid1, xGrid2, yGrid2);
     } else {
-      int pin1Volt = 0;
+      double pin1Volt = 0;
 
       if (element->getPin1() != -1) {
         pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
       }
-
 
       showWire(
           window, xGrid1, yGrid1, xGrid2, yGrid2,
