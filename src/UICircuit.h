@@ -33,10 +33,12 @@ private:
   // infos
 public:
   void printOutLocToPinID() {
+    std::cout << "xGrid, yGrid : PIN ID" << std::endl;
     for (const auto &pair : locToPinID) {
       std::cout << pair.first << ": " << pair.second << std::endl;
     }
     std::cout << "Max Node ID: " << nextPinID - 1 << std::endl;
+    std::cout << "Max UIElement ID: " << nextUIElementID - 1 << std::endl;
     std::cout << "Voltage Source Count: " << getVoltageSourceCount()
               << std::endl;
   }
