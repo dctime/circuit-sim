@@ -15,7 +15,7 @@ public:
     connectedLocs.push_back(pinLoc);
     groundedLocs.push_back(pinLoc);
 
-    std::cout << "Ground Added To UI Circuit:" << std::endl;
+    std::cout << "Ground Init:" << std::endl;
     std::cout << "  PinLoc: " << pinLoc << std::endl;
     std::cout << "  Grounded: " << pinLoc << std::endl;
   }
@@ -23,7 +23,7 @@ public:
     showGround(window, xGrid, yGrid); 
   }
 
-  CircuitElement * getCircuitElementPointer(UICircuit* circuit) override {
+  CircuitElement * getCircuitElementPointer() override {
     return nullptr;
   }
 private:

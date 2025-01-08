@@ -179,7 +179,6 @@ int main() {
   sf::Vector2i mousePos;
   bool mousePressed = false;
 
-
   while (window.isOpen()) {
 
     // mousePos, mouseGridPos update
@@ -229,11 +228,6 @@ int main() {
     // if (circuit->getTime() >= 0.03)
     //   window.close();
 
-    // text.setString("vg: " + std::to_string(circuit->getVoltage(0)) + " | vd:
-    // " +
-    //                std::to_string(circuit->getVoltage(1)) + " | i: " +
-    //                std::to_string(nmos->getId(circuit->getVoltageMatrix())) +
-    //                " | t: " + std::to_string(circuit->getTime()));
 
     window.clear(sf::Color::Black);
 
@@ -247,13 +241,6 @@ int main() {
     ResistorUIElement::showGhostElement(&window, mouseGridPos.x,
                                         mouseGridPos.y);
 
-    // TODO: UI Elements should use Circuit Elements PIN num to get data from
-    // circuit
-    // TODO: UI Elements should store the representing circuit element and put
-    // circuit elements into main circuits when build
-    // TODO: Wires should get data from connected UIElements
-    // TODO: Ground only need to be rendered
-
     uiCircuit.runCircuit();
     uiCircuit.showCircuit(&window);
 
@@ -262,6 +249,12 @@ int main() {
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
 
+    NMOSUIElement *nmosUIElement = (NMOSUIElement *)uiCircuit.getUIElement(7);
+    text.setString(
+        "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
+        " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
+        " | i: " + std::to_string(nmosUIElement->getShownId()) +
+        " | t: " + std::to_string(uiCircuit.getTime()));
     window.draw(text);
 
     window.display();

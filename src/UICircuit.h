@@ -9,17 +9,20 @@
 
 class UICircuit {
 public:
-  Circuit* getCircuit() {
-    return circuit.get();
+  Circuit *getCircuit() { return circuit.get(); }
+
+  double getCurrentScale() { return currentScale; }
+
+  double getTime() {
+    if (circuit.get() != nullptr) {
+      return circuit->getTime();
+    } else {
+      return 0;
+    }
   }
 
-  double getCurrentScale() {
-    return currentScale;
-  }
-  
-  int getMaxNodeID() {
-    return nextPinID - 1;
-  }
+  int getMaxNodeID() { return nextPinID - 1; }
+
 private:
   std::vector<std::unique_ptr<UIElement>> uiElements;
   std::unique_ptr<Circuit> circuit;
@@ -34,7 +37,8 @@ public:
       std::cout << pair.first << ": " << pair.second << std::endl;
     }
     std::cout << "Max Node ID: " << nextPinID - 1 << std::endl;
-    std::cout << "Voltage Source Count: " << getVoltageSourceCount() << std::endl;
+    std::cout << "Voltage Source Count: " << getVoltageSourceCount()
+              << std::endl;
   }
 
 public:
@@ -61,6 +65,12 @@ public:
   }
 
 private:
+  std::unordered_map<int, UIElement *> uiElementIDToUIElement;
+
+public:
+  UIElement *getUIElement(int id) { return uiElementIDToUIElement[id]; }
+
+private:
   void buildCircuit() {
     // FIXME: Reset every circuit element in UI Elements
     // FIXME: A reset method virtual to reset
@@ -69,24 +79,33 @@ private:
       if (pair.second == 0) {
         locToPinID[pair.first] = nextPinID;
         nextPinID++;
-      } 
+      }
     }
     std::vector<CircuitElement *> elements;
     for (std::unique_ptr<UIElement> &uiElement : uiElements) {
-      CircuitElement *circuitElement = uiElement->getCircuitElementPointer(this);
+
+      CircuitElement *circuitElement = uiElement->getCircuitElementPointer();
       if (circuitElement == nullptr)
         continue;
       elements.push_back(circuitElement);
     }
-    
-    circuit = Circuit::create(elements, 0.01, nextPinID-1);
-    
+
+    circuit = Circuit::create(elements, 0.01, nextPinID - 1);
+
     printOutLocToPinID();
   }
+
+private:
+  int nextUIElementID = 0;
 
 public:
   void addElement(std::unique_ptr<UIElement> &uiElement) {
     circuit.reset();
+
+    uiElement->setUIElementID(nextUIElementID);
+    uiElementIDToUIElement[nextUIElementID] = uiElement.get();
+    nextUIElementID++;
+
     for (std::string &loc : uiElement.get()->getConnectedLocs()) {
       if (!locToPinID.count(loc)) {
         locToPinID[loc] = 0;
@@ -115,7 +134,5 @@ public:
     return returnID;
   }
 
-  int getVoltageSourceCount() {
-    return voltageSourceID;
-  }
+  int getVoltageSourceCount() { return voltageSourceID; }
 };

@@ -37,7 +37,7 @@ public:
     connectedLocs.push_back(pin1Loc);
     connectedLocs.push_back(pin2Loc);
 
-    std::cout << "Wire Added to UI Circuit: " << std::endl;
+    std::cout << "Wire Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
@@ -62,7 +62,7 @@ public:
     }
   }
 
-  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+  CircuitElement *getCircuitElementPointer() override {
     if (element.get() == nullptr) {
       std::string pin1Loc =
           std::to_string(xGrid1) + "," + std::to_string(yGrid1);
@@ -72,6 +72,8 @@ public:
       element = VoltageSourceElement::create(
           0, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
           uiCircuit->getNextVoltageSourceID());
+      std::cout << "Wire Element Created!" << std::endl;
+      std::cout << "Wire UI Element added to UI Circuit. ID: " << uiElementID << std::endl;
     }
     return element.get();
   }

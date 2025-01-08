@@ -39,7 +39,7 @@ public:
 
     this->v = v;
 
-    std::cout << "Voltage Source Added to UI Circuit: " << std::endl;
+    std::cout << "Voltage Source Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
     std::cout << "  Voltage: " << v << std::endl;
@@ -70,7 +70,7 @@ public:
     }
   }
 
-  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+  CircuitElement *getCircuitElementPointer() override {
     if (element.get() == nullptr) {
       std::string pin1Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
@@ -81,7 +81,10 @@ public:
       std::cout << "Voltage Source Element Created" << std::endl;
       element = VoltageSourceElement::create(
           v, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
-          circuit->getNextVoltageSourceID());
+          uiCircuit->getNextVoltageSourceID());
+      std::cout << "Voltage Source Element Created!" << std::endl;
+      std::cout << "Voltage Source UI Element added to UI Circuit. ID: " << uiElementID << std::endl;
+
     }
 
     return element.get();

@@ -21,7 +21,8 @@ private:
 
 public:
   ~NMOSUIElement() override {};
-  NMOSUIElement(UICircuit* circuit, int xGrid, int yGrid, double k, double vt, double va) {
+  NMOSUIElement(UICircuit *circuit, int xGrid, int yGrid, double k, double vt,
+                double va) {
     uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
@@ -41,13 +42,13 @@ public:
     this->connectedLocs.push_back(pin2Loc);
     this->connectedLocs.push_back(pin3Loc);
 
-    std::cout << "NMOS added to UI Circuit: " << std::endl;
+    std::cout << "NMOS Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
     std::cout << "  Pin3Loc: " << pin3Loc << std::endl;
   }
 
-  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+  CircuitElement *getCircuitElementPointer() override {
     if (nmosElement.get() == nullptr) {
       std::string pin1Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
@@ -57,8 +58,11 @@ public:
           std::to_string(xGrid - 2) + "," + std::to_string(yGrid);
 
       nmosElement = NMOSElement::create(
-          k, va, vt, circuit->getIDfromLoc(pin3Loc),
-          circuit->getIDfromLoc(pin1Loc), circuit->getIDfromLoc(pin2Loc));
+          k, va, vt, uiCircuit->getIDfromLoc(pin3Loc),
+          uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc));
+      std::cout << "NMOS Element Created!" << std::endl;
+      std::cout << "NMOS UI Element added to UI Circuit. ID: " << uiElementID
+                << std::endl;
     }
     return nmosElement.get();
   }
@@ -72,21 +76,42 @@ public:
       double pinDVolt = 0;
       double pinSVolt = 0;
       if (nmosElement->getPIN_G() != -1) {
-        pinGVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_G());
+        pinGVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+            nmosElement->getPIN_G());
       }
 
       if (nmosElement->getPIN_D() != -1) {
-        pinDVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_D());
+        pinDVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+            nmosElement->getPIN_D());
       }
 
       if (nmosElement->getPIN_S() != -1) {
-        pinSVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_S());
+        pinSVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+            nmosElement->getPIN_S());
       }
-      
-      double id = nmosElement->getId(uiCircuit->getCircuit()->getVoltageMatrix());
-      showNMOS(window, pinGVolt, pinDVolt, pinSVolt, id, xGrid, yGrid, uiCircuit->getCurrentScale());
+
+      double id =
+          nmosElement->getId(uiCircuit->getCircuit()->getVoltageMatrix());
+      shownPinGVolt = pinGVolt;
+      shownPinDVolt = pinDVolt;
+      shownPinSVolt = pinSVolt;
+      shownId = id;
+      showNMOS(window, pinGVolt, pinDVolt, pinSVolt, id, xGrid, yGrid,
+               uiCircuit->getCurrentScale());
     }
   }
+
+private:
+  double shownPinGVolt;
+  double shownPinDVolt;
+  double shownPinSVolt;
+  double shownId;
+
+public:
+  double getShownPinGVolt() { return shownPinGVolt; }
+  double getShownPinDVolt() { return shownPinDVolt; }
+  double getShownPinSVolt() { return shownPinSVolt; }
+  double getShownId() { return shownId; }
 
 private:
   double lastoffsetNMOS = 0;

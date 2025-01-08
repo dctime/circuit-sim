@@ -5,6 +5,7 @@
 class UICircuit;
 
 class UIElement {
+friend UICircuit;
 protected:
   
   int xGrid;
@@ -33,8 +34,14 @@ public:
   // if there is no circuit element return nullptr
   // Called when UICircuit is building himself
   // Will Rewrite uiCircuit
-  virtual CircuitElement* getCircuitElementPointer(UICircuit* circuit) = 0;
+  virtual CircuitElement* getCircuitElementPointer() = 0;
   // virtual void showUnCalculated() = 0;
+protected:
+  int uiElementID;
+public:
+  void setUIElementID(int id) {
+    uiElementID = id;
+  }
 };
 
 

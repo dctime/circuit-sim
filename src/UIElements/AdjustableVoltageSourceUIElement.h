@@ -40,7 +40,7 @@ public:
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
 
-    std::cout << "Adj. Voltage Source added to UICircuit:" << std::endl;
+    std::cout << "Adj. Voltage Source Init:" << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
@@ -73,18 +73,20 @@ public:
     // *currentScale);
   }
 
-  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+  CircuitElement *getCircuitElementPointer() override {
     if (element.get() == nullptr) {
       std::string pin1Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
 
-      std::cout << "Adjustable Voltage Source Created" << std::endl;
 
       element = AdjustableVoltageSourceElement::create(
-          v, circuit->getIDfromLoc(pin1Loc), circuit->getIDfromLoc(pin2Loc),
-          circuit->getNextVoltageSourceID());
+          v, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
+          uiCircuit->getNextVoltageSourceID());
+      std::cout << "Adj. Voltage Source Element Created!" << std::endl;
+      std::cout << "Adj. Voltage Source UI Element added to UI Circuit. ID: " << uiElementID
+                << std::endl;
     }
     return element.get();
   }

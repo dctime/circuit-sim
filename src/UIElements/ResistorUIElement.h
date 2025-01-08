@@ -34,18 +34,23 @@ public:
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
 
-    std::cout << "Resistor Added to UI Circuit: " << std::endl;
+    std::cout << "Resistor Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
   }
 
-  CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
+  CircuitElement *getCircuitElementPointer() override {
     if (resistorElement.get() == nullptr) {
       std::string pin1Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
-      resistorElement = ResistorElement::create(R, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc));
+      resistorElement =
+          ResistorElement::create(R, uiCircuit->getIDfromLoc(pin1Loc),
+                                  uiCircuit->getIDfromLoc(pin2Loc));
+      std::cout << "Resistor Element Created!" << std::endl;
+      std::cout << "Resistor UI Element added to UI Circuit. ID: "
+                << uiElementID << std::endl;
     }
 
     return resistorElement.get();
@@ -56,8 +61,10 @@ public:
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
       showResistor(window,
-                   *uiCircuit->getCircuit()->getVoltagePointer(resistorElement->getPIN1()),
-                   *uiCircuit->getCircuit()->getVoltagePointer(resistorElement->getPIN2()),
+                   *uiCircuit->getCircuit()->getVoltagePointer(
+                       resistorElement->getPIN1()),
+                   *uiCircuit->getCircuit()->getVoltagePointer(
+                       resistorElement->getPIN2()),
                    xGrid, yGrid, R, uiCircuit->getCurrentScale());
     }
   }
