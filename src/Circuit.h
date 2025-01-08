@@ -56,13 +56,13 @@ public:
     }
 
 
-    std::cout << "g: " << std::endl;
-    std::cout << g << std::endl;
-    std::cout << "v: " << std::endl;
-    std::cout << v << std::endl;
-    std::cout << "i: " << std::endl;
-    std::cout << i << std::endl;
-    std::cout << "Start ITERATE: " << std::endl;
+    // std::cout << "g: " << std::endl;
+    // std::cout << g << std::endl;
+    // std::cout << "v: " << std::endl;
+    // std::cout << v << std::endl;
+    // std::cout << "i: " << std::endl;
+    // std::cout << i << std::endl;
+    // std::cout << "Start ITERATE: " << std::endl;
     // F matrix
     Eigen::MatrixXd f(MAX_MATRIX_SIZE, 1);
     f = g * v - i;
@@ -78,7 +78,7 @@ public:
     Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
     // std::cout << "j" << std::endl;
     // std::cout << j << std::endl;
-
+    //
     // std::cout << "j matrix success" << std::endl;
 
     // calculate deltaV

@@ -63,6 +63,16 @@ public:
 
 private:
   void buildCircuit() {
+    // FIXME: Remove unnecessary pins to avoid some calulation errors
+    // FIXME: Reset every circuit element in UI Elements
+    // FIXME: A reset method virtual to reset
+    nextPinID = 0;
+    for (std::pair<std::string, int> pair : locToPinID) {
+      if (pair.second == 0) {
+        locToPinID[pair.first] = nextPinID;
+        nextPinID++;
+      } 
+    }
     std::vector<CircuitElement *> elements;
     for (std::unique_ptr<UIElement> &uiElement : uiElements) {
       CircuitElement *circuitElement = uiElement->getCircuitElementPointer(this);
@@ -70,7 +80,8 @@ private:
         continue;
       elements.push_back(circuitElement);
     }
-    circuit = Circuit::create(elements, 0.01, nextPinID - 1);
+    
+    circuit = Circuit::create(elements, 0.01, nextPinID-1);
     
     printOutLocToPinID();
   }
@@ -80,8 +91,7 @@ public:
     circuit.reset();
     for (std::string &loc : uiElement.get()->getConnectedLocs()) {
       if (!locToPinID.count(loc)) {
-        locToPinID[loc] = nextPinID;
-        nextPinID++;
+        locToPinID[loc] = 0;
       }
     }
 

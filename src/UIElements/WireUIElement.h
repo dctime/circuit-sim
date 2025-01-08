@@ -57,7 +57,7 @@ public:
       std::string pin2Loc =
           std::to_string(xGrid2) + "," + std::to_string(yGrid2);
 
-      element = VoltageSourceElement::create(0, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
+      element = VoltageSourceElement::create(0.1, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
                                              uiCircuit->getNextVoltageSourceID());
     }
     return element.get();

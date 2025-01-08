@@ -170,11 +170,8 @@ int main() {
   uiCircuit.addElement(gnd2);
   uiCircuit.addElement(gnd3);
   uiCircuit.addElement(wire);
-  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(sourceG);
-  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(sourceD);
-  uiCircuit.printOutLocToPinID();
   uiCircuit.addElement(resistorDrain);
   uiCircuit.addElement(nmosUI);
 

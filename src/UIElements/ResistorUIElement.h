@@ -64,7 +64,6 @@ public:
     if (resistorElement.get() == nullptr) {
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
-      // FIXME: Use elements pin not from here
       showResistor(window,
                    *uiCircuit->getCircuit()->getVoltagePointer(getPin1ID()),
                    *uiCircuit->getCircuit()->getVoltagePointer(getPin2ID()), xGrid,
