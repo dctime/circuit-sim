@@ -37,4 +37,12 @@ private:
   double R;
   int PIN1;
   int PIN2;
+public:
+  int getPIN1() {
+    return PIN1;
+  }
+
+  int getPIN2() {
+    return PIN2;
+  }
 };

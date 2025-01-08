@@ -68,9 +68,24 @@ public:
       NMOSUIElement::showGhostElement(window, xGrid, yGrid);
       // ghost version
     } else {
+      double pinGVolt = 0;
+      double pinDVolt = 0;
+      double pinSVolt = 0;
+      if (nmosElement->getPIN_G() != -1) {
+        pinGVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_G());
+      }
+
+      if (nmosElement->getPIN_D() != -1) {
+        pinDVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_D());
+      }
+
+      if (nmosElement->getPIN_S() != -1) {
+        pinSVolt = *uiCircuit->getCircuit()->getVoltagePointer(nmosElement->getPIN_S());
+      }
+      
+      double id = nmosElement->getId(uiCircuit->getCircuit()->getVoltageMatrix());
+      showNMOS(window, pinGVolt, pinDVolt, pinSVolt, id, xGrid, yGrid, uiCircuit->getCurrentScale());
     }
-    // double id = nmosElement->getId(circuit->getVoltageMatrix());
-    // showNMOS(window, *vg, *vd, *vs, id, xGrid, yGrid, *currentScale);
   }
 
 private:

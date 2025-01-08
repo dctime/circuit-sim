@@ -3,8 +3,8 @@
 #include "../UIElement.h"
 #include "VoltageSourceElement.h"
 #include <SFML/System/Vector2.hpp>
-#include <iostream>
 #include <UICircuit.h>
+#include <iostream>
 
 class WireUIElement : public UIElement {
 public:
@@ -45,9 +45,21 @@ public:
   void showElement(sf::RenderWindow *window) override {
     if (element.get() == nullptr) {
       WireUIElement::showGhostElement(window, xGrid1, yGrid1, xGrid2, yGrid2);
+    } else {
+      int pin1Volt = 0;
+
+      if (element->getPin1() != -1) {
+        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+      }
+
+
+      showWire(
+          window, xGrid1, yGrid1, xGrid2, yGrid2,
+          pin1Volt,
+          *uiCircuit->getCircuit()->getVoltagePointer(
+              uiCircuit->getMaxNodeID() + 1 + element->getVoltageSourceID()),
+          uiCircuit->getCurrentScale());
     }
-    // showWire(window, xGrid1, yGrid1, xGrid2, yGrid2, *v, *i,
-    //          *currentScale);
   }
 
   CircuitElement *getCircuitElementPointer(UICircuit *circuit) override {
@@ -57,8 +69,9 @@ public:
       std::string pin2Loc =
           std::to_string(xGrid2) + "," + std::to_string(yGrid2);
 
-      element = VoltageSourceElement::create(0.1, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
-                                             uiCircuit->getNextVoltageSourceID());
+      element = VoltageSourceElement::create(
+          0, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
+          uiCircuit->getNextVoltageSourceID());
     }
     return element.get();
   }

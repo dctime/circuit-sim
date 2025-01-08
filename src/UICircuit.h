@@ -48,7 +48,6 @@ public:
 
   // run this every frame
   void runCircuit() {
-    std::cout << "running" << std::endl;
     if (circuit.get() == nullptr)
       buildCircuit();
 
@@ -63,7 +62,6 @@ public:
 
 private:
   void buildCircuit() {
-    // FIXME: Remove unnecessary pins to avoid some calulation errors
     // FIXME: Reset every circuit element in UI Elements
     // FIXME: A reset method virtual to reset
     nextPinID = 0;

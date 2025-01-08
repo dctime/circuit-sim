@@ -179,7 +179,6 @@ int main() {
   sf::Vector2i mousePos;
   bool mousePressed = false;
 
-  uiCircuit.runCircuit();
 
   while (window.isOpen()) {
 
@@ -255,12 +254,14 @@ int main() {
     // TODO: Wires should get data from connected UIElements
     // TODO: Ground only need to be rendered
 
+    uiCircuit.runCircuit();
     uiCircuit.showCircuit(&window);
 
     for (size_t i = 0; i < buttons.size(); i++) {
       buttons[i].render(&window);
       buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
     }
+
     window.draw(text);
 
     window.display();

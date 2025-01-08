@@ -22,15 +22,15 @@ public:
 private:
   std::unique_ptr<AdjustableVoltageSourceElement> element;
   std::function<double(double)> v;
-  UICircuit* uiCircuit;
+  UICircuit *uiCircuit;
 
 public:
-  AdjustableVoltageSourceUIElement(UICircuit* circuit, int xGrid, int yGrid,
+  AdjustableVoltageSourceUIElement(UICircuit *circuit, int xGrid, int yGrid,
                                    std::function<double(double)> v) {
     this->v = v;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
-    uiCircuit = circuit;    
+    uiCircuit = circuit;
 
     std::string pin1Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
@@ -50,7 +50,23 @@ public:
       // show Ghost Version
       AdjustableVoltageSourceUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
-       
+      double pin1Volt = 0;
+      double pin2Volt = 0;
+      if (element->getPin1() != -1) {
+        pin1Volt =
+            *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+      }
+
+      if (element->getPin2() != -1) {
+        pin2Volt =
+            *uiCircuit->getCircuit()->getVoltagePointer(element->getPin2());
+      }
+
+      showAdjustableVoltageSource(
+          window, pin1Volt, pin2Volt,
+          *uiCircuit->getCircuit()->getVoltagePointer(
+              uiCircuit->getMaxNodeID() + element->getVoltageSourceID() + 1),
+          xGrid, yGrid, uiCircuit->getCurrentScale());
       // show normal ones
     }
     // showAdjustableVoltageSource(window, *vp, *vm, *i, xGrid, yGrid,
