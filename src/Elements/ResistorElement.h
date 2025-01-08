@@ -1,5 +1,6 @@
 #pragma once
-#include "CircuitElement.h"
+#include "../CircuitElement.h"
+#include <memory>
 
 class ResistorElement : public CircuitElement {
 public:
@@ -36,4 +37,12 @@ private:
   double R;
   int PIN1;
   int PIN2;
+public:
+  int getPIN1() {
+    return PIN1;
+  }
+
+  int getPIN2() {
+    return PIN2;
+  }
 };

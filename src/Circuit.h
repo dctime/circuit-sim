@@ -1,8 +1,8 @@
 #pragma once
-#include <eigen3/Eigen/Dense>
-#include <memory>
 #include "CircuitElement.h"
-
+#include <eigen3/Eigen/Dense>
+#include <iostream>
+#include <memory>
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
@@ -24,7 +24,8 @@ public:
     circuit->g.setZero();
     circuit->i.resize(circuit->MAX_MATRIX_SIZE, 1);
     circuit->i.setZero();
-    // std::cout << "MAX_MATRIX_SIZE: " << circuit->MAX_MATRIX_SIZE << std::endl;
+    std::cout << "MAX_NODE_ID: " << MAX_NODE_ID << std::endl;
+    std::cout << "MAX_MATRIX_SIZE: " << circuit->MAX_MATRIX_SIZE << std::endl;
 
     for (CircuitElement *ele : elements) {
       // g matrix
@@ -37,10 +38,8 @@ public:
     return std::move(circuit);
   }
 
-  void incTimerByDeltaT() {
-    t += deltaT;
-  }
-  void iterate() {
+  void incTimerByDeltaT() { t += deltaT; }
+  void iterate(int iteration) {
     g.resize(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
     g.setZero();
     i.resize(MAX_MATRIX_SIZE, 1);
@@ -54,7 +53,6 @@ public:
       ele->modifyIMatrix(i, v, MAX_NODE_ID, t);
       // std::cout << "element success" << std::endl;
     }
-
 
     // std::cout << "g: " << std::endl;
     // std::cout << g << std::endl;
@@ -78,7 +76,7 @@ public:
     Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
     // std::cout << "j" << std::endl;
     // std::cout << j << std::endl;
-
+    //
     // std::cout << "j matrix success" << std::endl;
 
     // calculate deltaV
@@ -86,7 +84,7 @@ public:
     // std::cout << "deltaV value:" << std::endl;
     // std::cout << deltaV << std::endl;
     // calculate new v
-    v += deltaV;
+    v += deltaV / iteration;
     // std::cout << "cal v success" << std::endl;
 
     // print v
@@ -100,6 +98,7 @@ public:
   }
 
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
+  double *getVoltagePointer(int PIN_ID) { return &v(PIN_ID); }
   Eigen::MatrixXd &getVoltageMatrix() { return v; }
 
   double getTime() { return t; }

@@ -27,4 +27,5 @@ class Button
        // void ispressed();
         void render(sf::RenderTarget* target);
         void update(const sf::Vector2f& mousePos);
+        void setposition(float x, float y);
 };

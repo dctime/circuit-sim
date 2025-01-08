@@ -1,8 +1,11 @@
 #pragma once
 #include "CircuitElement.h"
+#include <memory>
 
 class NMOSElement : public CircuitElement
 {
+private:
+  double id;
 public:
   NMOSElement() : CircuitElement() {}
   ~NMOSElement() {}
@@ -158,6 +161,19 @@ private:
   double K;
   double VA;
   double VT;
+public:
+  int getPIN_G() {
+    return PIN_G;
+  }
+
+  int getPIN_D() {
+    return PIN_D;
+  }
+
+  int getPIN_S() {
+    return PIN_S;
+  }
+private:
 
   double calg0(double k, double vgs, double vds, double vt, double va)
   {

@@ -34,6 +34,10 @@ IF (UNIX)
 project(circuit-sim)
 
 file (GLOB SOURCES
+  "src/UIElements/*.h"
+  "src/UIElements/*.cpp"
+  "src/Elements/*.h"
+  "src/Elements/*.cpp"
   "main.cpp"
   "src/*.h"
   "src/*.cpp"
@@ -42,6 +46,8 @@ file (GLOB SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC src/Elements)
+target_include_directories(${PROJECT_NAME} PUBLIC src/UIElements)
 
 target_link_libraries(${PROJECT_NAME} 
   sfml-graphics 

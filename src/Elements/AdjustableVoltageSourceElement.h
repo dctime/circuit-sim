@@ -1,5 +1,5 @@
 #pragma once
-#include "CircuitElement.h"
+#include <CircuitElement.h>
 #include <memory>
 
 class AdjustableVoltageSourceElement : public CircuitElement {
@@ -48,4 +48,16 @@ private:
   int pin1;
   int pin2;
   int voltageSourceID;
+public:
+  int getPin1() {
+    return pin1;
+  }
+
+  int getPin2() {
+    return pin2;
+  }
+
+  int getVoltageSourceID() {
+    return voltageSourceID;
+  }
 };
