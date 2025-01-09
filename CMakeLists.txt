@@ -30,8 +30,7 @@ IF (WIN32)
 ENDIF(WIN32)
 
 IF (UNIX)
-  message("Unix Config")
-project(circuit-sim)
+message("Unix Config")
 
 file (GLOB SOURCES
   "src/UIElements/*.h"
@@ -43,7 +42,15 @@ file (GLOB SOURCES
   "src/*.cpp"
 )
 
+# find_package(OpenMP)
+# if (OPENMP_FOUND)
+#     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+# endif()
 add_executable(${PROJECT_NAME} ${SOURCES})
+
+
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC src/Elements)
@@ -54,6 +61,11 @@ target_link_libraries(${PROJECT_NAME}
   sfml-window 
   sfml-system
   tgui
+  # OpenMP::OpenMP_CXX
 )
+
+# add_compile_options(${PROJECT_NAME} -fopenmp=libomp)
+
+
 ENDIF(UNIX)
 

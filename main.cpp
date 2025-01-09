@@ -47,7 +47,6 @@ void showGrid(sf::RenderWindow &window, sf::Color &color) {
 }
 
 int main() {
-
   sf::Font font;
   if (!font.loadFromFile("../arial.ttf")) {
     std::cout << "Font Load Failed!" << std::endl;
