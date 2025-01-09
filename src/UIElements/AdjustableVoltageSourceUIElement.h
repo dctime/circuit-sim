@@ -21,6 +21,8 @@ public:
 
 private:
   std::unique_ptr<AdjustableVoltageSourceElement> element;
+
+private:
   std::function<double(double)> v;
   UICircuit *uiCircuit;
 
@@ -80,16 +82,17 @@ public:
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
 
-
       element = AdjustableVoltageSourceElement::create(
           v, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
           uiCircuit->getNextVoltageSourceID());
       std::cout << "Adj. Voltage Source Element Created!" << std::endl;
-      std::cout << "Adj. Voltage Source UI Element added to UI Circuit. ID: " << uiElementID
-                << std::endl;
+      std::cout << "Adj. Voltage Source UI Element added to UI Circuit. ID: "
+                << uiElementID << std::endl;
     }
     return element.get();
   }
+
+  void resetElement() override { element.reset(); }
 
 public:
   ~AdjustableVoltageSourceUIElement() override {};

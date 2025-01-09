@@ -77,6 +77,10 @@ public:
     return element.get();
   }
 
+  void resetElement() override {
+    element.reset();
+  }
+
 private:
   double lastoffsetVolt = 0;
   static void showWire(sf::RenderWindow *window, double v, sf::Vector2f &loc1,

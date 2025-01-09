@@ -67,6 +67,10 @@ public:
     return nmosElement.get();
   }
 
+  void resetElement() override {
+    nmosElement.reset();
+  }
+
   void showElement(sf::RenderWindow *window) override {
     if (nmosElement.get() == nullptr) {
       NMOSUIElement::showGhostElement(window, xGrid, yGrid);

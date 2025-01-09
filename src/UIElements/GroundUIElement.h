@@ -26,6 +26,9 @@ public:
   CircuitElement * getCircuitElementPointer() override {
     return nullptr;
   }
+
+  void resetElement() override {};
+
 private:
   void showGround(sf::RenderWindow *window, sf::Vector2f &loc) {
     double width = 5;

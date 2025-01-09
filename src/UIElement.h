@@ -13,7 +13,9 @@ protected:
   std::vector<std::string> connectedLocs;
   std::vector<std::string> groundedLocs;
   UICircuit* uiCircuit;
-
+public:
+  // reset the element stored in UI Element;
+  virtual void resetElement() = 0;
 public:
 
   UIElement() {};
