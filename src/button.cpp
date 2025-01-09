@@ -57,7 +57,7 @@ void Button::update(const sf::Vector2f &mousePos)
         this->shape.setFillColor(this->hoverColor);
         this->text.setFillColor(sf::Color::Black);
 
-        tooltip.setPosition(this->shape.getPosition().x, this->shape.getPosition().y + this->shape.getSize().y + 5);
+        tooltip.setPosition(this->shape.getPosition().x, this->shape.getPosition().y + this->shape.getSize().y + 5, 800, 600);
         tooltip.setVisible(true);
 
         // Active state (pressed)
@@ -71,5 +71,5 @@ void Button::update(const sf::Vector2f &mousePos)
 void Button::setPosition(float x, float y)
 {
     this->shape.setPosition(sf::Vector2f(x + 5, y - 5));
-    tooltip.setPosition(x + 5, y + this->shape.getSize().y + 5);
+    tooltip.setPosition(x + 5, y + this->shape.getSize().y + 5, 800, 600);
 }

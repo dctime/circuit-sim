@@ -23,12 +23,6 @@ void Tooltip::render(sf::RenderTarget &target)
     }
 }
 
-void Tooltip::setPosition(float x, float y)
-{
-    this->shape.setPosition(sf::Vector2f(x, y - 175));
-    this->text.setPosition(x, y - 150);
-}
-
 void Tooltip::setVisible(bool state)
 {
     this->visible = state;
@@ -37,4 +31,27 @@ void Tooltip::setVisible(bool state)
 bool Tooltip::isVisible() const
 {
     return this->visible;
+}
+void Tooltip::setPosition(float x, float y, float windowWidth, float windowHeight)
+{
+    float tooltipWidth = this->shape.getSize().x;
+    float tooltipHeight = this->shape.getSize().y;
+
+    // Adjust x position if tooltip goes beyond the window width
+    if (x + tooltipWidth > windowWidth)
+    {
+        x = windowWidth - tooltipWidth-65;
+    }
+    // Adjust y position if tooltip goes beyond the window height
+    if (y + tooltipHeight > windowHeight)
+    {
+        y = windowHeight - tooltipHeight;
+    }
+    if (y < 0)
+    {
+        y = 0;
+    }
+
+    this->shape.setPosition(sf::Vector2f(x, y-75));
+    this->text.setPosition(x + 10, y + 10); // Adjust text position with some padding
 }

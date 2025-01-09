@@ -18,7 +18,7 @@ public:
     ~Tooltip() = default;
 
     void render(sf::RenderTarget& target);
-    void setPosition(float x, float y);
+    void setPosition(float x, float y, float windowWidth, float windowHeight);  
     void setVisible(bool state);
     bool isVisible() const;
 };
