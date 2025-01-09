@@ -56,18 +56,29 @@ int main() {
   window.setFramerateLimit(60);
   std::vector<Button> buttons;
   std::vector<std::string> buttonNames = {"resistor", "voltage\nsource", "nmos", "wire", "ground"};
-  for (int i = 0; i < 5; i++) {
-  
-    buttons.push_back(Button(50 * i + 5 * (i), window.getSize().y - 50, 50, 50, &font, buttonNames[i],
-                             sf::Color::Red, sf::Color::Green,
-                             sf::Color::Blue));
-  }
-  Button startButton(window.getSize().x , 5, 50, 50, &font, "Start", sf::Color::Red,
-                     sf::Color::Green, sf::Color::Blue);
-  Button endButton(window.getSize().x , 55, 50, 50, &font, "End", sf::Color::Red,
-                   sf::Color::Green, sf::Color::Blue);
-  // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
+  for (int i = 0; i < 5; i++)
+    {
+        float x = 50 * i + 10 * i; // 計算按鈕的 X 座標，包含間距
+        float y = window.getSize().y - 60; // 按鈕放置在視窗底部，距離底部 10px
+        buttons.emplace_back(50 * i + 10 * i, window.getSize().y - 60, 50, 50, 
+                     &font, buttonNames[i], 
+                     sf::Color::Red, sf::Color::Green, 
+                     sf::Color::Blue, "Tooltip text for button");
+    }
 
+    // 右上角的 Start 和 End 按鈕
+    float windowWidth = window.getSize().x;
+    float buttonWidth = 50;
+    float buttonHeight = 50;
+  // CoordinateGraph graph(800.0f, 600.0f, 50.0f, 1, 0.2);
+      Button startButton(windowWidth - buttonWidth - 5, 5, buttonWidth, buttonHeight, 
+                     &font, "Start", 
+                     sf::Color::Red, sf::Color::Green, 
+                     sf::Color::Blue, "Tooltip text for button");
+    Button endButton(windowWidth - buttonWidth - 5, 60, buttonWidth, buttonHeight,
+                      &font, "End", 
+                      sf::Color::Red, sf::Color::Green, 
+                      sf::Color::Blue, "Tooltip text for button");
   // sf::VertexArray plotV1(sf::LineStrip);
   // graph.applyVectorToPlot(valuesV1, plotV1, 0.01, sf::Color::Green);
   // sf::VertexArray plotV0(sf::LineStrip);
@@ -170,8 +181,8 @@ int main() {
       for (int i = 0; i < buttons.size(); i++) {
         buttons[i].setPosition(50 * i + 5 * i, window.getSize().y - 50);
       }
-      startButton.setPosition(window.getSize().x - 55, 50);
-      endButton.setPosition(window.getSize().x - 55, 105);
+      // startButton.setPosition(window.getSize().x - 55, 50);
+      // endButton.setPosition(window.getSize().x - 55, 105);
       }
     }
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -204,9 +215,13 @@ int main() {
 
     uiCircuit.showCircuit(&window);
 
-    for (size_t i = 0; i < buttons.size(); i++) {
-      buttons[i].render(&window);
-      buttons[i].update(sf::Vector2f(sf::Mouse::getPosition(window)));
+    std::vector<Button*> buttonPtrs;
+    for (auto &button : buttons) {
+      buttonPtrs.push_back(&button);
+    }
+    for (auto &button : buttons) {
+      button.render(&window);
+      button.update_ispress(sf::Vector2f(sf::Mouse::getPosition(window)), buttonPtrs);
     }
     startButton.render(&window);
     startButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
