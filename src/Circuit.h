@@ -3,6 +3,8 @@
 #include <eigen3/Eigen/Dense>
 #include <iostream>
 #include <memory>
+#include <eigen3/Eigen/Sparse>
+#include <chrono>
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
@@ -45,6 +47,7 @@ public:
     i.resize(MAX_MATRIX_SIZE, 1);
     i.setZero();
     // std::cout << "MAX_MATRIX_SIZE: " << MAX_MATRIX_SIZE << std::endl;
+
 
     for (CircuitElement *ele : elements) {
       // g matrix

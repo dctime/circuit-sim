@@ -89,6 +89,10 @@ public:
 
     return element.get();
   }
+  
+  void resetElement() override {
+    element.reset();
+  }
 
 private:
   double lastoffsetVolt = 0;

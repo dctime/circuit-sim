@@ -56,6 +56,10 @@ public:
     return resistorElement.get();
   }
 
+  void resetElement() override {
+    resistorElement.reset();
+  }
+
   void showElement(sf::RenderWindow *window) override {
     if (resistorElement.get() == nullptr) {
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
