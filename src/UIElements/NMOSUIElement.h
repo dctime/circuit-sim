@@ -42,6 +42,8 @@ public:
     this->connectedLocs.push_back(pin2Loc);
     this->connectedLocs.push_back(pin3Loc);
 
+    this->noCurrentLocs.push_back(pin3Loc);
+
     std::cout << "NMOS Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;

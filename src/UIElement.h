@@ -12,6 +12,7 @@ protected:
   int yGrid;
   std::vector<std::string> connectedLocs;
   std::vector<std::string> groundedLocs;
+  std::vector<std::string> noCurrentLocs;
   UICircuit* uiCircuit;
 public:
   // reset the element stored in UI Element;
@@ -25,6 +26,10 @@ public:
 
   std::vector<std::string> getGroundedLocs() {
     return groundedLocs;
+  }
+
+  std::vector<std::string> getNoCurrentLocs() {
+    return noCurrentLocs;
   }
 
   virtual ~UIElement() {
