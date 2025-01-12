@@ -42,26 +42,43 @@ file (GLOB SOURCES
   "src/*.cpp"
 )
 
-# find_package(OpenMP)
-# if (OPENMP_FOUND)
-#     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-# endif()
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
+find_package(BLAS)
+
+
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-
+if (BLAS_FOUND)
+  message(STATUS "BLAS FOUND")
+  target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+      EIGEN_USE_BLAS
+  )
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    ${BLAS_LIBRARIES}
+  )
+else()
+  message(STATUS "BLAS NOT FOUND")
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC src/Elements)
 target_include_directories(${PROJECT_NAME} PUBLIC src/UIElements)
 
 target_link_libraries(${PROJECT_NAME} 
+  PRIVATE
   sfml-graphics 
   sfml-window 
   sfml-system
   tgui
-  # OpenMP::OpenMP_CXX
+  OpenMP::OpenMP_CXX
 )
 
 # add_compile_options(${PROJECT_NAME} -fopenmp=libomp)
