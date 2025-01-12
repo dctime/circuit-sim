@@ -58,19 +58,50 @@ public:
     if (circuit.get() == nullptr) {
       if (!buildCircuit()) {
         for (std::unique_ptr<UIElement> &uiElement : uiElements) {
-          uiElement->resetElement(); 
+          uiElement->resetElement();
         }
         return;
       }
     }
 
     circuit->incTimerByDeltaT();
-    for (int iteration = 1; iteration <= 50; iteration++) {
-      // std::cout << "========================" << std::endl;
-      // std::cout << "iteration: " << iteration << std::endl;
 
-      circuit->iterate(iteration);
+    bool passed = false;
+    bool hasOscillation = false;
+
+    int MAX_ITERATION = 50;
+
+    int iteration = 1;
+    // must be greater than 1
+    // the greater the faster iterations slows down the iteration
+    // osc -> iteration not doing its job -> drag too much
+    // giving too much drag will cause oscillation
+    //
+    double iterationDrag = 1.1;
+    while (true) {
+      circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
+
+      if (hasOscillation) {
+        // std::cout << "Oscillation occurs" << std::endl;
+        iterationDrag = 1.1;
+        hasOscillation = false;
+      } else {
+        // std::cout << "adding Drag to: " << iterationDrag << std::endl;
+        iterationDrag += 0.1;
+      }
+
+      if (passed) {
+        break;
+      }
+
+      if (iteration >= MAX_ITERATION) {
+        break;
+      }
+
+      iteration++;
     }
+
+    // std::cout << "Used Iterations: " << iteration << std::endl;
   }
 
 private:

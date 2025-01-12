@@ -245,7 +245,10 @@ int main() {
         "|id copy: " + std::to_string(nmos1UIElement->getShownId()) +
         "|id: " + std::to_string(nmos2UIElement->getShownId()) +
         "|vg control: " + std::to_string(nmos2UIElement->getShownPinGVolt()) +
-        "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt()));
+        "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt()) + 
+        "|t: " + std::to_string(uiCircuit.getTime())
+    );
+        
     window.draw(text);
 
     window.display();

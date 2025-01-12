@@ -1,10 +1,11 @@
 #pragma once
 #include "CircuitElement.h"
-#include <eigen3/Eigen/Dense>
-#include <iostream>
-#include <memory>
-#include <eigen3/Eigen/Sparse>
 #include <chrono>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Sparse>
+#include <iostream>
+#include <limits>
+#include <memory>
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
@@ -41,13 +42,17 @@ public:
   }
 
   void incTimerByDeltaT() { t += deltaT; }
-  void iterate(int iteration) {
+  // keep iterate: false
+  // can stop: true
+private:
+  double lastTimeSumOfIEvaluation = std::numeric_limits<double>::max();
+public:
+  void iterate(int iteration, double iterationDrag, bool* passed, bool* hasOscillation) {
     g.resize(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
     g.setZero();
     i.resize(MAX_MATRIX_SIZE, 1);
     i.setZero();
     // std::cout << "MAX_MATRIX_SIZE: " << MAX_MATRIX_SIZE << std::endl;
-
 
     for (CircuitElement *ele : elements) {
       // g matrix
@@ -87,17 +92,55 @@ public:
     // std::cout << "deltaV value:" << std::endl;
     // std::cout << deltaV << std::endl;
     // calculate new v
-    v += deltaV / iteration;
+    // more drag means more iterations
+    v += deltaV / pow(iteration, 1/iterationDrag);
     // std::cout << "cal v success" << std::endl;
 
     // print v
     // std::cout << "iteration: " << "idk" << std::endl;
     // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
     // std::cout << v << std::endl;
+    Eigen::MatrixXd iEvaluations = g * v - i;
+    double sumOfIEvaluation = 0;
+    double IEvaluationMax = 0;
+    for (int index = 0; index < iEvaluations.size(); index++) {
+      double absIEvaluation = fabs(iEvaluations(index));
+      if (IEvaluationMax < absIEvaluation) {
+        IEvaluationMax = absIEvaluation;
+      }
+      sumOfIEvaluation += absIEvaluation;
+    }
+
     // std::cout << "===============" << std::endl;
     // std::cout << "evaluation:" << std::endl;
-    // std::cout << g * v - i << std::endl;
-    // std::cout << "===============" << std::endl;
+    // std::cout << iEvaluations << std::endl;
+    // std::cout << "sum of evaluation: " << std::endl;
+    // std::cout << sumOfIEvaluation << std::endl;
+    
+    double reltol = 0.001;
+    double iabstol = 1 * pow(10, -12);
+    double residueCriterion = reltol * IEvaluationMax + iabstol;
+
+    // std::cout << "residueCriterion: " << residueCriterion << std::endl;
+    
+    if (iteration == 1) {
+      lastTimeSumOfIEvaluation = std::numeric_limits<double>::max();
+    }
+    
+    if (sumOfIEvaluation > lastTimeSumOfIEvaluation) {
+      *hasOscillation = true;
+    }
+
+    lastTimeSumOfIEvaluation = sumOfIEvaluation;
+
+    
+    if (sumOfIEvaluation >= residueCriterion) {
+      *passed = false;
+      // std::cout << "===============" << std::endl;
+      return;
+    }
+
+    *passed = true;
   }
 
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
