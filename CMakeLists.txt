@@ -60,6 +60,7 @@ if (BLAS_FOUND)
     PRIVATE
       EIGEN_USE_BLAS
   )
+  message(${BLAS_LIBRARIES})
   target_link_libraries(${PROJECT_NAME}
     PUBLIC
     ${BLAS_LIBRARIES}
