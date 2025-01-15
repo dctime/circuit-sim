@@ -46,24 +46,24 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (element.get() == nullptr) {
+    if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       VoltageSourceUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
       double pin1Volt = 0;
       double pin2Volt = 0;
       if (element->getPin1() != -1) {
-        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+        pin1Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(element->getPin1());
       }
 
       if (element->getPin2() != -1) {
-        pin2Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin2());
+        pin2Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(element->getPin2());
       }
 
       showVoltageSource(
           window,
           pin1Volt,
           pin2Volt,
-          *uiCircuit->getCircuit()->getVoltagePointer(
+          *uiCircuit->getDisplayCircuit()->getVoltagePointer(
               uiCircuit->getMaxNodeID() +
               element->getVoltageSourceID() + 1),
           xGrid, yGrid, uiCircuit->getCurrentScale());

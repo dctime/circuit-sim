@@ -61,18 +61,18 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (resistorElement.get() == nullptr) {
+    if (resistorElement.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       ResistorUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
       double pin1Volt = 0;
       double pin2Volt = 0;
       if (resistorElement->getPIN1() != -1) {
-        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(
+        pin1Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             resistorElement->getPIN1());
       }
 
       if (resistorElement->getPIN2() != -1) {
-        pin2Volt = *uiCircuit->getCircuit()->getVoltagePointer(
+        pin2Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             resistorElement->getPIN2());
       }
 

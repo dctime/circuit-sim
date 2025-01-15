@@ -1,5 +1,4 @@
 #pragma once
-#define EIGEN_USE_BLAS
 #include "CircuitElement.h"
 #include <chrono>
 #include <eigen3/Eigen/Dense>

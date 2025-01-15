@@ -43,19 +43,19 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (element.get() == nullptr) {
+    if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       WireUIElement::showGhostElement(window, xGrid1, yGrid1, xGrid2, yGrid2);
     } else {
       double pin1Volt = 0;
 
       if (element->getPin1() != -1) {
-        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+        pin1Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(element->getPin1());
       }
 
       showWire(
           window, xGrid1, yGrid1, xGrid2, yGrid2,
           pin1Volt,
-          *uiCircuit->getCircuit()->getVoltagePointer(
+          *uiCircuit->getDisplayCircuit()->getVoltagePointer(
               uiCircuit->getMaxNodeID() + 1 + element->getVoltageSourceID()),
           uiCircuit->getCurrentScale());
     }

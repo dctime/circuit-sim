@@ -1,22 +1,112 @@
 #pragma once
 #include <Circuit.h>
 #include <UIElement.h>
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <mutex>
+#include <queue>
 #include <stack>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
 
 class UICircuit {
 public:
-  Circuit *getCircuit() { return circuit.get(); }
+  UICircuit() {
+    bufferWorker = std::thread(&UICircuit::calculatingBufferingCircuits, this);
+  }
+
+  ~UICircuit() {
+    uiCircuitAlive = false;
+    bufferWorker.join();
+  }
+
+private:
+  std::thread bufferWorker;
+  std::mutex circuitLock;
+  // TODO: Make a bufferCircuits lock that only locks bufferCircuits
+  // FIXME: circuitLock only locks circuit
+  std::queue<std::unique_ptr<Circuit>> bufferCircuits;
+  bool uiCircuitAlive = true;
+
+  void calculatingBufferingCircuits() {
+    while (uiCircuitAlive) {
+      {
+        std::unique_lock<std::mutex> circuitLockGuard(circuitLock);
+        // std::cout << "Locked at Calculating Buffering Circuits!" <<
+        // std::endl; std::cout << "calculating buffering circuit! Buffering
+        // Size: " << bufferCircuits.size() << std::endl;
+        //
+
+        if (bufferCircuits.size() >= 100) {
+          circuitLockGuard.unlock();
+          continue;
+        }
+
+        if (circuit.get() == nullptr) {
+          continue;
+        }
+
+        circuit->incTimerByDeltaT();
+
+        bool passed = false;
+        bool hasOscillation = false;
+
+        int MAX_ITERATION = 50;
+
+        int iteration = 1;
+        // must be greater than 1
+        // the greater the faster iterations slows down the iteration
+        // osc -> iteration not doing its job -> drag too much
+        // giving too much drag will cause oscillation
+        //
+        double iterationDrag = 1.1;
+
+        while (true) {
+          circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
+
+          if (hasOscillation) {
+            // std::cout << "Oscillation occurs" << std::endl;
+            iterationDrag = 1.1;
+            hasOscillation = false;
+          } else {
+            // std::cout << "adding Drag to: " << iterationDrag << std::endl;
+            iterationDrag += 0.1;
+          }
+
+          if (passed) {
+            break;
+          }
+
+          if (iteration >= MAX_ITERATION) {
+            break;
+          }
+
+          iteration++;
+        }
+
+        std::unique_ptr<Circuit> pastCircuit =
+            std::make_unique<Circuit>(*circuit);
+        bufferCircuits.push(std::move(pastCircuit));
+        std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
+                  << std::endl;
+        // std::cout << "Used Iterations: " << iteration << std::endl;
+        // std::cout << "Unlock from calculating buffering circuit" <<
+        // std::endl;
+      }
+    }
+  }
+
+public:
+  Circuit *getDisplayCircuit() { return displayingCircuit.get(); }
 
   double getCurrentScale() { return currentScale; }
 
   double getTime() {
-    if (circuit.get() != nullptr) {
-      return circuit->getTime();
+    if (displayingCircuit.get() != nullptr) {
+      return displayingCircuit->getTime();
     } else {
       return 0;
     }
@@ -28,6 +118,7 @@ private:
   std::vector<std::unique_ptr<UIElement>> uiElements;
   std::unique_ptr<Circuit> circuit;
   std::unordered_map<std::string, int> locToPinID;
+  std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
   double currentScale = 1000;
 
@@ -48,60 +139,36 @@ public:
   double GROUND = 0;
 
   void showCircuit(sf::RenderWindow *window) {
+    std::unique_lock<std::mutex> circuitBufferUniqueLock(circuitLock,
+                                                         std::try_to_lock);
+    if (circuitBufferUniqueLock.owns_lock()) {
+      if (!bufferCircuits.empty()) {
+        displayingCircuit = std::move(bufferCircuits.front());
+        bufferCircuits.pop();
+        std::cout << "Popping:" << bufferCircuits.size() << "Left" << std::endl;
+      }
+    }
+
     for (std::unique_ptr<UIElement> &uiElement : uiElements) {
       uiElement->showElement(window);
     }
   }
 
   // run this every frame
-  void runCircuit() {
+  void startCircuit() {
+    std::lock_guard<std::mutex> circuitLockGuard(circuitLock);
+    std::cout << "Circuit locked for startCircuit" << std::endl;
     if (circuit.get() == nullptr) {
       if (!buildCircuit()) {
         for (std::unique_ptr<UIElement> &uiElement : uiElements) {
           uiElement->resetElement();
         }
+
+        std::cout << "Circuit unlocked for startCircuit" << std::endl;
         return;
       }
     }
-
-    circuit->incTimerByDeltaT();
-
-    bool passed = false;
-    bool hasOscillation = false;
-
-    int MAX_ITERATION = 50;
-
-    int iteration = 1;
-    // must be greater than 1
-    // the greater the faster iterations slows down the iteration
-    // osc -> iteration not doing its job -> drag too much
-    // giving too much drag will cause oscillation
-    //
-    double iterationDrag = 1.1;
-    while (true) {
-      circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
-
-      if (hasOscillation) {
-        // std::cout << "Oscillation occurs" << std::endl;
-        iterationDrag = 1.1;
-        hasOscillation = false;
-      } else {
-        // std::cout << "adding Drag to: " << iterationDrag << std::endl;
-        iterationDrag += 0.1;
-      }
-
-      if (passed) {
-        break;
-      }
-
-      if (iteration >= MAX_ITERATION) {
-        break;
-      }
-
-      iteration++;
-    }
-
-    // std::cout << "Used Iterations: " << iteration << std::endl;
+    std::cout << "Circuit unlocked for startCircuit" << std::endl;
   }
 
 private:
@@ -331,11 +398,17 @@ private:
   int nextUIElementID = 0;
 
   void resetCircuit() {
-    std::cout << "Circuit Reset!" << std::endl;
+    std::lock_guard<std::mutex> circuitBufferGuard(circuitLock);
+    std::cout << "Locked for resetCircuit" << std::endl;
+    while (!bufferCircuits.empty()) {
+      bufferCircuits.pop();
+    }
     circuit.reset();
+    displayingCircuit.reset();
     for (std::unique_ptr<UIElement> &uiElement : uiElements) {
       uiElement->resetElement();
     }
+    std::cout << "Circuit unlocked for resetCircuit" << std::endl;
   }
 
 public:

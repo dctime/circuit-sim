@@ -25,9 +25,11 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
 
+#include <queue>
 double TEST_DOUBLE = 0;
 
 int xloc1 = -1;
@@ -42,9 +44,12 @@ void leftMouseButtonPressedHolding(int xGrid, int yGrid) {
   }
 }
 
-void leftMouseButtonPressedNegativeEdge(int xGrid, int yGrid, UICircuit* circuit) {
-  if (xloc1 != -1 && xloc2 != -1 && yloc1 != -1 && yloc2 != -1 && !(xloc1 == xloc2 && yloc1 == yloc2)) {
-    std::unique_ptr<UIElement> wire = std::make_unique<WireUIElement>(circuit, xloc1, yloc1, xloc2, yloc2);
+void leftMouseButtonPressedNegativeEdge(int xGrid, int yGrid,
+                                        UICircuit *circuit) {
+  if (xloc1 != -1 && xloc2 != -1 && yloc1 != -1 && yloc2 != -1 &&
+      !(xloc1 == xloc2 && yloc1 == yloc2)) {
+    std::unique_ptr<UIElement> wire =
+        std::make_unique<WireUIElement>(circuit, xloc1, yloc1, xloc2, yloc2);
     circuit->addElement(wire);
   }
   xloc1 = -1;
@@ -65,6 +70,8 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
     xloc1 = xGrid;
     yloc1 = yGrid;
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+    circuit->startCircuit();
   }
 }
 
@@ -126,8 +133,10 @@ int main() {
     return sin(t) + 0.6;
   };
 
-  // UI only
   UICircuit uiCircuit;
+  // UI only
+
+  std::cout << "UICircuit Size: " << sizeof(uiCircuit) << std::endl;
 
   double K = 1 * pow(10, -3);
   double VT = 1;
@@ -192,6 +201,8 @@ int main() {
   std::chrono::high_resolution_clock::time_point start;
   std::chrono::high_resolution_clock::time_point end;
   float fps;
+
+  window.setFramerateLimit(60);
   while (window.isOpen()) {
     // Performed. Now perform GPU stuff...
     start = std::chrono::high_resolution_clock::now();
@@ -239,7 +250,8 @@ int main() {
 
     if (!sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
       if (mousePressed) {
-        leftMouseButtonPressedNegativeEdge(mouseGridPos.x, mouseGridPos.y, &uiCircuit);
+        leftMouseButtonPressedNegativeEdge(mouseGridPos.x, mouseGridPos.y,
+                                           &uiCircuit);
       }
       mousePressed = false;
     } else if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && !mousePressed &&
@@ -252,27 +264,19 @@ int main() {
       leftMouseButtonPressedHolding(mouseGridPos.x, mouseGridPos.y);
     }
 
-    uiCircuit.runCircuit();
-
     window.clear(sf::Color::Black);
 
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
 
-    // TODO: need UICircuit class to decide the pin numbers when circuit
-    // updates and passes to the elements. circuit needs to be stopped and
-    // restarted.
-    //
     uiCircuit.showCircuit(&window);
 
-    // resistor follows the cursor
-    ResistorUIElement::showGhostElement(&window, mouseGridPos.x,
-                                        mouseGridPos.y);
     double wireIndicatorWidth = 3;
     if (xloc1 != -1 && yloc1 != -1) {
       sf::CircleShape loc1Circle(wireIndicatorWidth);
       loc1Circle.setFillColor(sf::Color(255, 0, 0));
-      sf::Vector2f loc1(xloc1*50-wireIndicatorWidth/2, yloc1*50-wireIndicatorWidth/2);
+      sf::Vector2f loc1(xloc1 * 50 - wireIndicatorWidth / 2,
+                        yloc1 * 50 - wireIndicatorWidth / 2);
       loc1Circle.setPosition(loc1);
       window.draw(loc1Circle);
     }
@@ -280,7 +284,8 @@ int main() {
     if (xloc2 != -1 && yloc2 != -1) {
       sf::CircleShape loc2Circle(wireIndicatorWidth);
       loc2Circle.setFillColor(sf::Color(255, 0, 0));
-      sf::Vector2f loc2(xloc2*50-wireIndicatorWidth/2, yloc2*50-wireIndicatorWidth/2);
+      sf::Vector2f loc2(xloc2 * 50 - wireIndicatorWidth / 2,
+                        yloc2 * 50 - wireIndicatorWidth / 2);
       loc2Circle.setPosition(loc2);
       window.draw(loc2Circle);
     }
@@ -293,9 +298,9 @@ int main() {
     startButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
     endButton.render(&window);
     endButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
-    NMOSUIElement *nmos1UIElement = (NMOSUIElement *)uiCircuit.getUIElement(0);
-    NMOSUIElement *nmos2UIElement = (NMOSUIElement *)uiCircuit.getUIElement(1);
-    // text.setString(
+    // NMOSUIElement *nmos1UIElement = (NMOSUIElement
+    // *)uiCircuit.getUIElement(0); NMOSUIElement *nmos2UIElement =
+    // (NMOSUIElement *)uiCircuit.getUIElement(1); text.setString(
     //     "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
     //     " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
     //     " | vs: " + std::to_string(nmosUIElement->getShownPinSVolt()) +
@@ -309,10 +314,11 @@ int main() {
             .count();
     text.setString(
         "FPS: " + std::to_string(fps) +
-        "|id copy: " + std::to_string(nmos1UIElement->getShownId()) +
-        "|id: " + std::to_string(nmos2UIElement->getShownId()) +
-        "|vg control: " + std::to_string(nmos2UIElement->getShownPinGVolt()) +
-        "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt()) +
+        // "|id copy: " + std::to_string(nmos1UIElement->getShownId()) +
+        // "|id: " + std::to_string(nmos2UIElement->getShownId()) +
+        // "|vg control: " + std::to_string(nmos2UIElement->getShownPinGVolt())
+        // +
+        // "|vd dest: " + std::to_string(nmos1UIElement->getShownPinDVolt()) +
         "|t: " + std::to_string(uiCircuit.getTime()));
 
     window.draw(text);
