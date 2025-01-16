@@ -198,13 +198,23 @@ int main() {
   sf::Vector2i mousePos;
 
   bool mousePressed = false;
-  std::chrono::high_resolution_clock::time_point start;
-  std::chrono::high_resolution_clock::time_point end;
+  std::chrono::high_resolution_clock::time_point start =
+      std::chrono::high_resolution_clock::now();
+  std::chrono::high_resolution_clock::time_point end =
+      std::chrono::high_resolution_clock::now();
   float fps;
 
   window.setFramerateLimit(60);
+  // simulationSpeed 0.001 - 1
+  double simulationSpeed = 0.1;
+  int simulationSpeedCounter = 0;
   while (window.isOpen()) {
     // Performed. Now perform GPU stuff...
+    end = std::chrono::high_resolution_clock::now();
+    fps =
+        (float)1e9 /
+        (float)std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
+            .count();
     start = std::chrono::high_resolution_clock::now();
 
     // mousePos, mouseGridPos update
@@ -269,7 +279,13 @@ int main() {
     sf::Color gridColor = sf::Color(30, 30, 30);
     showGrid(window, gridColor);
 
-    uiCircuit.showCircuit(&window);
+    if (simulationSpeedCounter >= 1 / simulationSpeed) {
+      simulationSpeedCounter = 0;
+      uiCircuit.showCircuit(&window, true);
+    } else {
+      simulationSpeedCounter++;
+      uiCircuit.showCircuit(&window, false);
+    }
 
     double wireIndicatorWidth = 3;
     if (xloc1 != -1 && yloc1 != -1) {
@@ -307,11 +323,7 @@ int main() {
     //     " | i: " + std::to_string(nmosUIElement->getShownId()) +
     //     " | t: " + std::to_string(uiCircuit.getTime()));
     //
-    end = std::chrono::high_resolution_clock::now();
-    fps =
-        (float)1e9 /
-        (float)std::chrono::duration_cast<std::chrono::nanoseconds>(end - start)
-            .count();
+
     text.setString(
         "FPS: " + std::to_string(fps) +
         // "|id copy: " + std::to_string(nmos1UIElement->getShownId()) +

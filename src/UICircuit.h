@@ -26,6 +26,7 @@ public:
 private:
   std::thread bufferWorker;
   std::mutex circuitLock;
+  std::mutex bufferCircuitsLock;
   // TODO: Make a bufferCircuits lock that only locks bufferCircuits
   // FIXME: circuitLock only locks circuit
   std::queue<std::unique_ptr<Circuit>> bufferCircuits;
@@ -34,17 +35,21 @@ private:
   void calculatingBufferingCircuits() {
     while (uiCircuitAlive) {
       {
-        std::unique_lock<std::mutex> circuitLockGuard(circuitLock);
         // std::cout << "Locked at Calculating Buffering Circuits!" <<
         // std::endl; std::cout << "calculating buffering circuit! Buffering
         // Size: " << bufferCircuits.size() << std::endl;
         //
 
+        std::unique_lock<std::mutex> bufferCircuitsUniqueLock(
+            bufferCircuitsLock);
         if (bufferCircuits.size() >= 100) {
-          circuitLockGuard.unlock();
+          bufferCircuitsUniqueLock.unlock();
+          std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
           continue;
         }
+        bufferCircuitsUniqueLock.unlock();
 
+        std::unique_lock<std::mutex> circuitUniqueLock(circuitLock);
         if (circuit.get() == nullptr) {
           continue;
         }
@@ -87,11 +92,21 @@ private:
           iteration++;
         }
 
+        circuitUniqueLock.unlock();
+
+        bufferCircuitsUniqueLock.lock();
+        circuitUniqueLock.lock();
+
+        // Reset may occur to reset circuit
+        if (circuit.get() == nullptr) {
+          continue;
+        }
+
         std::unique_ptr<Circuit> pastCircuit =
             std::make_unique<Circuit>(*circuit);
         bufferCircuits.push(std::move(pastCircuit));
-        std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
-                  << std::endl;
+        // std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
+        //           << std::endl;
         // std::cout << "Used Iterations: " << iteration << std::endl;
         // std::cout << "Unlock from calculating buffering circuit" <<
         // std::endl;
@@ -138,14 +153,24 @@ public:
 public:
   double GROUND = 0;
 
-  void showCircuit(sf::RenderWindow *window) {
-    std::unique_lock<std::mutex> circuitBufferUniqueLock(circuitLock,
-                                                         std::try_to_lock);
-    if (circuitBufferUniqueLock.owns_lock()) {
-      if (!bufferCircuits.empty()) {
+private:
+  bool tryNextTime = false;
+
+public:
+  void showCircuit(sf::RenderWindow *window, bool updateCircuit) {
+    std::unique_lock<std::mutex> bufferCircuitsUniqueLock(bufferCircuitsLock,
+                                                          std::try_to_lock);
+    if (updateCircuit || tryNextTime) {
+      if (bufferCircuitsUniqueLock.owns_lock() && !bufferCircuits.empty()) {
         displayingCircuit = std::move(bufferCircuits.front());
         bufferCircuits.pop();
-        std::cout << "Popping:" << bufferCircuits.size() << "Left" << std::endl;
+        // std::cout << "Popping:" << bufferCircuits.size() << "Left" << std::endl;
+        tryNextTime = false;
+      } else if (bufferCircuits.empty()){
+        std::cout << "Circuits in buffer is empty. Circuit not valid or sim cannot keep up"
+                     ".. Circuit Simulation might slow Down"
+                  << std::endl;
+        tryNextTime = true;
       }
     }
 
@@ -156,7 +181,7 @@ public:
 
   // run this every frame
   void startCircuit() {
-    std::lock_guard<std::mutex> circuitLockGuard(circuitLock);
+    std::unique_lock<std::mutex> circuitUniqueLock(circuitLock);
     std::cout << "Circuit locked for startCircuit" << std::endl;
     if (circuit.get() == nullptr) {
       if (!buildCircuit()) {
@@ -178,6 +203,7 @@ public:
   UIElement *getUIElement(int id) { return uiElementIDToUIElement[id]; }
 
 private:
+  // TODO:  remember to lock this function outside of calls
   bool buildCircuit() {
     std::cout << "Rebuild Circuit" << std::endl;
     std::unordered_map<std::string, int> locToPinID;
@@ -398,7 +424,10 @@ private:
   int nextUIElementID = 0;
 
   void resetCircuit() {
-    std::lock_guard<std::mutex> circuitBufferGuard(circuitLock);
+    std::cout << "RESET: trying to obtain bufferCircuits lock" << std::endl;
+    std::unique_lock<std::mutex> bufferCircuitsUniqueLock(bufferCircuitsLock);
+    std::cout << "RESET: trying to obtain circuit lock" << std::endl;
+    std::unique_lock<std::mutex> circuitUniqueLock(circuitLock);
     std::cout << "Locked for resetCircuit" << std::endl;
     while (!bufferCircuits.empty()) {
       bufferCircuits.pop();
