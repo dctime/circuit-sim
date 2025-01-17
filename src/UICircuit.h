@@ -42,7 +42,7 @@ private:
 
         std::unique_lock<std::mutex> bufferCircuitsUniqueLock(
             bufferCircuitsLock);
-        if (bufferCircuits.size() >= 100) {
+        if (bufferCircuits.size() >= 3) {
           bufferCircuitsUniqueLock.unlock();
           std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
           continue;
@@ -59,7 +59,7 @@ private:
         bool passed = false;
         bool hasOscillation = false;
 
-        int MAX_ITERATION = 50;
+        int MAX_ITERATION = 150;
 
         int iteration = 1;
         // must be greater than 1
@@ -71,7 +71,6 @@ private:
 
         while (true) {
           circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
-
           if (hasOscillation) {
             // std::cout << "Oscillation occurs" << std::endl;
             iterationDrag = 1.1;
@@ -107,10 +106,11 @@ private:
         bufferCircuits.push(std::move(pastCircuit));
         // std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
         //           << std::endl;
-        // std::cout << "Used Iterations: " << iteration << std::endl;
+        std::cout << "Used Iterations: " << iteration << std::endl;
         // std::cout << "Unlock from calculating buffering circuit" <<
         // std::endl;
       }
+
     }
   }
 

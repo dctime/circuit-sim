@@ -46,8 +46,10 @@ public:
   // can stop: true
 private:
   double lastTimeSumOfIEvaluation = std::numeric_limits<double>::max();
+
 public:
-  void iterate(int iteration, double iterationDrag, bool* passed, bool* hasOscillation) {
+  void iterate(int iteration, double iterationDrag, bool *passed,
+               bool *hasOscillation) {
     g.resize(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
     g.setZero();
     i.resize(MAX_MATRIX_SIZE, 1);
@@ -62,6 +64,10 @@ public:
       // std::cout << "element success" << std::endl;
     }
 
+    for (int i = 0; i <= MAX_NODE_ID; i++) {
+      g(i, i) += pow(10, -15);
+    }
+
     // std::cout << "g: " << std::endl;
     // std::cout << g << std::endl;
     // std::cout << "v: " << std::endl;
@@ -72,6 +78,8 @@ public:
     // F matrix
     Eigen::MatrixXd f(MAX_MATRIX_SIZE, 1);
     f = g * v - i;
+    // std::cout << "f: " << std::endl;
+    // std::cout << f << std::endl;
 
     // std::cout << "f matrix success" << std::endl;
     // J matrix
@@ -82,8 +90,12 @@ public:
     vWithDelta = vWithDelta * delta + dupV;
     // std::cout << "vWithData value: " << vWithDelta << std::endl;
     Eigen::MatrixXd j = (g * vWithDelta - g * dupV) / delta;
+
     // std::cout << "j" << std::endl;
     // std::cout << j << std::endl;
+    //
+    // std::cout << "j inverse" << std::endl;
+    // std::cout << j.inverse() << std::endl;
     //
     // std::cout << "j matrix success" << std::endl;
 
@@ -93,13 +105,22 @@ public:
     // std::cout << deltaV << std::endl;
     // calculate new v
     // more drag means more iterations
-    v += deltaV / pow(iteration, 1/iterationDrag);
+    double normDeltaV = deltaV.norm();
+    double maxDeltaLength = 10000;
+    if (normDeltaV >= maxDeltaLength) {
+      deltaV = deltaV * (1 / normDeltaV);
+    }
+
+    deltaV = deltaV / pow(iteration, 1 / iterationDrag);
+    // std::cout << "mod DeltaV:" << std::endl;
+    // std::cout << deltaV << std::endl;
+    v += deltaV;
     // std::cout << "cal v success" << std::endl;
 
     // print v
-    // std::cout << "iteration: " << "idk" << std::endl;
     // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
-    // std::cout << v << std::endl;
+    std::cout << "V:" << std::endl;
+    std::cout << v << std::endl;
     Eigen::MatrixXd iEvaluations = g * v - i;
     double sumOfIEvaluation = 0;
     double IEvaluationMax = 0;
@@ -116,24 +137,23 @@ public:
     // std::cout << iEvaluations << std::endl;
     // std::cout << "sum of evaluation: " << std::endl;
     // std::cout << sumOfIEvaluation << std::endl;
-    
+
     double reltol = 0.001;
     double iabstol = 1 * pow(10, -12);
     double residueCriterion = reltol * IEvaluationMax + iabstol;
 
     // std::cout << "residueCriterion: " << residueCriterion << std::endl;
-    
+
     if (iteration == 1) {
       lastTimeSumOfIEvaluation = std::numeric_limits<double>::max();
     }
-    
+
     if (sumOfIEvaluation > lastTimeSumOfIEvaluation) {
       *hasOscillation = true;
     }
 
     lastTimeSumOfIEvaluation = sumOfIEvaluation;
 
-    
     if (sumOfIEvaluation >= residueCriterion) {
       *passed = false;
       // std::cout << "===============" << std::endl;

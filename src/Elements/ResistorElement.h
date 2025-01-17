@@ -45,4 +45,8 @@ public:
   int getPIN2() {
     return PIN2;
   }
+
+  double getR() {
+    return R;
+  }
 };
