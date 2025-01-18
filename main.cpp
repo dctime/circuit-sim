@@ -85,7 +85,7 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
     std::unique_ptr<UIElement> voltage = std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
-    std::unique_ptr<UIElement> bigResistor = std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000000);
+    std::unique_ptr<UIElement> bigResistor = std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000000000000);
     circuit->addElement(bigResistor);
   }
 }
@@ -153,57 +153,57 @@ int main() {
 
   std::cout << "UICircuit Size: " << sizeof(uiCircuit) << std::endl;
 
-  std::unique_ptr<UIElement> nmos1 =
-      std::make_unique<NMOSUIElement>(&uiCircuit, 4, 3, K, VT, VA);
-  std::unique_ptr<UIElement> nmos2 =
-      std::make_unique<NMOSUIElement>(&uiCircuit, 4, 8, K, VT, VA);
-  double v = 5;
-  std::unique_ptr<UIElement> voltsrc =
-      std::make_unique<VoltageSourceUIElement>(&uiCircuit, 6, 5, v);
-  std::function<double(double)> adjv = [](double t) {
-    return 5 * sin(t / 2) + 4;
-  };
-  std::unique_ptr<UIElement> adjvoltsrc =
-      std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 5, 6,
-                                                         adjv);
-  std::unique_ptr<UIElement> r1 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 6, 3, 1000);
-  std::unique_ptr<UIElement> r2 =
-      std::make_unique<ResistorUIElement>(&uiCircuit, 4, 6, 1000);
-  std::unique_ptr<UIElement> gnd1 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 4, 9);
-  std::unique_ptr<UIElement> gnd2 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 5, 7);
-  std::unique_ptr<UIElement> gnd3 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 6, 6);
-  std::unique_ptr<UIElement> gnd4 =
-      std::make_unique<GroundUIElement>(&uiCircuit, 4, 4);
-  std::unique_ptr<UIElement> wire1 =
-      std::make_unique<WireUIElement>(&uiCircuit, 4, 2, 6, 2);
-  std::unique_ptr<UIElement> wire2 =
-      std::make_unique<WireUIElement>(&uiCircuit, 2, 3, 2, 7);
-  std::unique_ptr<UIElement> wire3 =
-      std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 2, 8);
-  std::unique_ptr<UIElement> wire4 =
-      std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 4, 7);
-  std::unique_ptr<UIElement> wire5 =
-      std::make_unique<WireUIElement>(&uiCircuit, 4, 5, 5, 5);
-
-  uiCircuit.addElement(nmos1);
-  uiCircuit.addElement(nmos2);
-  uiCircuit.addElement(voltsrc);
-  uiCircuit.addElement(adjvoltsrc);
-  uiCircuit.addElement(r1);
-  uiCircuit.addElement(r2);
-  uiCircuit.addElement(gnd1);
-  uiCircuit.addElement(gnd2);
-  uiCircuit.addElement(gnd3);
-  uiCircuit.addElement(gnd4);
-  uiCircuit.addElement(wire1);
-  uiCircuit.addElement(wire2);
-  uiCircuit.addElement(wire3);
-  uiCircuit.addElement(wire4);
-  uiCircuit.addElement(wire5);
+  // std::unique_ptr<UIElement> nmos1 =
+  //     std::make_unique<NMOSUIElement>(&uiCircuit, 4, 3, K, VT, VA);
+  // std::unique_ptr<UIElement> nmos2 =
+  //     std::make_unique<NMOSUIElement>(&uiCircuit, 4, 8, K, VT, VA);
+  // double v = 5;
+  // std::unique_ptr<UIElement> voltsrc =
+  //     std::make_unique<VoltageSourceUIElement>(&uiCircuit, 6, 5, v);
+  // std::function<double(double)> adjv = [](double t) {
+  //   return 5 * sin(t / 2) + 4;
+  // };
+  // std::unique_ptr<UIElement> adjvoltsrc =
+  //     std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 5, 6,
+  //                                                        adjv);
+  // std::unique_ptr<UIElement> r1 =
+  //     std::make_unique<ResistorUIElement>(&uiCircuit, 6, 3, 1000);
+  // std::unique_ptr<UIElement> r2 =
+  //     std::make_unique<ResistorUIElement>(&uiCircuit, 4, 6, 1000);
+  // std::unique_ptr<UIElement> gnd1 =
+  //     std::make_unique<GroundUIElement>(&uiCircuit, 4, 9);
+  // std::unique_ptr<UIElement> gnd2 =
+  //     std::make_unique<GroundUIElement>(&uiCircuit, 5, 7);
+  // std::unique_ptr<UIElement> gnd3 =
+  //     std::make_unique<GroundUIElement>(&uiCircuit, 6, 6);
+  // std::unique_ptr<UIElement> gnd4 =
+  //     std::make_unique<GroundUIElement>(&uiCircuit, 4, 4);
+  // std::unique_ptr<UIElement> wire1 =
+  //     std::make_unique<WireUIElement>(&uiCircuit, 4, 2, 6, 2);
+  // std::unique_ptr<UIElement> wire2 =
+  //     std::make_unique<WireUIElement>(&uiCircuit, 2, 3, 2, 7);
+  // std::unique_ptr<UIElement> wire3 =
+  //     std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 2, 8);
+  // std::unique_ptr<UIElement> wire4 =
+  //     std::make_unique<WireUIElement>(&uiCircuit, 2, 7, 4, 7);
+  // std::unique_ptr<UIElement> wire5 =
+  //     std::make_unique<WireUIElement>(&uiCircuit, 4, 5, 5, 5);
+  //
+  // uiCircuit.addElement(nmos1);
+  // uiCircuit.addElement(nmos2);
+  // uiCircuit.addElement(voltsrc);
+  // uiCircuit.addElement(adjvoltsrc);
+  // uiCircuit.addElement(r1);
+  // uiCircuit.addElement(r2);
+  // uiCircuit.addElement(gnd1);
+  // uiCircuit.addElement(gnd2);
+  // uiCircuit.addElement(gnd3);
+  // uiCircuit.addElement(gnd4);
+  // uiCircuit.addElement(wire1);
+  // uiCircuit.addElement(wire2);
+  // uiCircuit.addElement(wire3);
+  // uiCircuit.addElement(wire4);
+  // uiCircuit.addElement(wire5);
 
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
@@ -217,7 +217,7 @@ int main() {
 
   window.setFramerateLimit(60);
   // simulationSpeed 0.001 - 1
-  double simulationSpeed = 0.1;
+  double simulationSpeed = 1;
   int simulationSpeedCounter = 0;
   while (window.isOpen()) {
     // Performed. Now perform GPU stuff...

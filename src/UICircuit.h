@@ -27,8 +27,6 @@ private:
   std::thread bufferWorker;
   std::mutex circuitLock;
   std::mutex bufferCircuitsLock;
-  // TODO: Make a bufferCircuits lock that only locks bufferCircuits
-  // FIXME: circuitLock only locks circuit
   std::queue<std::unique_ptr<Circuit>> bufferCircuits;
   bool uiCircuitAlive = true;
 
@@ -110,7 +108,6 @@ private:
         // std::cout << "Unlock from calculating buffering circuit" <<
         // std::endl;
       }
-
     }
   }
 
@@ -164,10 +161,12 @@ public:
       if (bufferCircuitsUniqueLock.owns_lock() && !bufferCircuits.empty()) {
         displayingCircuit = std::move(bufferCircuits.front());
         bufferCircuits.pop();
-        // std::cout << "Popping:" << bufferCircuits.size() << "Left" << std::endl;
+        // std::cout << "Popping:" << bufferCircuits.size() << "Left" <<
+        // std::endl;
         tryNextTime = false;
-      } else if (bufferCircuits.empty()){
-        std::cout << "Circuits in buffer is empty. Circuit not valid or sim cannot keep up"
+      } else if (bufferCircuits.empty()) {
+        std::cout << "Circuits in buffer is empty. Circuit not valid or sim "
+                     "cannot keep up"
                      ".. Circuit Simulation might slow Down"
                   << std::endl;
         tryNextTime = true;

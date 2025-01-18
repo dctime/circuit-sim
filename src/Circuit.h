@@ -64,9 +64,9 @@ public:
       // std::cout << "element success" << std::endl;
     }
 
-    for (int i = 0; i <= MAX_NODE_ID; i++) {
-      g(i, i) += pow(10, -15);
-    }
+    // for (int i = 0; i <= MAX_NODE_ID; i++) {
+    //   g(i, i) += pow(10, -11.5);
+    // }
 
     // std::cout << "g: " << std::endl;
     // std::cout << g << std::endl;
@@ -101,8 +101,8 @@ public:
 
     // calculate deltaV
     Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
-    // std::cout << "deltaV value:" << std::endl;
-    // std::cout << deltaV << std::endl;
+    std::cout << "deltaV value:" << std::endl;
+    std::cout << deltaV << std::endl;
     // calculate new v
     // more drag means more iterations
     double normDeltaV = deltaV.norm();
@@ -132,9 +132,9 @@ public:
       sumOfIEvaluation += absIEvaluation;
     }
 
-    // std::cout << "===============" << std::endl;
-    // std::cout << "evaluation:" << std::endl;
-    // std::cout << iEvaluations << std::endl;
+    std::cout << "===============" << std::endl;
+    std::cout << "evaluation:" << std::endl;
+    std::cout << iEvaluations << std::endl;
     // std::cout << "sum of evaluation: " << std::endl;
     // std::cout << sumOfIEvaluation << std::endl;
 
