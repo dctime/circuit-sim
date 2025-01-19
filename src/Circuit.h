@@ -6,6 +6,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <random>
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
@@ -22,6 +23,12 @@ public:
     }
 
     circuit->v.resize(circuit->MAX_MATRIX_SIZE, 1);
+    // std::uniform_real_distribution<double> dis(0, 2);
+    // std::default_random_engine re;
+    // for (int index = 0; index <= MAX_NODE_ID; index++) {
+    //   circuit->v(index) = dis(re);
+    // }
+
     circuit->v.setZero();
     circuit->g.resize(circuit->MAX_MATRIX_SIZE, circuit->MAX_MATRIX_SIZE);
     circuit->g.setZero();
@@ -46,6 +53,7 @@ public:
   // can stop: true
 private:
   double lastTimeSumOfIEvaluation = std::numeric_limits<double>::max();
+  double floatingRootScale = 10;
 
 public:
   void iterate(int iteration, double iterationDrag, bool *passed,
@@ -63,10 +71,6 @@ public:
       ele->modifyIMatrix(i, v, MAX_NODE_ID, t);
       // std::cout << "element success" << std::endl;
     }
-
-    // for (int i = 0; i <= MAX_NODE_ID; i++) {
-    //   g(i, i) += pow(10, -11.5);
-    // }
 
     // std::cout << "g: " << std::endl;
     // std::cout << g << std::endl;
@@ -103,10 +107,36 @@ public:
     Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
     std::cout << "deltaV value:" << std::endl;
     std::cout << deltaV << std::endl;
+
+    // TODO: Find points deltaV too aggressive
+    double maxDeltaV = 1000;
+    for (int index = 0; index < MAX_MATRIX_SIZE; index++) {
+      if (deltaV(index) > maxDeltaV) {
+        std::cout << "Index: " << index << " is too sensitive" << std::endl;
+
+        double modifiedV = maxDeltaV + 1;
+        while (true) {
+          modifiedV = pow(deltaV(index), 1.0 / floatingRootScale) * (maxDeltaV);
+          if (modifiedV < maxDeltaV * 2) {
+            break;
+          }
+          floatingRootScale++;
+        }
+        std::cout << "Value updated from " << deltaV(index);
+        deltaV(index) = modifiedV;
+        std::cout << " to " << deltaV(index) << std::endl;
+        std::cout << "floatingRootScale: " << floatingRootScale << std::endl;
+      }
+    }
     // calculate new v
     // more drag means more iterations
+    //
+    double maxDeltaLength = 1;
+    if (iteration != 1) {
+      maxDeltaLength = 10;
+    }
+
     double normDeltaV = deltaV.norm();
-    double maxDeltaLength = 10000;
     if (normDeltaV >= maxDeltaLength) {
       deltaV = deltaV * (1 / normDeltaV);
     }
@@ -114,7 +144,18 @@ public:
     deltaV = deltaV / pow(iteration, 1 / iterationDrag);
     // std::cout << "mod DeltaV:" << std::endl;
     // std::cout << deltaV << std::endl;
-    v += deltaV;
+    if (deltaV.array().isNaN().any()) {
+      std::cout << "NAN occurs" << std::endl;
+      std::cout << "G:" << std::endl << g << std::endl;
+      std::cout << "V:" << std::endl << v << std::endl;
+      std::cout << "I:" << std::endl << i << std::endl;
+      std::cout << "J" << std::endl << j << std::endl;
+      std::cout << "J inv:" << std::endl << j.inverse() << std::endl;
+      std::cout << "F:" << std::endl << f << std::endl;
+    } else {
+      v += deltaV;
+      *passed = true;
+    }
     // std::cout << "cal v success" << std::endl;
 
     // print v

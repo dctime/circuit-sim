@@ -71,7 +71,7 @@ private:
           circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
           if (hasOscillation) {
             // std::cout << "Oscillation occurs" << std::endl;
-            iterationDrag = 1.1;
+            iterationDrag = iterationDrag - (iterationDrag - 1.1) / 2;
             hasOscillation = false;
           } else {
             // std::cout << "adding Drag to: " << iterationDrag << std::endl;
