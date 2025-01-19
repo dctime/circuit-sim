@@ -42,6 +42,8 @@ public:
     this->connectedLocs.push_back(pin2Loc);
     this->connectedLocs.push_back(pin3Loc);
 
+    this->noCurrentLocs.push_back(pin3Loc);
+
     std::cout << "NMOS Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
@@ -72,7 +74,7 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (nmosElement.get() == nullptr) {
+    if (nmosElement.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       NMOSUIElement::showGhostElement(window, xGrid, yGrid);
       // ghost version
     } else {
@@ -80,22 +82,22 @@ public:
       double pinDVolt = 0;
       double pinSVolt = 0;
       if (nmosElement->getPIN_G() != -1) {
-        pinGVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+        pinGVolt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             nmosElement->getPIN_G());
       }
 
       if (nmosElement->getPIN_D() != -1) {
-        pinDVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+        pinDVolt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             nmosElement->getPIN_D());
       }
 
       if (nmosElement->getPIN_S() != -1) {
-        pinSVolt = *uiCircuit->getCircuit()->getVoltagePointer(
+        pinSVolt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             nmosElement->getPIN_S());
       }
 
       double id =
-          nmosElement->getId(uiCircuit->getCircuit()->getVoltageMatrix());
+          nmosElement->getId(uiCircuit->getDisplayCircuit()->getVoltageMatrix());
       shownPinGVolt = pinGVolt;
       shownPinDVolt = pinDVolt;
       shownPinSVolt = pinSVolt;

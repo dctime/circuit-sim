@@ -48,15 +48,33 @@ file (GLOB SOURCES
 #     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 #     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 # endif()
+
+# find_package(BLAS)
+
+
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-
+# if (BLAS_FOUND)
+#   message(STATUS "BLAS FOUND")
+#   target_compile_definitions(${PROJECT_NAME}
+#     PRIVATE
+#       EIGEN_USE_BLAS
+#   )
+#   message(${BLAS_LIBRARIES})
+#   target_link_libraries(${PROJECT_NAME}
+#     PUBLIC
+#     ${BLAS_LIBRARIES}
+#   )
+# else()
+#   message(STATUS "BLAS NOT FOUND")
+# endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC src/Elements)
 target_include_directories(${PROJECT_NAME} PUBLIC src/UIElements)
 
 target_link_libraries(${PROJECT_NAME} 
+  PRIVATE
   sfml-graphics 
   sfml-window 
   sfml-system

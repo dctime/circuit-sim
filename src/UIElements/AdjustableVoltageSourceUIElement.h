@@ -48,7 +48,7 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (element.get() == nullptr) {
+    if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       // show Ghost Version
       AdjustableVoltageSourceUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
@@ -56,17 +56,17 @@ public:
       double pin2Volt = 0;
       if (element->getPin1() != -1) {
         pin1Volt =
-            *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+            *uiCircuit->getDisplayCircuit()->getVoltagePointer(element->getPin1());
       }
 
       if (element->getPin2() != -1) {
         pin2Volt =
-            *uiCircuit->getCircuit()->getVoltagePointer(element->getPin2());
+            *uiCircuit->getDisplayCircuit()->getVoltagePointer(element->getPin2());
       }
 
       showAdjustableVoltageSource(
           window, pin1Volt, pin2Volt,
-          *uiCircuit->getCircuit()->getVoltagePointer(
+          *uiCircuit->getDisplayCircuit()->getVoltagePointer(
               uiCircuit->getMaxNodeID() + element->getVoltageSourceID() + 1),
           xGrid, yGrid, uiCircuit->getCurrentScale());
       // show normal ones

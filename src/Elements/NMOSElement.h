@@ -2,16 +2,15 @@
 #include "CircuitElement.h"
 #include <memory>
 
-class NMOSElement : public CircuitElement
-{
+class NMOSElement : public CircuitElement {
 private:
   double id;
+
 public:
   NMOSElement() : CircuitElement() {}
   ~NMOSElement() {}
   static std::unique_ptr<NMOSElement> create(double K, double VA, double VT,
-                                             int PIN_G, int PIN_D, int PIN_S)
-  {
+                                             int PIN_G, int PIN_D, int PIN_S) {
     std::unique_ptr<NMOSElement> nmosEle = std::make_unique<NMOSElement>();
     nmosEle->PIN_G = PIN_G;
     nmosEle->PIN_D = PIN_D;
@@ -24,67 +23,47 @@ public:
 
   int getVoltageSourceCount() override { return 0; }
 
-  double getId(Eigen::MatrixXd &vResult)
-  {
+  double getId(Eigen::MatrixXd &vResult) {
     double vg, vd, vs;
-    if (PIN_G == -1)
-    {
+    if (PIN_G == -1) {
       vg = 0;
-    }
-    else
-    {
+    } else {
       vg = vResult(PIN_G);
     }
 
-    if (PIN_D == -1)
-    {
+    if (PIN_D == -1) {
       vd = 0;
-    }
-    else
-    {
+    } else {
       vd = vResult(PIN_D);
     }
 
-    if (PIN_S == -1)
-    {
+    if (PIN_S == -1) {
       vs = 0;
-    }
-    else
-    {
+    } else {
       vs = vResult(PIN_S);
     }
     return calid(K, vg - vs, vd - vs, VT, VA);
   }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override
-  {
+                     double t) override {
     // g0
     double vg, vd, vs;
-    if (PIN_G == -1)
-    {
+    if (PIN_G == -1) {
       vg = 0;
-    }
-    else
-    {
+    } else {
       vg = v(PIN_G);
     }
 
-    if (PIN_D == -1)
-    {
+    if (PIN_D == -1) {
       vd = 0;
-    }
-    else
-    {
+    } else {
       vd = v(PIN_D);
     }
 
-    if (PIN_S == -1)
-    {
+    if (PIN_S == -1) {
       vs = 0;
-    }
-    else
-    {
+    } else {
       vs = v(PIN_S);
     }
 
@@ -96,57 +75,67 @@ public:
     if (PIN_S != -1)
       g(PIN_S, PIN_S) += g0;
 
-    if (PIN_D != -1 && PIN_S != -1)
-    {
+    if (PIN_D != -1 && PIN_S != -1) {
       g(PIN_D, PIN_S) += -g0;
       g(PIN_S, PIN_D) += -g0;
+    }
+
+    // add gmin
+    if (PIN_G != -1 && PIN_S != -1) {
+      g(PIN_G, PIN_S) += -pow(10, -12);
+      g(PIN_S, PIN_G) += -pow(10, -12);
+    }
+
+    if (PIN_G != -1 && PIN_D != -1) {
+      g(PIN_G, PIN_D) += -pow(10, -12);
+      g(PIN_G, PIN_D) += -pow(10, -12);
+    }
+
+    if (PIN_G != -1) {
+      g(PIN_G, PIN_G) += 2*pow(10, -12);
+    }
+
+    if (PIN_D != -1) {
+      g(PIN_D, PIN_D) += pow(10, -12);
+    }
+
+    if (PIN_S != -1) {
+      g(PIN_S, PIN_S) += pow(10, -12);
     }
   }
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override
-  {
+                     double t) override {
     double vg, vd, vs;
-    if (PIN_G == -1)
-    {
+    if (PIN_G == -1) {
       vg = 0;
-    }
-    else
-    {
+    } else {
       vg = v(PIN_G);
     }
 
-    if (PIN_D == -1)
-    {
+    if (PIN_D == -1) {
       vd = 0;
-    }
-    else
-    {
+    } else {
       vd = v(PIN_D);
     }
 
-    if (PIN_S == -1)
-    {
+    if (PIN_S == -1) {
       vs = 0;
-    }
-    else
-    {
+    } else {
       vs = v(PIN_S);
     }
 
     double ideq = calideq(K, vg - vs, vd - vs, VT, VA);
     double issd = calissd(K, vg - vs, vd - vs, VT, VA);
 
-    if (PIN_D != -1)
-    {
+    if (PIN_D != -1) {
       // ideq large DC signal current
       // issd small signal current
       i(PIN_D) += -ideq;
       i(PIN_D) += -issd;
     }
 
-    if (PIN_S != -1)
-    {
+    if (PIN_S != -1) {
       // ideq large DC signal current
       // issd small signal current
       i(PIN_S) += ideq;
@@ -161,22 +150,16 @@ private:
   double K;
   double VA;
   double VT;
+
 public:
-  int getPIN_G() {
-    return PIN_G;
-  }
+  int getPIN_G() { return PIN_G; }
 
-  int getPIN_D() {
-    return PIN_D;
-  }
+  int getPIN_D() { return PIN_D; }
 
-  int getPIN_S() {
-    return PIN_S;
-  }
+  int getPIN_S() { return PIN_S; }
+
 private:
-
-  double calg0(double k, double vgs, double vds, double vt, double va)
-  {
+  double calg0(double k, double vgs, double vds, double vt, double va) {
     if (vgs - vt < 0)
       return 0;
     if (vds <= vgs - vt)
@@ -184,8 +167,7 @@ private:
     return ((k / 2) * pow(vgs - vt, 2)) / va;
   }
 
-  double calgm(double k, double vgs, double vds, double vt, double va)
-  {
+  double calgm(double k, double vgs, double vds, double vt, double va) {
     if (vgs - vt < 0)
       return 0;
     if (vds <= vgs - vt)
@@ -193,8 +175,7 @@ private:
     return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
   }
 
-  double calid(double k, double vgs, double vds, double vt, double va)
-  {
+  double calid(double k, double vgs, double vds, double vt, double va) {
     if (vgs - vt < 0)
       return 0;
     if (vds <= vgs - vt)
@@ -202,13 +183,11 @@ private:
     return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
   }
 
-  double calissd(double k, double vgs, double vds, double vt, double va)
-  {
+  double calissd(double k, double vgs, double vds, double vt, double va) {
     return calgm(k, vgs, vds, vt, va) * vgs;
   }
 
-  double calideq(double k, double vgs, double vds, double vt, double va)
-  {
+  double calideq(double k, double vgs, double vds, double vt, double va) {
     return calid(k, vgs, vds, vt, va) - calissd(k, vgs, vds, vt, va) -
            calg0(k, vgs, vds, vt, va) * vds;
   }

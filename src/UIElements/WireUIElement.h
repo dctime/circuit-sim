@@ -1,6 +1,7 @@
 #pragma once
 #include "../Line.h"
 #include "../UIElement.h"
+#include "ResistorElement.h"
 #include "VoltageSourceElement.h"
 #include <SFML/System/Vector2.hpp>
 #include <UICircuit.h>
@@ -18,6 +19,7 @@ public:
 private:
   int xGrid1, xGrid2, yGrid1, yGrid2;
   std::unique_ptr<VoltageSourceElement> element;
+  // std::unique_ptr<ResistorElement> element;
 
 public:
   ~WireUIElement() override {};
@@ -43,21 +45,33 @@ public:
   }
 
   void showElement(sf::RenderWindow *window) override {
-    if (element.get() == nullptr) {
+    if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       WireUIElement::showGhostElement(window, xGrid1, yGrid1, xGrid2, yGrid2);
     } else {
       double pin1Volt = 0;
+      double pin2Volt = 0;
 
-      if (element->getPin1() != -1) {
-        pin1Volt = *uiCircuit->getCircuit()->getVoltagePointer(element->getPin1());
+      // int pin1ID = element->getPIN1();
+      int pin1ID = element->getPin1();
+      if (pin1ID != -1) {
+        pin1Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(pin1ID);
       }
 
+      // int pin2ID = element->getPIN2();
+      int pin2ID = element->getPin2();
+      if (pin2ID != -1) {
+        pin2Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(pin2ID);
+      }
+
+      double current = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
+              uiCircuit->getMaxNodeID() + 1 + element->getVoltageSourceID());
+      // double current = (pin1Volt-pin2Volt)/element->getR();
       showWire(
           window, xGrid1, yGrid1, xGrid2, yGrid2,
           pin1Volt,
-          *uiCircuit->getCircuit()->getVoltagePointer(
-              uiCircuit->getMaxNodeID() + 1 + element->getVoltageSourceID()),
-          uiCircuit->getCurrentScale());
+          current,
+          uiCircuit->getCurrentScale()
+      );
     }
   }
 
@@ -68,6 +82,7 @@ public:
       std::string pin2Loc =
           std::to_string(xGrid2) + "," + std::to_string(yGrid2);
 
+      // element = ResistorElement::create(1, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc));
       element = VoltageSourceElement::create(
           0, uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc),
           uiCircuit->getNextVoltageSourceID());
