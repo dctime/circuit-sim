@@ -87,6 +87,10 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
     std::unique_ptr<UIElement> bigResistor = std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000000000000);
     circuit->addElement(bigResistor);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
+    std::unique_ptr<UIElement> nmos =
+        std::make_unique<NMOSUIElement>(circuit, xGrid, yGrid, K, 2*VT, VA);
+    circuit->addElement(nmos);
   }
 }
 
