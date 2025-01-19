@@ -1,6 +1,7 @@
 #pragma once
 #include "CircuitElement.h"
 #include <chrono>
+#include <cmath>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
 #include <iostream>
@@ -111,17 +112,26 @@ public:
     // TODO: Find points deltaV too aggressive
     double maxDeltaV = 1000;
     for (int index = 0; index < MAX_MATRIX_SIZE; index++) {
-      if (deltaV(index) > maxDeltaV) {
-        std::cout << "Index: " << index << " is too sensitive" << std::endl;
+      if (fabs(deltaV(index)) > maxDeltaV) {
+        bool negative = false;
+        if (deltaV(index) < 0)
+          negative = true;
 
+        std::cout << "Index: " << index << " is too sensitive" << std::endl;
+        double fabsDeltaV = std::fabs(deltaV(index));
         double modifiedV = maxDeltaV + 1;
         while (true) {
-          modifiedV = pow(deltaV(index), 1.0 / floatingRootScale) * (maxDeltaV);
+          modifiedV = pow(fabsDeltaV, 1.0 / floatingRootScale) * (maxDeltaV);
           if (modifiedV < maxDeltaV * 2) {
             break;
           }
           floatingRootScale++;
         }
+
+        if (negative) {
+          modifiedV *= -1;
+        }
+
         std::cout << "Value updated from " << deltaV(index);
         deltaV(index) = modifiedV;
         std::cout << " to " << deltaV(index) << std::endl;
