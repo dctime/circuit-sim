@@ -57,7 +57,7 @@ private:
         bool passed = false;
         bool hasOscillation = false;
 
-        int MAX_ITERATION = 150;
+        int MAX_ITERATION = 10000;
 
         int iteration = 1;
         // must be greater than 1

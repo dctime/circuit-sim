@@ -80,27 +80,28 @@ public:
       g(PIN_S, PIN_D) += -g0;
     }
 
+    double GMIN = pow(10, -6);
     // add gmin
     if (PIN_G != -1 && PIN_S != -1) {
-      g(PIN_G, PIN_S) += -pow(10, -12);
-      g(PIN_S, PIN_G) += -pow(10, -12);
+      g(PIN_G, PIN_S) += -GMIN;
+      g(PIN_S, PIN_G) += -GMIN;
     }
 
     if (PIN_G != -1 && PIN_D != -1) {
-      g(PIN_G, PIN_D) += -pow(10, -12);
-      g(PIN_G, PIN_D) += -pow(10, -12);
+      g(PIN_G, PIN_D) += -GMIN;
+      g(PIN_G, PIN_D) += -GMIN;
     }
 
     if (PIN_G != -1) {
-      g(PIN_G, PIN_G) += 2*pow(10, -12);
+      g(PIN_G, PIN_G) += 2*GMIN;
     }
 
     if (PIN_D != -1) {
-      g(PIN_D, PIN_D) += pow(10, -12);
+      g(PIN_D, PIN_D) += GMIN;
     }
 
     if (PIN_S != -1) {
-      g(PIN_S, PIN_S) += pow(10, -12);
+      g(PIN_S, PIN_S) += GMIN;
     }
   }
 
