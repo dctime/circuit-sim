@@ -20,7 +20,7 @@ public:
 
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     // std::cout << "modifying" << std::endl;
     // std::cout << "pin1" << pin1 << std::endl;
     // std::cout << "pin2" << pin2 << std::endl;
@@ -42,7 +42,7 @@ public:
   }
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     i(MAX_NODE_ID + 1 + voltageSourceID) = this->v;
 
     // std::cout << "voltageSourceISuccess" << std::endl;

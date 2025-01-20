@@ -23,7 +23,7 @@ public:
   int getVoltageSourceCount() override { return 1; }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     if (pin1 != -1) {
       g(MAX_NODE_ID + 1 + voltageSourceID, pin1) = 1;
       g(pin1, MAX_NODE_ID + 1 + voltageSourceID) = 1;
@@ -38,7 +38,7 @@ public:
   }
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     i(MAX_NODE_ID + 1 + voltageSourceID) = this->v(t);
     // std::cout << "adjVoltageSourceISuccess" << std::endl;
   }

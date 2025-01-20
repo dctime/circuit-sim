@@ -7,7 +7,7 @@ public:
   virtual ~CircuitElement() {}
   virtual int getVoltageSourceCount() = 0;
   virtual void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v,
-                             int MAX_NODE_ID, double t) = 0;
+                             int MAX_NODE_ID, double t, double deltaT) = 0;
   virtual void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v,
-                             int MAX_NODE_ID, double t) = 0;
+                             int MAX_NODE_ID, double t, double deltaT) = 0;
 };

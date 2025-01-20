@@ -11,6 +11,7 @@
 #include <NMOSUIElement.h>
 #include <ResistorElement.h>
 #include <ResistorUIElement.h>
+#include <CapacitorUIElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -84,6 +85,9 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V)) {
     std::unique_ptr<UIElement> voltage = std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
+    std::unique_ptr<UIElement> capacitor = std::make_unique<CapacitorUIElement>(circuit, xGrid, yGrid, 0.001);
+    circuit->addElement(capacitor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
     std::unique_ptr<UIElement> bigResistor = std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000000000000);
     circuit->addElement(bigResistor);

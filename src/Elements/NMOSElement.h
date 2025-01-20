@@ -46,7 +46,7 @@ public:
   }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     // g0
     double vg, vd, vs;
     if (PIN_G == -1) {
@@ -105,7 +105,7 @@ public:
   }
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     double vg, vd, vs;
     if (PIN_G == -1) {
       vg = 0;

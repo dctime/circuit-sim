@@ -40,9 +40,9 @@ public:
 
     for (CircuitElement *ele : elements) {
       // g matrix
-      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0);
+      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0, deltaT);
       // i matrix
-      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0);
+      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0, deltaT);
       // std::cout << "element success" << std::endl;
     }
 
@@ -67,9 +67,9 @@ public:
 
     for (CircuitElement *ele : elements) {
       // g matrix
-      ele->modifyGMatrix(g, v, MAX_NODE_ID, t);
+      ele->modifyGMatrix(g, v, MAX_NODE_ID, t, deltaT);
       // i matrix
-      ele->modifyIMatrix(i, v, MAX_NODE_ID, t);
+      ele->modifyIMatrix(i, v, MAX_NODE_ID, t, deltaT);
       // std::cout << "element success" << std::endl;
     }
 
@@ -106,8 +106,8 @@ public:
 
     // calculate deltaV
     Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
-    std::cout << "deltaV value:" << std::endl;
-    std::cout << deltaV << std::endl;
+    // std::cout << "deltaV value:" << std::endl;
+    // std::cout << deltaV << std::endl;
 
     // TODO: Find points deltaV too aggressive
     double maxDeltaV = 1;
@@ -117,7 +117,7 @@ public:
         if (deltaV(index) < 0)
           negative = true;
 
-        std::cout << "Index: " << index << " is too sensitive" << std::endl;
+        // std::cout << "Index: " << index << " is too sensitive" << std::endl;
         double fabsDeltaV = std::fabs(deltaV(index));
         double modifiedV = maxDeltaV + 1;
         while (true) {
@@ -132,10 +132,10 @@ public:
           modifiedV *= -1;
         }
 
-        std::cout << "Value updated from " << deltaV(index);
+        // std::cout << "Value updated from " << deltaV(index);
         deltaV(index) = modifiedV;
-        std::cout << " to " << deltaV(index) << std::endl;
-        std::cout << "floatingRootScale: " << floatingRootScale << std::endl;
+        // std::cout << " to " << deltaV(index) << std::endl;
+        // std::cout << "floatingRootScale: " << floatingRootScale << std::endl;
       }
     }
     // calculate new v
@@ -170,8 +170,8 @@ public:
 
     // print v
     // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
-    std::cout << "V:" << std::endl;
-    std::cout << v << std::endl;
+    // std::cout << "V:" << std::endl;
+    // std::cout << v << std::endl;
     Eigen::MatrixXd iEvaluations = g * v - i;
     double sumOfIEvaluation = 0;
     double IEvaluationMax = 0;
@@ -183,9 +183,9 @@ public:
       sumOfIEvaluation += absIEvaluation;
     }
 
-    std::cout << "===============" << std::endl;
-    std::cout << "evaluation:" << std::endl;
-    std::cout << iEvaluations << std::endl;
+    // std::cout << "===============" << std::endl;
+    // std::cout << "evaluation:" << std::endl;
+    // std::cout << iEvaluations << std::endl;
     // std::cout << "sum of evaluation: " << std::endl;
     // std::cout << sumOfIEvaluation << std::endl;
 
@@ -217,7 +217,6 @@ public:
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
   double *getVoltagePointer(int PIN_ID) { return &v(PIN_ID); }
   Eigen::MatrixXd &getVoltageMatrix() { return v; }
-
   double getTime() { return t; }
 
 private:

@@ -132,7 +132,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 1000;
+  double currentScale = 1;
 
   // infos
 public:
@@ -202,6 +202,7 @@ public:
   UIElement *getUIElement(int id) { return uiElementIDToUIElement[id]; }
 
 private:
+  double deltaT = 0.01;
   // TODO:  remember to lock this function outside of calls
   bool buildCircuit() {
     std::cout << "Rebuild Circuit" << std::endl;
@@ -244,7 +245,7 @@ private:
       return false;
     }
 
-    circuit = Circuit::create(elements, 0.01, nextPinID - 1);
+    circuit = Circuit::create(elements, deltaT, nextPinID - 1);
     return true;
   }
 
