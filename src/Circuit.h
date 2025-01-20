@@ -110,7 +110,7 @@ public:
     std::cout << deltaV << std::endl;
 
     // TODO: Find points deltaV too aggressive
-    double maxDeltaV = 1;
+    double maxDeltaV = 100;
     for (int index = 0; index < MAX_MATRIX_SIZE; index++) {
       if (fabs(deltaV(index)) > maxDeltaV) {
         bool negative = false;
