@@ -61,7 +61,7 @@ public:
 
       pmosElement = PMOSElement::create(
           k, va, vt, uiCircuit->getIDfromLoc(pin3Loc),
-          uiCircuit->getIDfromLoc(pin1Loc), uiCircuit->getIDfromLoc(pin2Loc));
+          uiCircuit->getIDfromLoc(pin2Loc), uiCircuit->getIDfromLoc(pin1Loc));
       std::cout << "PMOS Element Created!" << std::endl;
       std::cout << "PMOS UI Element added to UI Circuit. ID: " << uiElementID
                 << std::endl;
@@ -69,12 +69,11 @@ public:
     return pmosElement.get();
   }
 
-  void resetElement() override {
-    pmosElement.reset();
-  }
+  void resetElement() override { pmosElement.reset(); }
 
   void showElement(sf::RenderWindow *window) override {
-    if (pmosElement.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
+    if (pmosElement.get() == nullptr ||
+        uiCircuit->getDisplayCircuit() == nullptr) {
       PMOSUIElement::showGhostElement(window, xGrid, yGrid);
       // ghost version
     } else {
@@ -96,8 +95,8 @@ public:
             pmosElement->getPIN_S());
       }
 
-      double id =
-          pmosElement->getId(uiCircuit->getDisplayCircuit()->getVoltageMatrix());
+      double id = pmosElement->getId(
+          uiCircuit->getDisplayCircuit()->getVoltageMatrix());
       shownPinGVolt = pinGVolt;
       shownPinDVolt = pinDVolt;
       shownPinSVolt = pinSVolt;
@@ -124,18 +123,19 @@ private:
   static void showPMOS(sf::RenderWindow *window, sf::Vector2f &loc, double vg,
                        double vd, double vs) {
     double width = 5;
-    sf::Vector2f pointD1(loc.x, loc.y - 50);
-    sf::Vector2f pointD2(loc.x, loc.y - 25);
+
+    sf::Vector2f pointS1(loc.x, loc.y - 50);
+    sf::Vector2f pointS2(loc.x, loc.y - 25);
+    sf::Vector2f pointB11(loc.x - 50 + 2.5 + 10, loc.y - 25 + 10);
+    sf::Vector2f pointB12(loc.x - 50 + 2.5 + 10, loc.y - 25 - 10);
     sf::Vector2f pointB1(loc.x - 50 + 2.5, loc.y - 25);
     sf::Vector2f pointB2(loc.x - 50 + 2.5, loc.y + 25);
     sf::Vector2f pointBG1(loc.x - 50 - 7.5, loc.y - 25);
     sf::Vector2f pointBG2(loc.x - 50 - 7.5, loc.y + 25);
     sf::Vector2f pointG1(loc.x - 50 - 7.5, loc.y);
     sf::Vector2f pointG2(loc.x - 100, loc.y);
-    sf::Vector2f pointS1(loc.x, loc.y + 25);
-    sf::Vector2f pointS11(loc.x - 10, loc.y + 25 + 10);
-    sf::Vector2f pointS12(loc.x - 10, loc.y + 25 - 10);
-    sf::Vector2f pointS2(loc.x, loc.y + 50);
+    sf::Vector2f pointD1(loc.x, loc.y + 25);
+    sf::Vector2f pointD2(loc.x, loc.y + 50);
 
     sf::Color gColor;
     voltToColor(vg, gColor);
@@ -146,15 +146,15 @@ private:
     sf::Color bColor;
     midColor(bColor, dColor, sColor);
 
-    showLine(window, pointD1, pointD2, 5, dColor, dColor, dColor);
-    showLine(window, pointB1, pointB2, width, dColor, sColor, bColor);
+    showLine(window, pointS1, pointS2, 5, sColor, sColor, sColor);
+    showLine(window, pointB1, pointB2, width, sColor, dColor, bColor);
     showLine(window, pointBG1, pointBG2, width, gColor, gColor, gColor);
     showLine(window, pointG1, pointG2, 5, gColor, gColor, gColor);
-    showLine(window, pointS1, pointS2, 5, sColor, sColor, sColor);
-    showLine(window, pointD2, pointB1, 5, dColor, dColor, dColor);
-    showLine(window, pointB2, pointS1, 5, sColor, sColor, sColor);
-    showLine(window, pointS1, pointS11, width, sColor, sColor, sColor);
-    showLine(window, pointS1, pointS12, width, sColor, sColor, sColor);
+    showLine(window, pointD1, pointD2, 5, dColor, dColor, dColor);
+    showLine(window, pointS2, pointB1, 5, sColor, sColor, sColor);
+    showLine(window, pointB2, pointD1, 5, dColor, dColor, dColor);
+    showLine(window, pointB1, pointB11, width, sColor, sColor, sColor);
+    showLine(window, pointB1, pointB12, width, sColor, sColor, sColor);
   }
   void showPMOS(sf::RenderWindow *window, double vg, double vd, double vs,
                 double id, sf::Vector2f &loc, double currentScale) {
@@ -165,18 +165,18 @@ private:
     double width = 5;
 
     PMOSUIElement::showPMOS(window, loc, vg, vd, vs);
-    sf::Vector2f pointD1(loc.x, loc.y - 50);
-    sf::Vector2f pointD2(loc.x, loc.y - 25);
+    sf::Vector2f pointS1(loc.x, loc.y - 50);
+    sf::Vector2f pointS2(loc.x, loc.y - 25);
+    sf::Vector2f pointB11(loc.x - 50 + 2.5 + 10, loc.y - 25 + 10);
+    sf::Vector2f pointB12(loc.x - 50 + 2.5 + 10, loc.y - 25 - 10);
     sf::Vector2f pointB1(loc.x - 50 + 2.5, loc.y - 25);
     sf::Vector2f pointB2(loc.x - 50 + 2.5, loc.y + 25);
     sf::Vector2f pointBG1(loc.x - 50 - 7.5, loc.y - 25);
     sf::Vector2f pointBG2(loc.x - 50 - 7.5, loc.y + 25);
     sf::Vector2f pointG1(loc.x - 50 - 7.5, loc.y);
     sf::Vector2f pointG2(loc.x - 100, loc.y);
-    sf::Vector2f pointS1(loc.x, loc.y + 25);
-    sf::Vector2f pointS11(loc.x - 10, loc.y + 25 + 10);
-    sf::Vector2f pointS12(loc.x - 10, loc.y + 25 - 10);
-    sf::Vector2f pointS2(loc.x, loc.y + 50);
+    sf::Vector2f pointD1(loc.x, loc.y + 25);
+    sf::Vector2f pointD2(loc.x, loc.y + 50);
 
     double &current = id;
     // std::cout << "id:" << id << std::endl;
@@ -195,25 +195,25 @@ private:
 
     for (int i = 0; i < 20; ++i) {
       if (i < 1)
-        circle.setPosition(pointD1.x - circle.getRadius(),
-                           pointD1.y - circle.getRadius() + lastoffsetPMOS);
+        circle.setPosition(pointS1.x - circle.getRadius(),
+                           pointS1.y - circle.getRadius() + lastoffsetPMOS);
       else if (i < 2) {
         if (lastoffsetPMOS < 5)
-          circle.setPosition(pointD1.x - circle.getRadius(),
-                             pointD1.y + 20 - circle.getRadius() +
+          circle.setPosition(pointS1.x - circle.getRadius(),
+                             pointS1.y + 20 - circle.getRadius() +
                                  lastoffsetPMOS);
         else
-          circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetPMOS +
+          circle.setPosition(pointS2.x - circle.getRadius() - lastoffsetPMOS +
                                  5,
-                             pointD2.y - circle.getRadius());
+                             pointS2.y - circle.getRadius());
       } else if (i < 3) {
-        circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetPMOS - 15,
-                           pointD2.y - circle.getRadius());
+        circle.setPosition(pointS2.x - circle.getRadius() - lastoffsetPMOS - 15,
+                           pointS2.y - circle.getRadius());
       } else if (i < 4) {
         if (lastoffsetPMOS < 15)
-          circle.setPosition(pointD2.x - circle.getRadius() - lastoffsetPMOS -
+          circle.setPosition(pointS2.x - circle.getRadius() - lastoffsetPMOS -
                                  35,
-                             pointD2.y - circle.getRadius());
+                             pointS2.y - circle.getRadius());
         else
           circle.setPosition(pointB1.x - circle.getRadius(),
                              pointB1.y - circle.getRadius() + lastoffsetPMOS -
@@ -240,12 +240,12 @@ private:
                                  35,
                              pointB2.y - circle.getRadius());
         else
-          circle.setPosition(pointS1.x - circle.getRadius(),
-                             pointS1.y - circle.getRadius() - 15 +
+          circle.setPosition(pointD1.x - circle.getRadius(),
+                             pointD1.y - circle.getRadius() - 15 +
                                  lastoffsetPMOS);
       } else {
-        circle.setPosition(pointS1.x - circle.getRadius(),
-                           pointS1.y - circle.getRadius() + lastoffsetPMOS + 5);
+        circle.setPosition(pointD1.x - circle.getRadius(),
+                           pointD1.y - circle.getRadius() + lastoffsetPMOS + 5);
       }
       circle.setFillColor(sf::Color(200, 200, 0));
       window->draw(circle);

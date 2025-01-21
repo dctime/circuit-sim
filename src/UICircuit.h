@@ -135,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 1000;
+  double currentScale = 10;
 
   // infos
 public:

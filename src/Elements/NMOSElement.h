@@ -80,7 +80,7 @@ public:
       g(PIN_S, PIN_D) += -g0;
     }
 
-    double GMIN = pow(10, -6);
+    double GMIN = pow(10, -9);
     // add gmin
     if (PIN_G != -1 && PIN_S != -1) {
       g(PIN_G, PIN_S) += -GMIN;
