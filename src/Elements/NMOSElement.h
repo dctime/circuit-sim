@@ -144,6 +144,10 @@ public:
     }
   }
 
+  void incTime(Circuit *circuit) override {
+    
+  }
+
 private:
   int PIN_G;
   int PIN_D;

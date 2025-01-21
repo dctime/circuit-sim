@@ -53,7 +53,7 @@ private:
         }
 
         circuit->incTimerByDeltaT();
-
+        
         bool passed = false;
         bool hasOscillation = false;
 
@@ -67,6 +67,8 @@ private:
         //
         double iterationDrag = 1.1;
 
+        // set pre
+        circuit->setPreVAndPreI();
         while (true) {
           circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
           if (hasOscillation) {
@@ -99,8 +101,9 @@ private:
           continue;
         }
 
+        // std::cout << "C:" << circuit->getCircuitID() << std::endl;
         std::unique_ptr<Circuit> pastCircuit =
-            std::make_unique<Circuit>(*circuit);
+            std::make_unique<Circuit>(*(circuit.get()));
         bufferCircuits.push(std::move(pastCircuit));
         // std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
         //           << std::endl;
@@ -132,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 1;
+  double currentScale = 1000;
 
   // infos
 public:

@@ -1,4 +1,5 @@
 #pragma once
+#include "Circuit.h"
 #include <CircuitElement.h>
 #include <memory>
 
@@ -42,6 +43,8 @@ public:
     i(MAX_NODE_ID + 1 + voltageSourceID) = this->v(t);
     // std::cout << "adjVoltageSourceISuccess" << std::endl;
   }
+
+  void incTime(Circuit* circuit) override {}
 
 private:
   std::function<double(double)> v;

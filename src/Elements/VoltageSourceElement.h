@@ -48,6 +48,8 @@ public:
     // std::cout << "voltageSourceISuccess" << std::endl;
   }
 
+  void incTime(Circuit *circuit) override {}
+
   int getVoltageSourceCount() override { return 1; }
 
 private:

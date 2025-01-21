@@ -8,11 +8,15 @@
 #include <limits>
 #include <memory>
 #include <random>
+
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
                                          double deltaT, int MAX_NODE_ID) {
     std::unique_ptr<Circuit> circuit = std::make_unique<Circuit>();
+    circuit->circuitID = Circuit::circuitCounter;
+    Circuit::circuitCounter = Circuit::circuitCounter + 1;
+
     circuit->elements = elements;
     circuit->t = 0;
     circuit->deltaT = deltaT;
@@ -40,16 +44,23 @@ public:
 
     for (CircuitElement *ele : elements) {
       // g matrix
-      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0, deltaT);
+      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0,
+                         deltaT);
       // i matrix
-      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0, deltaT);
+      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0,
+                         deltaT);
       // std::cout << "element success" << std::endl;
     }
 
     return std::move(circuit);
   }
 
-  void incTimerByDeltaT() { t += deltaT; }
+  void incTimerByDeltaT() {
+    t += deltaT;
+    for (CircuitElement *ele : elements) {
+      ele->incTime(this);
+    }
+  }
   // keep iterate: false
   // can stop: true
 private:
@@ -172,6 +183,8 @@ public:
     // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
     // std::cout << "V:" << std::endl;
     // std::cout << v << std::endl;
+
+    // ===== Evaluation =====
     Eigen::MatrixXd iEvaluations = g * v - i;
     double sumOfIEvaluation = 0;
     double IEvaluationMax = 0;
@@ -216,16 +229,35 @@ public:
 
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
   double *getVoltagePointer(int PIN_ID) { return &v(PIN_ID); }
+  double *getPreVoltagePointer(int PIN_ID) { return &preV(PIN_ID); }
   Eigen::MatrixXd &getVoltageMatrix() { return v; }
   double getTime() { return t; }
 
 private:
   std::vector<CircuitElement *> elements;
   Eigen::MatrixXd v;
+  Eigen::MatrixXd preV;
   Eigen::MatrixXd g;
+  Eigen::MatrixXd preI;
   Eigen::MatrixXd i;
   double t;
   double deltaT;
   int MAX_NODE_ID;
   int MAX_MATRIX_SIZE;
+
+public:
+  static int circuitCounter;
+
+private:
+  int circuitID;
+
+public:
+  int getCircuitID() { return circuitID; }
+  void setCircuitID(int id) { circuitID = id; }
+
+public:
+  void setPreVAndPreI() { 
+    preV = v;
+    preI = i;
+  }
 };

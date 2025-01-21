@@ -33,6 +33,8 @@ public:
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
                      double t, double deltaT) override {}
 
+  void incTime(Circuit *circuit) override {}
+
 private:
   double R;
   int PIN1;
