@@ -7,12 +7,13 @@
 #include <AdjustableVoltageSourceUIElement.h>
 #include <Circuit.h>
 int Circuit::circuitCounter = 0;
+#include <CapacitorUIElement.h>
 #include <GroundUIElement.h>
 #include <NMOSElement.h>
 #include <NMOSUIElement.h>
+#include <PMOSUIElement.h>
 #include <ResistorElement.h>
 #include <ResistorUIElement.h>
-#include <CapacitorUIElement.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -83,18 +84,26 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
     std::unique_ptr<UIElement> nmos =
         std::make_unique<NMOSUIElement>(circuit, xGrid, yGrid, K, VT, VA);
     circuit->addElement(nmos);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
+    std::unique_ptr<UIElement> pmos =
+        std::make_unique<PMOSUIElement>(circuit, xGrid, yGrid, K, VT, VA);
+    circuit->addElement(pmos);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V)) {
-    std::unique_ptr<UIElement> voltage = std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
+    std::unique_ptr<UIElement> voltage =
+        std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
-    std::unique_ptr<UIElement> capacitor = std::make_unique<CapacitorUIElement>(circuit, xGrid, yGrid, 0.001);
+    std::unique_ptr<UIElement> capacitor =
+        std::make_unique<CapacitorUIElement>(circuit, xGrid, yGrid, 0.001);
     circuit->addElement(capacitor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
-    std::unique_ptr<UIElement> bigResistor = std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000000000000);
+    std::unique_ptr<UIElement> bigResistor =
+        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid,
+                                            1000000000000);
     circuit->addElement(bigResistor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
     std::unique_ptr<UIElement> nmos =
-        std::make_unique<NMOSUIElement>(circuit, xGrid, yGrid, K, 2*VT, VA);
+        std::make_unique<NMOSUIElement>(circuit, xGrid, yGrid, K, 2 * VT, VA);
     circuit->addElement(nmos);
   }
 }
@@ -336,14 +345,13 @@ int main() {
     endButton.update(sf::Vector2f(sf::Mouse::getPosition(window)));
     // NMOSUIElement *nmos1UIElement = (NMOSUIElement
     // *)uiCircuit.getUIElement(0); NMOSUIElement *nmos2UIElement =
-    // (NMOSUIElement *)uiCircuit.getUIElement(1); 
+    // (NMOSUIElement *)uiCircuit.getUIElement(1);
     // text.setString(
     //     "vg: " + std::to_string(nmosUIElement->getShownPinGVolt()) +
     //     " | vd: " + std::to_string(nmosUIElement->getShownPinDVolt()) +
     //     " | vs: " + std::to_string(nmosUIElement->getShownPinSVolt()) +
     //     " | i: " + std::to_string(nmosUIElement->getShownId()) +
     //     " | t: " + std::to_string(uiCircuit.getTime()));
-
 
     text.setString(
         "FPS: " + std::to_string(fps) +
