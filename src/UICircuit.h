@@ -40,7 +40,7 @@ private:
 
         std::unique_lock<std::mutex> bufferCircuitsUniqueLock(
             bufferCircuitsLock);
-        if (bufferCircuits.size() >= 3) {
+        if (bufferCircuits.size() >= 1000) {
           bufferCircuitsUniqueLock.unlock();
           std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
           continue;
@@ -53,11 +53,11 @@ private:
         }
 
         circuit->incTimerByDeltaT();
-
+        
         bool passed = false;
         bool hasOscillation = false;
 
-        int MAX_ITERATION = 150;
+        int MAX_ITERATION = 1000;
 
         int iteration = 1;
         // must be greater than 1
@@ -67,6 +67,8 @@ private:
         //
         double iterationDrag = 1.1;
 
+        // set pre
+        circuit->setPreVAndPreI();
         while (true) {
           circuit->iterate(iteration, iterationDrag, &passed, &hasOscillation);
           if (hasOscillation) {
@@ -99,8 +101,9 @@ private:
           continue;
         }
 
+        // std::cout << "C:" << circuit->getCircuitID() << std::endl;
         std::unique_ptr<Circuit> pastCircuit =
-            std::make_unique<Circuit>(*circuit);
+            std::make_unique<Circuit>(*(circuit.get()));
         bufferCircuits.push(std::move(pastCircuit));
         // std::cout << "Buffer Circuit Count: " << bufferCircuits.size()
         //           << std::endl;
@@ -132,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 1000;
+  double currentScale = 1;
 
   // infos
 public:
@@ -202,6 +205,7 @@ public:
   UIElement *getUIElement(int id) { return uiElementIDToUIElement[id]; }
 
 private:
+  double deltaT = 0.01;
   // TODO:  remember to lock this function outside of calls
   bool buildCircuit() {
     std::cout << "Rebuild Circuit" << std::endl;
@@ -244,7 +248,7 @@ private:
       return false;
     }
 
-    circuit = Circuit::create(elements, 0.01, nextPinID - 1);
+    circuit = Circuit::create(elements, deltaT, nextPinID - 1);
     return true;
   }
 

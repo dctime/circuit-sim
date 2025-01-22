@@ -90,6 +90,7 @@ public:
       std::cout << "Wire UI Element added to UI Circuit. ID: " << uiElementID << std::endl;
     }
     return element.get();
+
   }
 
   void resetElement() override {

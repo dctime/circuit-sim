@@ -37,17 +37,19 @@ void showLine(sf::RenderWindow *window, sf::Vector2f &point1,
 }
 
 void voltToColor(double voltage, sf::Color &color) {
+  double MAX_VOLT = 2;
+  double NEG_MAX_VOLT = -2;
   if (voltage >= 0) {
-    if (voltage >= 1)
-      voltage = 1;
+    if (voltage >= MAX_VOLT)
+      voltage = MAX_VOLT;
     color.a = 255;
     color.r = 30;
-    color.g = 30 + (255 - 30) * voltage;
+    color.g = 30 + (255 - 30) * (voltage / MAX_VOLT);
   } else {
-    if (voltage <= -1)
-      voltage = -1;
+    if (voltage <= NEG_MAX_VOLT)
+      voltage = NEG_MAX_VOLT;
     color.a = 255;
-    color.r = 30 + (255 - 30) * voltage * (-1);
+    color.r = 30 + (255 - 30) * (voltage / NEG_MAX_VOLT);
     color.g = 30;
     color.b = 30;
   }
