@@ -40,7 +40,7 @@ private:
 
         std::unique_lock<std::mutex> bufferCircuitsUniqueLock(
             bufferCircuitsLock);
-        if (bufferCircuits.size() >= 3) {
+        if (bufferCircuits.size() >= 1000) {
           bufferCircuitsUniqueLock.unlock();
           std::this_thread::sleep_for(std::chrono::nanoseconds(1000));
           continue;
@@ -57,7 +57,7 @@ private:
         bool passed = false;
         bool hasOscillation = false;
 
-        int MAX_ITERATION = 10000;
+        int MAX_ITERATION = 1000;
 
         int iteration = 1;
         // must be greater than 1
@@ -135,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 10;
+  double currentScale = 1;
 
   // infos
 public:

@@ -94,9 +94,15 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
     std::unique_ptr<UIElement> voltage =
         std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    std::function<double(double)> v = [](double t) { return 2*sin(3 * t); };
+    std::unique_ptr<UIElement> voltage =
+        std::make_unique<AdjustableVoltageSourceUIElement>(circuit, xGrid,
+                                                           yGrid, v);
+    circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
-    std::unique_ptr<UIElement> capacitor =
-        std::make_unique<CapacitorUIElement>(circuit, xGrid, yGrid, 0.0000000001);
+    std::unique_ptr<UIElement> capacitor = std::make_unique<CapacitorUIElement>(
+        circuit, xGrid, yGrid, 0.0000000001);
     circuit->addElement(capacitor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
     std::unique_ptr<UIElement> bigResistor =
@@ -104,12 +110,12 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
                                             1000000000000);
     circuit->addElement(bigResistor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1)) {
-    std::unique_ptr<UIElement> r800 = 
-      std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 800);
+    std::unique_ptr<UIElement> r800 =
+        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 800);
     circuit->addElement(r800);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2)) {
-    std::unique_ptr<UIElement> v18 = 
-      std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 1.8);
+    std::unique_ptr<UIElement> v18 =
+        std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 1.8);
     circuit->addElement(v18);
   }
 }
@@ -229,6 +235,38 @@ int main() {
   // uiCircuit.addElement(wire4);
   // uiCircuit.addElement(wire5);
   //
+
+  std::unique_ptr<UIElement> wire1 = std::make_unique<WireUIElement>(&uiCircuit, 5, 3, 8, 3);
+  std::unique_ptr<UIElement> srcV = std::make_unique<VoltageSourceUIElement>(&uiCircuit, 8, 4, 2);
+  std::unique_ptr<UIElement> groundSrc = std::make_unique<GroundUIElement>(&uiCircuit, 8, 5);
+  std::unique_ptr<UIElement> pmos = std::make_unique<PMOSUIElement>(&uiCircuit, 5, 4, K, VT, VA);
+  std::unique_ptr<UIElement> wirePMOS = std::make_unique<WireUIElement>(&uiCircuit, 5, 5, 5, 6);
+  std::unique_ptr<UIElement> wireNMOS = std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 5, 7);
+  std::unique_ptr<UIElement> wireOut = std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 7, 6);
+  std::unique_ptr<UIElement> rOut = std::make_unique<ResistorUIElement>(&uiCircuit, 7, 7, 1000);
+  std::unique_ptr<UIElement> groundOut = std::make_unique<GroundUIElement>(&uiCircuit, 7, 8);
+  std::unique_ptr<UIElement> nmos = std::make_unique<NMOSUIElement>(&uiCircuit, 5, 8, K, VT, VA);
+  std::unique_ptr<UIElement> groundNMOS = std::make_unique<GroundUIElement>(&uiCircuit, 5, 9);
+  std::unique_ptr<UIElement> wireGate = std::make_unique<WireUIElement>(&uiCircuit, 3, 4, 3, 8);
+  std::unique_ptr<UIElement> gateV = std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 3, 9, [](double t) { return 2*sin(3*t); });
+  std::unique_ptr<UIElement> groundGate = std::make_unique<GroundUIElement>(&uiCircuit, 3, 10);
+
+   
+  uiCircuit.addElement(wire1);
+  uiCircuit.addElement(srcV);
+  uiCircuit.addElement(groundSrc);
+  uiCircuit.addElement(pmos);
+  uiCircuit.addElement(wirePMOS);
+  uiCircuit.addElement(wireNMOS);
+  uiCircuit.addElement(wireOut);
+  uiCircuit.addElement(rOut);
+  uiCircuit.addElement(groundOut);
+  uiCircuit.addElement(nmos);
+  uiCircuit.addElement(groundNMOS);
+  uiCircuit.addElement(wireGate);
+  uiCircuit.addElement(gateV);
+  uiCircuit.addElement(groundGate);
+
   sf::Vector2i mouseGridPos;
   sf::Vector2i mousePos;
 
@@ -241,7 +279,7 @@ int main() {
 
   window.setFramerateLimit(60);
   // simulationSpeed 0.001 - 1
-  double simulationSpeed = 1;
+  double simulationSpeed = 0.1;
   int simulationSpeedCounter = 0;
   while (window.isOpen()) {
     // Performed. Now perform GPU stuff...
