@@ -8,6 +8,7 @@
 #include <Circuit.h>
 int Circuit::circuitCounter = 0;
 #include <CapacitorUIElement.h>
+#include <CurrentSourceUIElement.h>
 #include <GroundUIElement.h>
 #include <NMOSElement.h>
 #include <NMOSUIElement.h>
@@ -95,11 +96,16 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
         std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-    std::function<double(double)> v = [](double t) { return 2*sin(3 * t); };
+    std::function<double(double)> v = [](double t) { return 2 * sin(3 * t); };
     std::unique_ptr<UIElement> voltage =
         std::make_unique<AdjustableVoltageSourceUIElement>(circuit, xGrid,
                                                            yGrid, v);
     circuit->addElement(voltage);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I)) {
+    double i = 1;
+    std::unique_ptr<UIElement> current =
+        std::make_unique<CurrentSourceUIElement>(circuit, xGrid, yGrid, i);
+    circuit->addElement(current);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
     std::unique_ptr<UIElement> capacitor = std::make_unique<CapacitorUIElement>(
         circuit, xGrid, yGrid, 0.0000000001);
@@ -236,22 +242,36 @@ int main() {
   // uiCircuit.addElement(wire5);
   //
 
-  std::unique_ptr<UIElement> wire1 = std::make_unique<WireUIElement>(&uiCircuit, 5, 3, 8, 3);
-  std::unique_ptr<UIElement> srcV = std::make_unique<VoltageSourceUIElement>(&uiCircuit, 8, 4, 2);
-  std::unique_ptr<UIElement> groundSrc = std::make_unique<GroundUIElement>(&uiCircuit, 8, 5);
-  std::unique_ptr<UIElement> pmos = std::make_unique<PMOSUIElement>(&uiCircuit, 5, 4, K, VT, VA);
-  std::unique_ptr<UIElement> wirePMOS = std::make_unique<WireUIElement>(&uiCircuit, 5, 5, 5, 6);
-  std::unique_ptr<UIElement> wireNMOS = std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 5, 7);
-  std::unique_ptr<UIElement> wireOut = std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 7, 6);
-  std::unique_ptr<UIElement> rOut = std::make_unique<ResistorUIElement>(&uiCircuit, 7, 7, 1000);
-  std::unique_ptr<UIElement> groundOut = std::make_unique<GroundUIElement>(&uiCircuit, 7, 8);
-  std::unique_ptr<UIElement> nmos = std::make_unique<NMOSUIElement>(&uiCircuit, 5, 8, K, VT, VA);
-  std::unique_ptr<UIElement> groundNMOS = std::make_unique<GroundUIElement>(&uiCircuit, 5, 9);
-  std::unique_ptr<UIElement> wireGate = std::make_unique<WireUIElement>(&uiCircuit, 3, 4, 3, 8);
-  std::unique_ptr<UIElement> gateV = std::make_unique<AdjustableVoltageSourceUIElement>(&uiCircuit, 3, 9, [](double t) { return 2*sin(3*t); });
-  std::unique_ptr<UIElement> groundGate = std::make_unique<GroundUIElement>(&uiCircuit, 3, 10);
+  std::unique_ptr<UIElement> wire1 =
+      std::make_unique<WireUIElement>(&uiCircuit, 5, 3, 8, 3);
+  std::unique_ptr<UIElement> srcV =
+      std::make_unique<VoltageSourceUIElement>(&uiCircuit, 8, 4, 2);
+  std::unique_ptr<UIElement> groundSrc =
+      std::make_unique<GroundUIElement>(&uiCircuit, 8, 5);
+  std::unique_ptr<UIElement> pmos =
+      std::make_unique<PMOSUIElement>(&uiCircuit, 5, 4, K, VT, VA);
+  std::unique_ptr<UIElement> wirePMOS =
+      std::make_unique<WireUIElement>(&uiCircuit, 5, 5, 5, 6);
+  std::unique_ptr<UIElement> wireNMOS =
+      std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 5, 7);
+  std::unique_ptr<UIElement> wireOut =
+      std::make_unique<WireUIElement>(&uiCircuit, 5, 6, 7, 6);
+  std::unique_ptr<UIElement> rOut =
+      std::make_unique<ResistorUIElement>(&uiCircuit, 7, 7, 1000);
+  std::unique_ptr<UIElement> groundOut =
+      std::make_unique<GroundUIElement>(&uiCircuit, 7, 8);
+  std::unique_ptr<UIElement> nmos =
+      std::make_unique<NMOSUIElement>(&uiCircuit, 5, 8, K, VT, VA);
+  std::unique_ptr<UIElement> groundNMOS =
+      std::make_unique<GroundUIElement>(&uiCircuit, 5, 9);
+  std::unique_ptr<UIElement> wireGate =
+      std::make_unique<WireUIElement>(&uiCircuit, 3, 4, 3, 8);
+  std::unique_ptr<UIElement> gateV =
+      std::make_unique<AdjustableVoltageSourceUIElement>(
+          &uiCircuit, 3, 9, [](double t) { return 2 * sin(3 * t); });
+  std::unique_ptr<UIElement> groundGate =
+      std::make_unique<GroundUIElement>(&uiCircuit, 3, 10);
 
-   
   uiCircuit.addElement(wire1);
   uiCircuit.addElement(srcV);
   uiCircuit.addElement(groundSrc);
