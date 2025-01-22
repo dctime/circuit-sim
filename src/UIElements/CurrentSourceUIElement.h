@@ -109,8 +109,8 @@ private:
     sf::Vector2f point22(loc.x, loc.y + 25);
     sf::Vector2f pointC1(loc.x, loc.y - 20);
     sf::Vector2f pointC2(loc.x, loc.y + 20);
-    sf::Vector2f pointC11(loc.x + 2.5, loc.y - 15);
-    sf::Vector2f pointC12(loc.x - 2.5, loc.y - 15);
+    sf::Vector2f pointC11(loc.x + 10, loc.y - 10);
+    sf::Vector2f pointC12(loc.x - 10, loc.y - 10);
     // sf::Vector2f pointADD1(loc.x - 10, loc.y - 10);
     // sf::Vector2f pointADD2(loc.x + 10, loc.y - 10);
     // sf::Vector2f pointADD3(loc.x, loc.y - 10 + 10);
