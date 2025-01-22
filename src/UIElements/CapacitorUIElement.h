@@ -21,6 +21,19 @@ public:
     this->xGrid = xGrid;
     this->yGrid = yGrid;
     this->C = C;
+
+    std::string pin1Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
+    std::string pin2Loc =
+        std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+
+    this->connectedLocs.push_back(pin1Loc);
+    this->connectedLocs.push_back(pin2Loc);
+
+    std::cout << "Capacitor Init: " << std::endl;
+    std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
+    std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
+
   }
 
   CircuitElement *getCircuitElementPointer() override {
@@ -29,7 +42,7 @@ public:
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
-      element = CapacitorElement::create(C, 0, uiCircuit->getIDfromLoc(pin1Loc),
+      element = CapacitorElement::create(C, 1, uiCircuit->getIDfromLoc(pin1Loc),
                                          uiCircuit->getIDfromLoc(pin2Loc));
       std::cout << "Capacitor Element Created!" << std::endl;
       std::cout << "Capacitor UI Element added to UI Circuit. ID: "
@@ -66,9 +79,9 @@ public:
                 // << "element:" << prePin1Volt - prePin2Volt << std::endl;
       double RI = (pin1Volt - pin2Volt) /
                   CapacitorElement::getInnerResistance(
-                      element->getDeltaT(), prePin1Volt - prePin2Volt, C);
+                      uiCircuit->getDeltaT(), prePin1Volt - prePin2Volt, C);
       double InnerI = CapacitorElement::getInnerISource(
-          element->getDeltaT(), prePin1Volt - prePin2Volt, C);
+          uiCircuit->getDeltaT(), prePin1Volt - prePin2Volt, C);
 
       double i = RI + InnerI;
       showCapacitor(window, pin1Volt, pin2Volt, i, xGrid, yGrid,

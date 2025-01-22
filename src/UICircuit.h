@@ -52,7 +52,6 @@ private:
           continue;
         }
 
-        circuit->incTimerByDeltaT();
         
         bool passed = false;
         bool hasOscillation = false;
@@ -111,6 +110,7 @@ private:
         // std::cout << "Unlock from calculating buffering circuit" <<
         // std::endl;
       }
+      circuit->incTimerByDeltaT();
     }
   }
 
@@ -168,10 +168,10 @@ public:
         // std::endl;
         tryNextTime = false;
       } else if (bufferCircuits.empty()) {
-        std::cout << "Circuits in buffer is empty. Circuit not valid or sim "
-                     "cannot keep up"
-                     ".. Circuit Simulation might slow Down"
-                  << std::endl;
+        // std::cout << "Circuits in buffer is empty. Circuit not valid or sim "
+        //              "cannot keep up"
+        //              ".. Circuit Simulation might slow Down"
+        //           << std::endl;
         tryNextTime = true;
       }
     }
@@ -203,9 +203,10 @@ private:
 
 public:
   UIElement *getUIElement(int id) { return uiElementIDToUIElement[id]; }
+  double getDeltaT() { return deltaT; }
 
 private:
-  double deltaT = 0.01;
+  double deltaT = 0.0001;
   // TODO:  remember to lock this function outside of calls
   bool buildCircuit() {
     std::cout << "Rebuild Circuit" << std::endl;

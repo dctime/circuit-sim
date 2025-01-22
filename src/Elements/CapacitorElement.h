@@ -7,13 +7,11 @@ class CapacitorElement : public CircuitElement {
 private:
   double previousV = 0;
   double C;
-  double deltaT;
   int PIN_1, PIN_2;
 
 public:
   int getPIN1() { return PIN_1; }
   int getPIN2() { return PIN_2; }
-  double getDeltaT() { return deltaT; }
 
 public:
   static std::unique_ptr<CapacitorElement> create(double C, double initialV,
@@ -35,7 +33,6 @@ public:
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
                      double t, double deltaT) override {
-    this->deltaT = deltaT;
     double g0 = 1.0 / getInnerResistance(deltaT);
     if (PIN_1 != -1)
       g(PIN_1, PIN_1) += g0;
@@ -49,7 +46,6 @@ public:
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
                      double t, double deltaT) override {
-    this->deltaT = deltaT;
     if (PIN_1 != -1) {
       // ideq large DC signal current
       // issd small signal current

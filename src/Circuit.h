@@ -244,6 +244,9 @@ private:
   double deltaT;
   int MAX_NODE_ID;
   int MAX_MATRIX_SIZE;
+public:
+  int getMaxNodeID() { return MAX_NODE_ID; }
+  int getDeltaT() { return deltaT; }
 
 public:
   static int circuitCounter;

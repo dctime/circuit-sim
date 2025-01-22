@@ -42,7 +42,7 @@ public:
   // Called when UICircuit is building himself
   // Will Rewrite uiCircuit
   virtual CircuitElement* getCircuitElementPointer() = 0;
-  // virtual void showUnCalculated() = 0;
+
 protected:
   int uiElementID;
 public:
