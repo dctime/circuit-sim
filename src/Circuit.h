@@ -152,9 +152,9 @@ public:
     // calculate new v
     // more drag means more iterations
     //
-    double maxDeltaLength = 0.001;
-    if (iteration != 1) {
-      maxDeltaLength = 10;
+    double maxDeltaLength = 0.01;
+    if (iteration == 1) {
+      maxDeltaLength = pow(MAX_MATRIX_SIZE*10, 0.5);
     }
 
     double normDeltaV = deltaV.norm();
