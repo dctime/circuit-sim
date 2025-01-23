@@ -24,6 +24,7 @@ public:
   PMOSUIElement(UICircuit *circuit, int xGrid, int yGrid, double k, double vt,
                 double va) {
     uiCircuit = circuit;
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
     this->xGrid = xGrid;
     this->yGrid = yGrid;
 

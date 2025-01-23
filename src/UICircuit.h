@@ -135,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 1;
+  double currentScale = 0.1;
 
   // infos
 public:
@@ -426,7 +426,13 @@ private:
 
 private:
   int nextUIElementID = 0;
-
+public:
+  int getUIElementIDForUIElement(UIElement* elementPtr) {
+    uiElementIDToUIElement[nextUIElementID] = elementPtr;
+    nextUIElementID++; 
+    return nextUIElementID-1;
+  }
+private:
   void resetCircuit() {
     std::cout << "RESET: trying to obtain bufferCircuits lock" << std::endl;
     std::unique_lock<std::mutex> bufferCircuitsUniqueLock(bufferCircuitsLock);
@@ -447,10 +453,6 @@ private:
 public:
   void addElement(std::unique_ptr<UIElement> &uiElement) {
     resetCircuit();
-    uiElement->setUIElementID(nextUIElementID);
-    uiElementIDToUIElement[nextUIElementID] = uiElement.get();
-    nextUIElementID++;
-
     uiElements.push_back(std::move(uiElement));
   }
 

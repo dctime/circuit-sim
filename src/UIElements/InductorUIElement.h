@@ -21,6 +21,7 @@ public:
     this->xGrid = xGrid;
     this->yGrid = yGrid;
     this->L = L;
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
 
     std::string pin1Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);

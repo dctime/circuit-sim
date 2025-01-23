@@ -21,6 +21,7 @@ public:
     this->xGrid = xGrid;
     this->yGrid = yGrid;
     this->C = C;
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
 
     std::string pin1Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
@@ -46,7 +47,7 @@ public:
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
       std::string pinMLoc = "E" + std::to_string(uiElementID) + "PinM";
 
-      element = CapacitorElement::create(C, 1, uiCircuit->getIDfromLoc(pin1Loc),
+      element = CapacitorElement::create(C, 2, uiCircuit->getIDfromLoc(pin1Loc),
                                          uiCircuit->getIDfromLoc(pin2Loc), uiCircuit->getIDfromLoc(pinMLoc), uiCircuit->getNextVoltageSourceID());
       std::cout << "Capacitor Element Created!" << std::endl;
       std::cout << "Capacitor UI Element added to UI Circuit. ID: "

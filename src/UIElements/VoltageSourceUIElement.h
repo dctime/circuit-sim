@@ -24,6 +24,7 @@ public:
   ~VoltageSourceUIElement() override {};
   VoltageSourceUIElement(UICircuit *circuit, int xGrid, int yGrid, double v) {
     // important
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
     uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;

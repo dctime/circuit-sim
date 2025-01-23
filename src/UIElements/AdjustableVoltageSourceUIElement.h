@@ -10,7 +10,6 @@
 #include <cmath>
 #include <iostream>
 
-class UICircuit;
 
 class AdjustableVoltageSourceUIElement : public UIElement {
 public:
@@ -33,6 +32,7 @@ public:
     this->xGrid = xGrid;
     this->yGrid = yGrid;
     uiCircuit = circuit;
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
 
     std::string pin1Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);

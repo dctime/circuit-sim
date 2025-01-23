@@ -6,6 +6,7 @@
 class CapacitorElement : public CircuitElement {
 private:
   double previousV = 0;
+  double previousI = 0;
   double C;
   int PIN_1, PIN_2, PIN_M;
   int voltageSourceID;
@@ -40,7 +41,7 @@ public:
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
                      double t, double deltaT) override {
-    double g0 = getInnerConductance(deltaT, previousV, C);
+    double g0 = getInnerConductance(deltaT, previousV, previousI, C);
     if (PIN_2 != -1)
       g(PIN_2, PIN_2) += g0;
     if (PIN_M != -1)
@@ -67,7 +68,7 @@ public:
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
                      double t, double deltaT) override {
-    i(MAX_NODE_ID + 1 + voltageSourceID) = getInnerVSource(deltaT, previousV, C);
+    i(MAX_NODE_ID + 1 + voltageSourceID) = getInnerVSource(deltaT, previousV, previousI, C);
   }
 
   void incTime(Circuit *circuit) override {
@@ -84,16 +85,20 @@ public:
     circuit->setCircuitID(Circuit::circuitCounter);
     Circuit::circuitCounter++;
     previousV = pin1Volt - pin2Volt;
+    previousI =  *circuit->getVoltagePointer(
+              circuit->getMaxNodeID() +
+              voltageSourceID + 1);
+
     // std::cout << "CID:" << circuit->getCircuitID() << "updatedP:" <<
     // previousV
     // << std::endl;
   }
 
 public:
-  static double getInnerVSource(double deltaT, double previousV, double C) {
-    return previousV;
+  static double getInnerVSource(double deltaT, double previousV, double previousI, double C) {
+    return previousV + deltaT/(2*C)*previousI;
   }
-  static double getInnerConductance(double deltaT, double previousV, double C) {
-    return C / deltaT;
+  static double getInnerConductance(double deltaT, double previousV, double previousI, double C) {
+    return C / (2*deltaT);
   }
 };

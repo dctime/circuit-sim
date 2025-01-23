@@ -71,7 +71,7 @@ void leftMouseButtonPressedNegativeEdge(int xGrid, int yGrid,
 void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
     std::unique_ptr<UIElement> resistor =
-        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 0.01);
+        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1);
     circuit->addElement(resistor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
     std::unique_ptr<UIElement> gnd =
@@ -302,7 +302,7 @@ int main() {
       std::chrono::high_resolution_clock::now();
   float fps;
 
-  window.setFramerateLimit(500);
+  window.setFramerateLimit(1000);
   // simulationSpeed 0.001 - 1
   double simulationSpeed = 1;
   int simulationSpeedCounter = 0;

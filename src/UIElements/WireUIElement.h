@@ -25,6 +25,7 @@ public:
   ~WireUIElement() override {};
   WireUIElement(UICircuit *circuit, int xGrid1, int yGrid1, int xGrid2,
                 int yGrid2) {
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
     uiCircuit = circuit;
     this->xGrid = -1;
     this->yGrid = -1;

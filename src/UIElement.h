@@ -19,7 +19,7 @@ public:
   virtual void resetElement() = 0;
 public:
 
-  UIElement() {};
+  UIElement() {}
   std::vector<std::string> getConnectedLocs() {
     return connectedLocs;  
   }
@@ -46,9 +46,6 @@ public:
 protected:
   int uiElementID;
 public:
-  void setUIElementID(int id) {
-    uiElementID = id;
-  }
 };
 
 
