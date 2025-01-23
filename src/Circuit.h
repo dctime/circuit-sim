@@ -99,7 +99,7 @@ public:
 
     // std::cout << "f matrix success" << std::endl;
     // J matrix
-    double delta = 0.000001;
+    double delta = 0.0001;
     Eigen::MatrixXd dupV = v.replicate(1, MAX_MATRIX_SIZE);
     Eigen::MatrixXd vWithDelta =
         Eigen::MatrixXd::Identity(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
@@ -173,6 +173,7 @@ public:
       std::cout << "J" << std::endl << j << std::endl;
       std::cout << "J inv:" << std::endl << j.inverse() << std::endl;
       std::cout << "F:" << std::endl << f << std::endl;
+      exit(1);
     } else {
       v += deltaV;
       *passed = true;
@@ -246,7 +247,7 @@ private:
   int MAX_MATRIX_SIZE;
 public:
   int getMaxNodeID() { return MAX_NODE_ID; }
-  int getDeltaT() { return deltaT; }
+  double getDeltaT() { return deltaT; }
 
 public:
   static int circuitCounter;

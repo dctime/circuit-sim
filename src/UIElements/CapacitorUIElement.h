@@ -26,14 +26,16 @@ public:
         std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
     std::string pin2Loc =
         std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+    std::string pinMLoc = "E" + std::to_string(uiElementID) + "PinM";
 
     this->connectedLocs.push_back(pin1Loc);
     this->connectedLocs.push_back(pin2Loc);
+    this->connectedLocs.push_back(pinMLoc);
 
     std::cout << "Capacitor Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
-
+    std::cout << "  PinMLoc: " << pinMLoc << std::endl;
   }
 
   CircuitElement *getCircuitElementPointer() override {
@@ -42,8 +44,10 @@ public:
           std::to_string(xGrid) + "," + std::to_string(yGrid - 1);
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
+      std::string pinMLoc = "E" + std::to_string(uiElementID) + "PinM";
+
       element = CapacitorElement::create(C, 1, uiCircuit->getIDfromLoc(pin1Loc),
-                                         uiCircuit->getIDfromLoc(pin2Loc));
+                                         uiCircuit->getIDfromLoc(pin2Loc), uiCircuit->getIDfromLoc(pinMLoc), uiCircuit->getNextVoltageSourceID());
       std::cout << "Capacitor Element Created!" << std::endl;
       std::cout << "Capacitor UI Element added to UI Circuit. ID: "
                 << uiElementID << std::endl;
@@ -58,32 +62,23 @@ public:
     } else {
       double pin1Volt = 0;
       double pin2Volt = 0;
-      double prePin1Volt = 0;
-      double prePin2Volt = 0;
       if (element->getPIN1() != -1) {
         pin1Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
-            element->getPIN1());
-        prePin1Volt = *uiCircuit->getDisplayCircuit()->getPreVoltagePointer(
             element->getPIN1());
       }
 
       if (element->getPIN2() != -1) {
         pin2Volt = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
             element->getPIN2());
-        prePin2Volt = *uiCircuit->getDisplayCircuit()->getPreVoltagePointer(
-            element->getPIN2());
       }
 
       // std::cout << "CID:" << uiCircuit->getDisplayCircuit()->getCircuitID()
-                // << "V1-V2:" << pin1Volt - pin2Volt
-                // << "element:" << prePin1Volt - prePin2Volt << std::endl;
-      double RI = (pin1Volt - pin2Volt) /
-                  CapacitorElement::getInnerResistance(
-                      uiCircuit->getDeltaT(), prePin1Volt - prePin2Volt, C);
-      double InnerI = CapacitorElement::getInnerISource(
-          uiCircuit->getDeltaT(), prePin1Volt - prePin2Volt, C);
-
-      double i = RI + InnerI;
+      // << "V1-V2:" << pin1Volt - pin2Volt
+      // << "element:" << prePin1Volt - prePin2Volt << std::endl;
+      double i =  *uiCircuit->getDisplayCircuit()->getVoltagePointer(
+              uiCircuit->getMaxNodeID() +
+              element->getVoltageSourceID() + 1);
+      
       showCapacitor(window, pin1Volt, pin2Volt, i, xGrid, yGrid,
                     uiCircuit->getCurrentScale());
     }

@@ -206,7 +206,7 @@ public:
   double getDeltaT() { return deltaT; }
 
 private:
-  double deltaT = 0.0001;
+  double deltaT = 0.00001;
   // TODO:  remember to lock this function outside of calls
   bool buildCircuit() {
     std::cout << "Rebuild Circuit" << std::endl;
