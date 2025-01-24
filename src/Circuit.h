@@ -99,7 +99,8 @@ public:
 
     // std::cout << "f matrix success" << std::endl;
     // J matrix
-    double delta = 0.0001;
+    
+    double delta = 0.001;
     Eigen::MatrixXd dupV = v.replicate(1, MAX_MATRIX_SIZE);
     Eigen::MatrixXd vWithDelta =
         Eigen::MatrixXd::Identity(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
@@ -119,6 +120,7 @@ public:
     Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
     // std::cout << "deltaV value:" << std::endl;
     // std::cout << deltaV << std::endl;
+    
 
     // TODO: Find points deltaV too aggressive
     double maxDeltaV = 100;
@@ -152,9 +154,9 @@ public:
     // calculate new v
     // more drag means more iterations
     //
-    double maxDeltaLength = 0.01;
+    double maxDeltaLength = 0.001;
     if (iteration == 1) {
-      maxDeltaLength = pow(MAX_MATRIX_SIZE*10, 0.5);
+      maxDeltaLength = pow(MAX_MATRIX_SIZE*pow(10, 2), 0.5);
     }
 
     double normDeltaV = deltaV.norm();
