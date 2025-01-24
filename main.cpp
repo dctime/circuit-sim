@@ -8,9 +8,10 @@
 #include <Circuit.h>
 int Circuit::circuitCounter = 0;
 #include <CapacitorUIElement.h>
-#include <InductorUIElement.h>
 #include <CurrentSourceUIElement.h>
+#include <DiodeUIElement.h>
 #include <GroundUIElement.h>
+#include <InductorUIElement.h>
 #include <NMOSElement.h>
 #include <NMOSUIElement.h>
 #include <PMOSUIElement.h>
@@ -71,7 +72,7 @@ void leftMouseButtonPressedNegativeEdge(int xGrid, int yGrid,
 void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
     std::unique_ptr<UIElement> resistor =
-        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1);
+        std::make_unique<ResistorUIElement>(circuit, xGrid, yGrid, 1000);
     circuit->addElement(resistor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::G)) {
     std::unique_ptr<UIElement> gnd =
@@ -92,28 +93,37 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
     std::unique_ptr<UIElement> pmos =
         std::make_unique<PMOSUIElement>(circuit, xGrid, yGrid, K, VT, VA);
     circuit->addElement(pmos);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    double Is = 6.9 * pow(10, -16);
+    double VTD = 0.025;
+    std::unique_ptr<UIElement> diode =
+        std::make_unique<DiodeUIElement>(circuit, xGrid, yGrid, Is, VTD);
+    circuit->addElement(diode);
+
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V)) {
     std::unique_ptr<UIElement> voltage =
         std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
     circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-    std::function<double(double)> v = [](double t) { return 2 * sin(3 * t); };
+    std::function<double(double)> v = [](double t) { return 2 * sin(300000 * t); };
     std::unique_ptr<UIElement> voltage =
         std::make_unique<AdjustableVoltageSourceUIElement>(circuit, xGrid,
                                                            yGrid, v);
     circuit->addElement(voltage);
-  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I)) {
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I) &&
+             !sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
     double i = 1;
     std::unique_ptr<UIElement> current =
         std::make_unique<CurrentSourceUIElement>(circuit, xGrid, yGrid, i);
     circuit->addElement(current);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
-    std::unique_ptr<UIElement> capacitor = std::make_unique<CapacitorUIElement>(
-        circuit, xGrid, yGrid, 0.0001);
+    std::unique_ptr<UIElement> capacitor =
+        std::make_unique<CapacitorUIElement>(circuit, xGrid, yGrid, 0.0001);
     circuit->addElement(capacitor);
-  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-    std::unique_ptr<UIElement> inductor = std::make_unique<InductorUIElement>(
-        circuit, xGrid, yGrid, 0.0001);
+  } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::I) &&
+             sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+    std::unique_ptr<UIElement> inductor =
+        std::make_unique<InductorUIElement>(circuit, xGrid, yGrid, 0.0001);
     circuit->addElement(inductor);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::L)) {
     std::unique_ptr<UIElement> bigResistor =

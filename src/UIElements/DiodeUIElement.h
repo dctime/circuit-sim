@@ -1,26 +1,27 @@
 #pragma once
 #include "Line.h"
 #include "UIElement.h"
-#include <InductorElement.h>
+#include <DiodeElement.h>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <UICircuit.h>
 
-class InductorUIElement : public UIElement {
+class DiodeUIElement : public UIElement {
 public:
   void resetElement() override { element.reset(); }
 
 private:
   UICircuit *uiCircuit;
   int xGrid, yGrid;
-  double L;
-  std::unique_ptr<InductorElement> element;
+  double Is, Vt;
+  std::unique_ptr<DiodeElement> element;
 
 public:
-  InductorUIElement(UICircuit *circuit, int xGrid, int yGrid, double L) {
+  DiodeUIElement(UICircuit *circuit, int xGrid, int yGrid, double Is, double Vt) {
     uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
-    this->L = L;
+    this->Is = Is;
+    this->Vt = Vt;
     uiElementID = circuit->getUIElementIDForUIElement((UIElement *)this);
 
     std::string pin1Loc =
@@ -33,7 +34,7 @@ public:
     this->connectedLocs.push_back(pinMLoc);
     this->connectedLocs.push_back(pin2Loc);
 
-    std::cout << "Inductor Init: " << std::endl;
+    std::cout << "Diode Init: " << std::endl;
     std::cout << "  Pin1Loc: " << pin1Loc << std::endl;
     std::cout << "  PinMLoc (0 Volt Voltage Source): " << pinMLoc << std::endl;
     std::cout << "  Pin2Loc: " << pin2Loc << std::endl;
@@ -47,13 +48,13 @@ public:
       std::string pin2Loc =
           std::to_string(xGrid) + "," + std::to_string(yGrid + 1);
 
-      element = InductorElement::create(L, 0, uiCircuit->getIDfromLoc(pin1Loc),
+      element = DiodeElement::create(Is, Vt, uiCircuit->getIDfromLoc(pin1Loc),
                                         uiCircuit->getIDfromLoc(pinMLoc),
                                         uiCircuit->getIDfromLoc(pin2Loc),
                                         uiCircuit->getNextVoltageSourceID());
 
-      std::cout << "Inductor Element Created!" << std::endl;
-      std::cout << "Inductor UI Element added to UI Circuit. ID: "
+      std::cout << "Diode Element Created!" << std::endl;
+      std::cout << "Diode UI Element added to UI Circuit. ID: "
                 << uiElementID << std::endl;
     }
 
@@ -61,7 +62,7 @@ public:
   }
   void showElement(sf::RenderWindow *window) override {
     if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
-      InductorUIElement::showGhostElement(window, xGrid, yGrid);
+      DiodeUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
       double pin1Volt = 0;
       double pin2Volt = 0;
@@ -84,69 +85,50 @@ public:
       // std::cout << "CID:" << uiCircuit->getDisplayCircuit()->getCircuitID()
       // << "V1-V2:" << pin1Volt - pin2Volt
       // << "element:" << prePin1Volt - prePin2Volt << std::endl;
-
+      
       double i = *uiCircuit->getDisplayCircuit()->getVoltagePointer(
           uiCircuit->getMaxNodeID() + element->getVoltageSourceID() + 1);
 
-      showInductor(window, pin1Volt, pin2Volt, i, xGrid, yGrid,
+      showDiode(window, pin1Volt, pin2Volt, i, xGrid, yGrid,
                    uiCircuit->getCurrentScale());
     }
   }
 
 private:
-  static void showInductor(sf::RenderWindow *window, sf::Vector2f &loc,
+  static void showDiode(sf::RenderWindow *window, sf::Vector2f &loc,
                            double v1, double v2) {
     double width = 5;
 
     sf::Vector2f pointP11(loc.x, loc.y-50);
-    sf::Vector2f pointP12(loc.x, loc.y-40);
-    sf::Vector2f pointP13(loc.x+20, loc.y-30);
-    sf::Vector2f pointPC11(loc.x+20, loc.y-20);
-    sf::Vector2f pointPC12(loc.x, loc.y-10);
-    sf::Vector2f pointPC13(loc.x-20, loc.y-20);
-    sf::Vector2f pointPC14(loc.x, loc.y-30);
-    sf::Vector2f pointPC15(loc.x+20, loc.y-10);
-    sf::Vector2f pointPC21(loc.x+20, loc.y+10);
-    sf::Vector2f pointPC22(loc.x, loc.y+20);
-    sf::Vector2f pointPC23(loc.x-20, loc.y+10);
-    sf::Vector2f pointPC24(loc.x, loc.y);
-    sf::Vector2f pointPC25(loc.x+20, loc.y+20);
-    sf::Vector2f pointP23(loc.x+20, loc.y+30);
-    sf::Vector2f pointP22(loc.x, loc.y+40);
+    sf::Vector2f pointP12(loc.x, loc.y-20);
+    sf::Vector2f pointP13(loc.x-20, loc.y-20);
+    sf::Vector2f pointP14(loc.x+20, loc.y-20);
+    sf::Vector2f pointP24(loc.x+20, loc.y+20);
+    sf::Vector2f pointP23(loc.x-20, loc.y+20);
+    sf::Vector2f pointP22(loc.x, loc.y+20);
     sf::Vector2f pointP21(loc.x, loc.y+50);
 
     sf::Color color1;
     voltToColor(v1, color1);
     sf::Color color2;
     voltToColor(v2, color2);
-    sf::Color colorPC1;
-    sf::Color colorPC2;
-    sf::Color colorPCM;
-    midColor(colorPCM, color1, color2);
-    midColor(colorPC1, color1, colorPCM);
-    midColor(colorPC2, color2, colorPCM);
+    sf::Color colorM;
+    midColor(colorM, color1, color2);
     
     showLine(window, pointP11, pointP12, width, color1, color1, color1);
     showLine(window, pointP12, pointP13, width, color1, color1, color1);
-    showLine(window, pointP13, pointPC11, width, color1, color1, color1);
-    showLine(window, pointPC11, pointPC12, width, color1, colorPC1, color1);
-    showLine(window, pointPC12, pointPC13, width, colorPC1, colorPC1, colorPC1);
-    showLine(window, pointPC13, pointPC14, width, colorPC1, colorPC1, colorPC1);
-    showLine(window, pointPC14, pointPC15, width, colorPC1, colorPC1, colorPCM);
-    showLine(window, pointPC15, pointPC21, width, colorPCM, colorPC2, colorPC2);
-    showLine(window, pointPC21, pointPC22, width, colorPC2, colorPC2, colorPC2);
-    showLine(window, pointPC22, pointPC23, width, colorPC2, colorPC2, colorPC2);
-    showLine(window, pointPC23, pointPC24, width, colorPC2, colorPC2, colorPC2);
-    showLine(window, pointPC24, pointPC25, width, colorPC2, color2, color2);
-    showLine(window, pointPC25, pointP23, width, color2, color2, color2);
-    showLine(window, pointP23, pointP22, width, color2, color2, color2);
-    showLine(window, pointP22, pointP21, width, color2, color2, color2);
+    showLine(window, pointP12, pointP14, width, color1, color1, color1);
+    showLine(window, pointP21, pointP22, width, color2, color2, color2);
+    showLine(window, pointP22, pointP23, width, color2, color2, color2);
+    showLine(window, pointP22, pointP24, width, color2, color2, color2);
+    showLine(window, pointP13, pointP22, width, color1, color2, colorM);
+    showLine(window, pointP14, pointP22, width, color1, color2, colorM);
   }
 
   double lastoffset = 0;
-  void showInductor(sf::RenderWindow *window, double v1, double v2, double i,
+  void showDiode(sf::RenderWindow *window, double v1, double v2, double i,
                     sf::Vector2f &loc, double currentScale) {
-    InductorUIElement::showInductor(window, loc, v1, v2);
+    DiodeUIElement::showDiode(window, loc, v1, v2);
 
     sf::Vector2f point11(loc.x, loc.y - 50);
     double current = i;
@@ -161,15 +143,15 @@ private:
       window->draw(circle);
     }
   }
-  void showInductor(sf::RenderWindow *window, double v1, double v2, double i,
+  void showDiode(sf::RenderWindow *window, double v1, double v2, double i,
                     int xGrid, int yGrid, double currentScale) {
     sf::Vector2f loc(xGrid * 50, yGrid * 50);
-    showInductor(window, v1, v2, i, loc, currentScale);
+    showDiode(window, v1, v2, i, loc, currentScale);
   }
 
 private:
   static void showGhostElement(sf::RenderWindow *window, int xGrid, int yGrid) {
     sf::Vector2f loc(xGrid * 50, yGrid * 50);
-    InductorUIElement::showInductor(window, loc, 0, 0);
+    DiodeUIElement::showDiode(window, loc, 0, 0);
   }
 };
