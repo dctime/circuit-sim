@@ -37,8 +37,6 @@ public:
   }
 
 public:
-  // FIXME: Add a 0 volt votlage source to the end so that the current can be
-  // got by UIElement
   int getVoltageSourceCount() override { return 1; }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
