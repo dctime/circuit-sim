@@ -60,7 +60,6 @@ public:
     return element.get();
   }
   void showElement(sf::RenderWindow *window) override {
-    // FIXME: element is the newest version. to get the rendered version use
     if (element.get() == nullptr || uiCircuit->getDisplayCircuit() == nullptr) {
       InductorUIElement::showGhostElement(window, xGrid, yGrid);
     } else {
@@ -98,24 +97,50 @@ private:
   static void showInductor(sf::RenderWindow *window, sf::Vector2f &loc,
                            double v1, double v2) {
     double width = 5;
-    sf::Vector2f point11(loc.x, loc.y - 50);
-    sf::Vector2f point12(loc.x, loc.y - 10);
-    // sf::Vector2f pointP3(loc.x - 30, loc.y - 10);
-    // sf::Vector2f pointP4(loc.x + 30, loc.y - 10);
-    sf::Vector2f point21(loc.x, loc.y + 50);
-    sf::Vector2f point22(loc.x, loc.y + 10);
-    // sf::Vector2f pointM3(loc.x - 30, loc.y + 10);
-    // sf::Vector2f pointM4(loc.x + 30, loc.y + 10);
+
+    sf::Vector2f pointP11(loc.x, loc.y-50);
+    sf::Vector2f pointP12(loc.x, loc.y-40);
+    sf::Vector2f pointP13(loc.x+20, loc.y-30);
+    sf::Vector2f pointPC11(loc.x+20, loc.y-20);
+    sf::Vector2f pointPC12(loc.x, loc.y-10);
+    sf::Vector2f pointPC13(loc.x-20, loc.y-20);
+    sf::Vector2f pointPC14(loc.x, loc.y-30);
+    sf::Vector2f pointPC15(loc.x+20, loc.y-10);
+    sf::Vector2f pointPC21(loc.x+20, loc.y+10);
+    sf::Vector2f pointPC22(loc.x, loc.y+20);
+    sf::Vector2f pointPC23(loc.x-20, loc.y+10);
+    sf::Vector2f pointPC24(loc.x, loc.y);
+    sf::Vector2f pointPC25(loc.x+20, loc.y+20);
+    sf::Vector2f pointP23(loc.x+20, loc.y+30);
+    sf::Vector2f pointP22(loc.x, loc.y+40);
+    sf::Vector2f pointP21(loc.x, loc.y+50);
 
     sf::Color color1;
     voltToColor(v1, color1);
     sf::Color color2;
     voltToColor(v2, color2);
-
-    showLine(window, point11, point12, width, color1, color1, color1);
-    // showLine(window, pointP3, pointP4, width, color1, color1, color1);
-    showLine(window, point21, point22, width, color2, color2, color2);
-    // showLine(window, pointM3, pointM4, width, color2, color2, color2);
+    sf::Color colorPC1;
+    sf::Color colorPC2;
+    sf::Color colorPCM;
+    midColor(colorPCM, color1, color2);
+    midColor(colorPC1, color1, colorPCM);
+    midColor(colorPC2, color2, colorPCM);
+    
+    showLine(window, pointP11, pointP12, width, color1, color1, color1);
+    showLine(window, pointP12, pointP13, width, color1, color1, color1);
+    showLine(window, pointP13, pointPC11, width, color1, color1, color1);
+    showLine(window, pointPC11, pointPC12, width, color1, color1, colorPC1);
+    showLine(window, pointPC12, pointPC13, width, colorPC1, colorPC1, colorPC1);
+    showLine(window, pointPC13, pointPC14, width, colorPC1, colorPC1, colorPC1);
+    showLine(window, pointPC14, pointPC15, width, colorPC1, colorPC1, colorPCM);
+    showLine(window, pointPC15, pointPC21, width, colorPCM, colorPC2, colorPC2);
+    showLine(window, pointPC21, pointPC22, width, colorPC2, colorPC2, colorPC2);
+    showLine(window, pointPC22, pointPC23, width, colorPC2, colorPC2, colorPC2);
+    showLine(window, pointPC23, pointPC24, width, colorPC2, colorPC2, colorPC2);
+    showLine(window, pointPC24, pointPC25, width, colorPC2, color2, color2);
+    showLine(window, pointPC25, pointP23, width, color2, color2, color2);
+    showLine(window, pointP23, pointP22, width, color2, color2, color2);
+    showLine(window, pointP22, pointP21, width, color2, color2, color2);
   }
 
   double lastoffset = 0;

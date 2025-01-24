@@ -36,6 +36,8 @@ public:
 
   };
   
+
+  // NOTE: element is the newest version elment in the simulation. Get Data From V, I, PreviousV, and PreviousI Matrixes
   virtual void showElement(sf::RenderWindow* window) = 0;
 
   // if there is no circuit element return nullptr
