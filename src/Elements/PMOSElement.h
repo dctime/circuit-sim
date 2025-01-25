@@ -2,23 +2,23 @@
 #include "CircuitElement.h"
 #include <memory>
 
-class NMOSElement : public CircuitElement {
+class PMOSElement : public CircuitElement {
 private:
   double id;
 
 public:
-  NMOSElement() : CircuitElement() {}
-  ~NMOSElement() {}
-  static std::unique_ptr<NMOSElement> create(double K, double VA, double VT,
+  PMOSElement() : CircuitElement() {}
+  ~PMOSElement() {}
+  static std::unique_ptr<PMOSElement> create(double K, double VA, double VT,
                                              int PIN_G, int PIN_D, int PIN_S) {
-    std::unique_ptr<NMOSElement> nmosEle = std::make_unique<NMOSElement>();
-    nmosEle->PIN_G = PIN_G;
-    nmosEle->PIN_D = PIN_D;
-    nmosEle->PIN_S = PIN_S;
-    nmosEle->K = K;
-    nmosEle->VA = VA;
-    nmosEle->VT = VT;
-    return std::move(nmosEle);
+    std::unique_ptr<PMOSElement> pmosEle = std::make_unique<PMOSElement>();
+    pmosEle->PIN_G = PIN_G;
+    pmosEle->PIN_D = PIN_D;
+    pmosEle->PIN_S = PIN_S;
+    pmosEle->K = K;
+    pmosEle->VA = VA;
+    pmosEle->VT = VT;
+    return std::move(pmosEle);
   }
 
   int getVoltageSourceCount() override { return 0; }
@@ -42,7 +42,7 @@ public:
     } else {
       vs = vResult(PIN_S);
     }
-    return calid(K, vg - vs, vd - vs, VT, VA);
+    return calid(K, vs - vg, vs - vd, VT, VA);
   }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
@@ -67,7 +67,7 @@ public:
       vs = v(PIN_S);
     }
 
-    double g0 = calg0(K, vg - vs, vd - vs, VT, VA);
+    double g0 = calg0(K, vs - vg, vs - vd, VT, VA);
 
     if (PIN_D != -1)
       g(PIN_D, PIN_D) += g0;
@@ -126,21 +126,21 @@ public:
       vs = v(PIN_S);
     }
 
-    double ideq = calideq(K, vg - vs, vd - vs, VT, VA);
-    double issd = calissd(K, vg - vs, vd - vs, VT, VA);
+    double ideq = calideq(K, vs - vg, vs - vd, VT, VA);
+    double issd = calissd(K, vs - vg, vs - vd, VT, VA);
 
     if (PIN_D != -1) {
       // ideq large DC signal current
       // issd small signal current
-      i(PIN_D) += -ideq;
-      i(PIN_D) += -issd;
+      i(PIN_D) += ideq;
+      i(PIN_D) += issd;
     }
 
     if (PIN_S != -1) {
       // ideq large DC signal current
       // issd small signal current
-      i(PIN_S) += ideq;
-      i(PIN_S) += issd;
+      i(PIN_S) += -ideq;
+      i(PIN_S) += -issd;
     }
   }
 
@@ -164,36 +164,36 @@ public:
   int getPIN_S() { return PIN_S; }
 
 private:
-  double calg0(double k, double vgs, double vds, double vt, double va) {
-    if (vgs - vt < 0)
+  double calg0(double k, double vsg, double vsd, double vt, double va) {
+    if (vsg - vt < 0)
       return 0;
-    if (vds <= vgs - vt)
-      return k * ((vgs - vt) - vds);
-    return ((k / 2) * pow(vgs - vt, 2)) / va;
+    if (-vsd <= -vsg - vt)
+      return k * ((vsg - vt) - vsd);
+    return calid(k, vsg, vsd, vt, va)/va;
   }
 
-  double calgm(double k, double vgs, double vds, double vt, double va) {
-    if (vgs - vt < 0)
+  double calgm(double k, double vsg, double vsd, double vt, double va) {
+    if (vsg - vt < 0)
       return 0;
-    if (vds <= vgs - vt)
-      return k * vds;
-    return k * (vgs - vt) * (1 + (vds - (vgs - vt)) / va);
+    if (-vsd <= -vsg - vt)
+      return k * vsd;
+    return pow(2*k*calid(k, vsg, vsd, vt, va), 1/2.0);
   }
 
-  double calid(double k, double vgs, double vds, double vt, double va) {
-    if (vgs - vt < 0)
+  double calid(double k, double vsg, double vsd, double vt, double va) {
+    if (vsg - vt < 0)
       return 0;
-    if (vds <= vgs - vt)
-      return k * ((vgs - vt) - vds / 2) * vds;
-    return (k / 2) * pow(vgs - vt, 2) * (1 + (vds - (vgs - vt)) / va);
+    if (-vsd <= -vsg - vt)
+      return k * ((vsg - vt) - vsd / 2) * vsd;
+    return (k / 2) * pow(vsg - vt, 2) * (1 + (vsd - (vsd - vt)) / va);
   }
 
-  double calissd(double k, double vgs, double vds, double vt, double va) {
-    return calgm(k, vgs, vds, vt, va) * vgs;
+  double calissd(double k, double vsg, double vsd, double vt, double va) {
+    return calgm(k, vsg, vsd, vt, va) * vsg;
   }
 
-  double calideq(double k, double vgs, double vds, double vt, double va) {
-    return calid(k, vgs, vds, vt, va) - calissd(k, vgs, vds, vt, va) -
-           calg0(k, vgs, vds, vt, va) * vds;
+  double calideq(double k, double vsg, double vsd, double vt, double va) {
+    return calid(k, vsg, vsd, vt, va) - calissd(k, vsg, vsd, vt, va) -
+           calg0(k, vsg, vsd, vt, va) * vsd;
   }
 };

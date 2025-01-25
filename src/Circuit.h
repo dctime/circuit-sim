@@ -8,11 +8,15 @@
 #include <limits>
 #include <memory>
 #include <random>
+
 class Circuit {
 public:
   static std::unique_ptr<Circuit> create(std::vector<CircuitElement *> elements,
                                          double deltaT, int MAX_NODE_ID) {
     std::unique_ptr<Circuit> circuit = std::make_unique<Circuit>();
+    circuit->circuitID = Circuit::circuitCounter;
+    Circuit::circuitCounter = Circuit::circuitCounter + 1;
+
     circuit->elements = elements;
     circuit->t = 0;
     circuit->deltaT = deltaT;
@@ -40,16 +44,23 @@ public:
 
     for (CircuitElement *ele : elements) {
       // g matrix
-      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0);
+      ele->modifyGMatrix(circuit->g, circuit->v, circuit->MAX_NODE_ID, 0,
+                         deltaT);
       // i matrix
-      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0);
+      ele->modifyIMatrix(circuit->i, circuit->v, circuit->MAX_NODE_ID, 0,
+                         deltaT);
       // std::cout << "element success" << std::endl;
     }
 
     return std::move(circuit);
   }
 
-  void incTimerByDeltaT() { t += deltaT; }
+  void incTimerByDeltaT() {
+    t += deltaT;
+    for (CircuitElement *ele : elements) {
+      ele->incTime(this);
+    }
+  }
   // keep iterate: false
   // can stop: true
 private:
@@ -67,9 +78,9 @@ public:
 
     for (CircuitElement *ele : elements) {
       // g matrix
-      ele->modifyGMatrix(g, v, MAX_NODE_ID, t);
+      ele->modifyGMatrix(g, v, MAX_NODE_ID, t, deltaT);
       // i matrix
-      ele->modifyIMatrix(i, v, MAX_NODE_ID, t);
+      ele->modifyIMatrix(i, v, MAX_NODE_ID, t, deltaT);
       // std::cout << "element success" << std::endl;
     }
 
@@ -88,7 +99,8 @@ public:
 
     // std::cout << "f matrix success" << std::endl;
     // J matrix
-    double delta = 0.00000001;
+    
+    double delta = 0.0000001;
     Eigen::MatrixXd dupV = v.replicate(1, MAX_MATRIX_SIZE);
     Eigen::MatrixXd vWithDelta =
         Eigen::MatrixXd::Identity(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
@@ -106,18 +118,19 @@ public:
 
     // calculate deltaV
     Eigen::MatrixXd deltaV = -1 * ((j.inverse()) * f);
-    std::cout << "deltaV value:" << std::endl;
-    std::cout << deltaV << std::endl;
+    // std::cout << "deltaV value:" << std::endl;
+    // std::cout << deltaV << std::endl;
+    
 
     // TODO: Find points deltaV too aggressive
-    double maxDeltaV = 1;
+    double maxDeltaV = 100;
     for (int index = 0; index < MAX_MATRIX_SIZE; index++) {
       if (fabs(deltaV(index)) > maxDeltaV) {
         bool negative = false;
         if (deltaV(index) < 0)
           negative = true;
 
-        std::cout << "Index: " << index << " is too sensitive" << std::endl;
+        // std::cout << "Index: " << index << " is too sensitive" << std::endl;
         double fabsDeltaV = std::fabs(deltaV(index));
         double modifiedV = maxDeltaV + 1;
         while (true) {
@@ -132,18 +145,18 @@ public:
           modifiedV *= -1;
         }
 
-        std::cout << "Value updated from " << deltaV(index);
+        // std::cout << "Value updated from " << deltaV(index);
         deltaV(index) = modifiedV;
-        std::cout << " to " << deltaV(index) << std::endl;
-        std::cout << "floatingRootScale: " << floatingRootScale << std::endl;
+        // std::cout << " to " << deltaV(index) << std::endl;
+        // std::cout << "floatingRootScale: " << floatingRootScale << std::endl;
       }
     }
     // calculate new v
     // more drag means more iterations
     //
     double maxDeltaLength = 1;
-    if (iteration != 1) {
-      maxDeltaLength = 10;
+    if (iteration == 1) {
+      maxDeltaLength = pow(MAX_MATRIX_SIZE*pow(0.5, 2), 0.5);
     }
 
     double normDeltaV = deltaV.norm();
@@ -162,6 +175,7 @@ public:
       std::cout << "J" << std::endl << j << std::endl;
       std::cout << "J inv:" << std::endl << j.inverse() << std::endl;
       std::cout << "F:" << std::endl << f << std::endl;
+      exit(1);
     } else {
       v += deltaV;
       *passed = true;
@@ -170,8 +184,10 @@ public:
 
     // print v
     // std::cout << "V0\nV1\nIx\nIY:" << std::endl;
-    std::cout << "V:" << std::endl;
-    std::cout << v << std::endl;
+    // std::cout << "V:" << std::endl;
+    // std::cout << v << std::endl;
+
+    // ===== Evaluation =====
     Eigen::MatrixXd iEvaluations = g * v - i;
     double sumOfIEvaluation = 0;
     double IEvaluationMax = 0;
@@ -183,9 +199,9 @@ public:
       sumOfIEvaluation += absIEvaluation;
     }
 
-    std::cout << "===============" << std::endl;
-    std::cout << "evaluation:" << std::endl;
-    std::cout << iEvaluations << std::endl;
+    // std::cout << "===============" << std::endl;
+    // std::cout << "evaluation:" << std::endl;
+    // std::cout << iEvaluations << std::endl;
     // std::cout << "sum of evaluation: " << std::endl;
     // std::cout << sumOfIEvaluation << std::endl;
 
@@ -216,17 +232,38 @@ public:
 
   double getVoltage(int PIN_ID) { return v(PIN_ID); }
   double *getVoltagePointer(int PIN_ID) { return &v(PIN_ID); }
+  double *getPreVoltagePointer(int PIN_ID) { return &preV(PIN_ID); }
   Eigen::MatrixXd &getVoltageMatrix() { return v; }
-
   double getTime() { return t; }
 
 private:
   std::vector<CircuitElement *> elements;
   Eigen::MatrixXd v;
+  Eigen::MatrixXd preV;
   Eigen::MatrixXd g;
+  Eigen::MatrixXd preI;
   Eigen::MatrixXd i;
   double t;
   double deltaT;
   int MAX_NODE_ID;
   int MAX_MATRIX_SIZE;
+public:
+  int getMaxNodeID() { return MAX_NODE_ID; }
+  double getDeltaT() { return deltaT; }
+
+public:
+  static int circuitCounter;
+
+private:
+  int circuitID;
+
+public:
+  int getCircuitID() { return circuitID; }
+  void setCircuitID(int id) { circuitID = id; }
+
+public:
+  void setPreVAndPreI() { 
+    preV = v;
+    preI = i;
+  }
 };

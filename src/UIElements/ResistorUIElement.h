@@ -21,6 +21,7 @@ private:
 
 public:
   ResistorUIElement(UICircuit *circuit, int xGrid, int yGrid, double R) {
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
     uiCircuit = circuit;
     this->R = R;
     this->xGrid = xGrid;

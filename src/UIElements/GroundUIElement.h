@@ -1,6 +1,7 @@
 #include <UIElement.h>
 #include <Line.h>
 #include <iostream>
+#include <UICircuit.h>
 
 class GroundUIElement : public UIElement {
 public:
@@ -9,6 +10,7 @@ public:
     uiCircuit = circuit;
     this->xGrid = xGrid;
     this->yGrid = yGrid;
+    uiElementID = circuit->getUIElementIDForUIElement((UIElement*) this);
 
     std::string pinLoc = std::to_string(xGrid) + "," + std::to_string(yGrid);
 

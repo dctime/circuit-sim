@@ -18,7 +18,7 @@ public:
   int getVoltageSourceCount() override { return 0; }
 
   void modifyGMatrix(Eigen::MatrixXd &g, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {
+                     double t, double deltaT) override {
     double g0 = 1.0 / R;
     if (PIN1 != -1)
       g(PIN1, PIN1) += g0;
@@ -31,7 +31,9 @@ public:
   }
 
   void modifyIMatrix(Eigen::MatrixXd &i, Eigen::MatrixXd &v, int MAX_NODE_ID,
-                     double t) override {}
+                     double t, double deltaT) override {}
+
+  void incTime(Circuit *circuit) override {}
 
 private:
   double R;

@@ -19,7 +19,7 @@ public:
   virtual void resetElement() = 0;
 public:
 
-  UIElement() {};
+  UIElement() {}
   std::vector<std::string> getConnectedLocs() {
     return connectedLocs;  
   }
@@ -36,19 +36,18 @@ public:
 
   };
   
+
+  // NOTE: element is the newest version elment in the simulation. Get Data From V, I, PreviousV, and PreviousI Matrixes
   virtual void showElement(sf::RenderWindow* window) = 0;
 
   // if there is no circuit element return nullptr
   // Called when UICircuit is building himself
   // Will Rewrite uiCircuit
   virtual CircuitElement* getCircuitElementPointer() = 0;
-  // virtual void showUnCalculated() = 0;
+
 protected:
   int uiElementID;
 public:
-  void setUIElementID(int id) {
-    uiElementID = id;
-  }
 };
 
 
