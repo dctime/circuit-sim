@@ -56,7 +56,7 @@ private:
         bool passed = false;
         bool hasOscillation = false;
 
-        int MAX_ITERATION = 1000;
+        int MAX_ITERATION = 150;
 
         int iteration = 1;
         // must be greater than 1
@@ -135,7 +135,7 @@ private:
   std::unordered_map<std::string, int> locToPinID;
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
-  double currentScale = 100;
+  double currentScale = 0.1;
 
   // infos
 public:

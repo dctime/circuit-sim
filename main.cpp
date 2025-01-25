@@ -43,7 +43,7 @@ int xloc2 = -1;
 int yloc1 = -1;
 int yloc2 = -1;
 
-double K = 5 * pow(10, -3);
+double K = 5 * pow(10, -2);
 double VT = 0.4;
 // double va = std::numeric_limits<double>::infinity();
 double VA = INFINITY;
@@ -102,10 +102,16 @@ void leftMouseButtonPressedEdge(int xGrid, int yGrid, UICircuit *circuit) {
 
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V)) {
     std::unique_ptr<UIElement> voltage =
-        std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 2);
+        std::make_unique<VoltageSourceUIElement>(circuit, xGrid, yGrid, 5);
     circuit->addElement(voltage);
   } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-    std::function<double(double)> v = [](double t) { return 2 * sin(300000 * t); };
+    std::function<double(double)> v = [](double t) { 
+      if ((int)(t*1000000)%2 == 1) {
+        return 10;
+      } else {
+        return 0;
+      }
+    };
     std::unique_ptr<UIElement> voltage =
         std::make_unique<AdjustableVoltageSourceUIElement>(circuit, xGrid,
                                                            yGrid, v);

@@ -70,7 +70,7 @@ public:
       g(MAX_NODE_ID + 1 + voltageSourceID, PIN_2) = 1;
       // std::cout << "success1" << std::endl;
       g(PIN_2, MAX_NODE_ID + 1 + voltageSourceID) = 1;
-      // std::cout << "success2" << std::endl;
+      // std::cout << "success2" << std::endl; 
     }
 
     if (PIN_M != -1) {
@@ -78,7 +78,7 @@ public:
       g(PIN_M, MAX_NODE_ID + 1 + voltageSourceID) = -1;
     }
 
-    double GMIN = pow(10, -9);
+    double GMIN = pow(10, -6);
     // add gmin
     if (PIN_1 != -1 && PIN_2 != -1) {
       g(PIN_1, PIN_2) += -GMIN;

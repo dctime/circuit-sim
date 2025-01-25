@@ -100,7 +100,7 @@ public:
     // std::cout << "f matrix success" << std::endl;
     // J matrix
     
-    double delta = 0.0000001;
+    double delta = 0.0001;
     Eigen::MatrixXd dupV = v.replicate(1, MAX_MATRIX_SIZE);
     Eigen::MatrixXd vWithDelta =
         Eigen::MatrixXd::Identity(MAX_MATRIX_SIZE, MAX_MATRIX_SIZE);
@@ -154,7 +154,7 @@ public:
     // calculate new v
     // more drag means more iterations
     //
-    double maxDeltaLength = 1;
+    double maxDeltaLength = 0.001;
     if (iteration == 1) {
       maxDeltaLength = pow(MAX_MATRIX_SIZE*pow(0.5, 2), 0.5);
     }
