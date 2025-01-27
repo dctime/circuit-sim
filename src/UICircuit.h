@@ -133,6 +133,8 @@ private:
   std::vector<std::unique_ptr<UIElement>> uiElements;
   std::unique_ptr<Circuit> circuit;
   std::unordered_map<std::string, int> locToPinID;
+  std::unordered_map<std::string, int> locToUIElementID;
+  std::unordered_map<int, std::string> UIElementIDToLoc; 
   std::unique_ptr<Circuit> displayingCircuit;
   int nextPinID = 0;
   double currentScale = 0.1;
@@ -148,6 +150,18 @@ public:
     std::cout << "Max UIElement ID: " << nextUIElementID - 1 << std::endl;
     std::cout << "Voltage Source Count: " << getVoltageSourceCount()
               << std::endl;
+  }
+
+  void printOutLocToUIElementID() {
+    std::cout << "xGrid, yGrid : UIElementID" << std::endl;
+    for (std::pair<std::string, int> pair : locToUIElementID) {
+      std::cout << pair.first << ":" << pair.second << std::endl;
+    }
+
+    std::cout << "UIElementID : xGrid, yGrid" << std::endl;
+    for (std::pair<int, std::string> pair : UIElementIDToLoc) {
+      std::cout << pair.first << ":" << pair.second << std::endl;
+    }
   }
 
 public:
@@ -451,9 +465,44 @@ private:
   }
 
 public:
-  void addElement(std::unique_ptr<UIElement> &uiElement) {
+  void addElement(std::unique_ptr<UIElement> &uiElement, int gridX, int gridY) {
     resetCircuit();
+    
+    std::string loc = std::to_string(gridX) + "," + std::to_string(gridY);
+    locToUIElementID[loc] = uiElement->getUIElementID();
+    UIElementIDToLoc[uiElement->getUIElementID()] = loc;
+
     uiElements.push_back(std::move(uiElement));
+  }
+
+  void deleteElement(int uiElementID) {
+    resetCircuit();
+
+    for (int uiElementIndex = 0; uiElementIndex < uiElements.size(); uiElementIndex++) {
+      if (uiElements.at(uiElementIndex)->getUIElementID() == uiElementID) {
+        uiElements.erase(uiElements.begin()+uiElementIndex);
+        break;
+      }
+    }
+
+    std::string targetLoc = UIElementIDToLoc[uiElementID];
+    UIElementIDToLoc.erase(uiElementID);
+    locToUIElementID.erase(targetLoc);
+  }
+
+  void deleteElement(int gridX, int gridY) {
+    int id = getUiElementIDFromLoc(gridX, gridY);
+    if (id == -1) return;
+    deleteElement(getUiElementIDFromLoc(gridX, gridY));
+  }
+
+  int getUiElementIDFromLoc(int gridX, int gridY) {
+    std::string loc = std::to_string(gridX) + "," + std::to_string(gridY);
+    if (locToUIElementID.count(loc) == 0) {
+      return -1;
+    }
+
+    return locToUIElementID[loc];
   }
 
 public:

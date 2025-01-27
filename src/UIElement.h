@@ -48,6 +48,9 @@ public:
 protected:
   int uiElementID;
 public:
+  int getUIElementID() {
+    return uiElementID;
+  }
 };
 
 
