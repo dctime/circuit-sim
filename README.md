@@ -8,3 +8,4 @@ https://youtube.com/playlist?list=PLvv0ScY6vfd_ocTP2ZLicgqKnvq50OCXM&si=W4fUKjix
 
 https://www.geeksforgeeks.org/std-mutex-in-cpp/ Mutex 防止 thread 衝在一起
 
+### 現在不想寫 doc 和註解 也真的沒時間寫 呵呵
