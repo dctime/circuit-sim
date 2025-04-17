@@ -9,3 +9,16 @@ https://youtube.com/playlist?list=PLvv0ScY6vfd_ocTP2ZLicgqKnvq50OCXM&si=W4fUKjix
 https://www.geeksforgeeks.org/std-mutex-in-cpp/ Mutex 防止 thread 衝在一起
 
 ### 現在不想寫 doc 和註解 也真的沒時間寫 呵呵
+
+#### 可以幫忙加的功能:
+
+第一規則:
+電流源錯誤問題
+![image](https://github.com/user-attachments/assets/35755f98-f009-4667-b0c1-2d07c45d8c47)
+
+第二個規則: 任一個迴圈不能全部都是電壓原 （地與地是連起來的）
+
+第三個規則: 每個節點一定要有路徑可以到地 (那些輸入電流為0的節點沒跟同元件其他節點連在一起 像是 ideal op amp 的 ＋ -  與 mos 的 ground) (這好像加了)
+
+元件旋轉, UI, 好玩的關卡(https://www.youtube.com/watch?v=NS3C8i8kfWY), 極度非線性電路優化(cascode mos, CMOS differential amp等等)
+
