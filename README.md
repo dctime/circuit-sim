@@ -1,4 +1,11 @@
 # sources: (for those who want to kinda add something to the code (contributing or idk what else))
+## 怎跑?
+```
+git clone 這東西
+./run.sh
+./execute.sh
+報錯? 裝module (如果用 ubuntu sudo apt install windows 的話 慢慢改 cmake 吧拉資料夾 lib 耶)
+```
 ## 歡迎爆改code (發 pull request 有功能就加)
 http://dev.hypertriton.com/edacious/trunk/doc/lec.pdf 主要"參考"論文
 
