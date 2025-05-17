@@ -12,7 +12,7 @@ http://dev.hypertriton.com/edacious/trunk/doc/lec.pdf 主要"參考"論文
 https://acrobat.adobe.com/id/urn:aaid:sc:AP:9c98ed59-76ea-454a-821b-281e4a7006d9?viewer%21megaVerb=group-discover 
 主模擬用到的數學 Circuit.h Circuit Class and iterate method
 
-這 method 後面有一部分是將得到的 deltaV 做一些處理 使其不會讓模擬震盪或是卡住 (非正規的方法需要改進)
+這 method 後面有一部分是將用jacobian得到的 deltaV 做一些處理 使其不會讓模擬震盪或是卡住 (非正規的方法需要改進)
 
 https://aice.sjtu.edu.cn/eLearning/Lecture/Lecture5/Lecture5.html MNA 論文沒說到但很重要
 ![image](https://github.com/user-attachments/assets/d4fd5df3-9256-4567-a6d0-4b3ea16f15cd)
